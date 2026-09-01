@@ -1439,4 +1439,18 @@ $$(".modal")
 
         }
     );
-    
+    function startSimulation(type) {
+    console.log("Starting simulation:", type);
+
+    if (type === "coding") {
+        window.location.href = "/simulation/coding";
+    }
+
+    else if (type === "data-structures") {
+        window.location.href = "/simulation/data-structures";
+    }
+
+    else if (type === "ai-learning") {
+        window.location.href = "/simulation/ai-learning";
+    }
+}

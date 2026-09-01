@@ -2864,3 +2864,114 @@ body {
 .reset-content .message {
     margin-bottom: 18px;
 }
+/* =========================================================
+   SIMULATION PAGE
+   ========================================================= */
+
+.simulation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    margin-top: 30px;
+}
+
+.simulation-card {
+    background: #ffffff;
+    border: 1px solid #e3eee8;
+    border-radius: 24px;
+    padding: 32px;
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.simulation-card:hover {
+    transform: translateY(-4px);
+    border-color: #55bf7d;
+    box-shadow: 0 16px 35px rgba(54, 150, 92, 0.12);
+}
+
+.simulation-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    background: #e4f5ea;
+    color: #3db66d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 25px;
+}
+
+.simulation-type {
+    color: #39b56b;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.simulation-card h2 {
+    color: #202522;
+    font-size: 25px;
+    margin: 0 0 14px;
+}
+
+.simulation-card p {
+    color: #748078;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.simulation-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: auto;
+    margin-bottom: 24px;
+}
+
+.simulation-meta span {
+    background: #eef8f1;
+    color: #4c765b;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.simulation-button {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    background: #55c27c;
+    color: #ffffff;
+    padding: 15px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.simulation-button:hover {
+    background: #3eae67;
+}
+@media (max-width: 1000px) {
+
+    .simulation-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 650px) {
+
+    .simulation-grid {
+        grid-template-columns: 1fr;
+    }
+
+}

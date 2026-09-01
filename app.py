@@ -1220,6 +1220,9 @@ def chatbot():
 def source_page():
     return render_dashboard_page("sources")
 
+@app.route("/simulation")
+def simulation():
+    return render_dashboard_page("simulation")
 
 @app.route("/certificate")
 def certificate_page():

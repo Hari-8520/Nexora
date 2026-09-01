@@ -148,6 +148,11 @@
                 <span>⌁</span>
                 <span>Sources</span>
             </a>
+            <a href="{{ url_for('simulation') }}"
+   class="{% if page == 'simulation' %}active{% endif %}">
+    <span>◈</span>
+    <span>Simulation</span>
+</a>
 
             <a href="{{ url_for('certificate_page') }}"
                class="{% if page == 'certificate' %}active{% endif %}">
@@ -1353,76 +1358,153 @@
              SOURCES
         ========================== -->
 
-        {% if page == "sources" %}
+        <!-- =========================
+     SIMULATION
+========================== -->
+<!-- ==================== SIMULATION PAGE ==================== -->
+<!-- =========================
+     SIMULATION
+========================== -->
 
-        <section class="page-content">
+{% if page == "simulation" %}
 
-            <div class="page-heading">
+<section class="page-content">
 
-                <div>
+    <!-- PAGE HEADING -->
+    <div class="page-heading">
 
-                    <span class="eyebrow">
-                        LEARNING RESOURCES
-                    </span>
+        <div>
+            <span class="eyebrow">
+                NEXORA SIMULATION
+            </span>
 
-                    <h1>
-                        Sources
-                    </h1>
+            <h1>
+                Simulation
+            </h1>
 
-                    <p>
-                        Curated resources for your learning journey.
-                    </p>
+            <p>
+                Practice concepts through interactive learning simulations.
+            </p>
+        </div>
 
-                </div>
+    </div>
+
+
+    <!-- SIMULATION CARDS -->
+    <div class="video-grid">
+
+        <!-- CODING SIMULATION -->
+        <article class="video-card">
+
+            <div class="video-thumb">
+                <span>◇</span>
+                <small>20 min</small>
+            </div>
+
+            <div class="video-content">
+
+                <span>
+                    PROGRAMMING
+                </span>
+
+                <h2>
+                    Coding Simulation
+                </h2>
+
+                <p>
+                    Java · Beginner
+                </p>
+
+                <button
+                    class="course-btn"
+                    type="button"
+                    onclick="startSimulation('coding')">
+
+                    Start Simulation →
+
+                </button>
 
             </div>
 
+        </article>
 
-            <div class="source-grid">
 
-                {% for source in sources %}
+        <!-- DATA STRUCTURES SIMULATION -->
+        <article class="video-card">
 
-                <article class="source-card">
+            <div class="video-thumb">
+                <span>◇</span>
+                <small>25 min</small>
+            </div>
 
-                    <div class="source-icon">
-                        ↗
-                    </div>
+            <div class="video-content">
 
-                    <span>
-                        {{ source.type }}
-                    </span>
+                <span>
+                    DATA STRUCTURES
+                </span>
 
-                    <h2>
-                        {{ source.title }}
-                    </h2>
+                <h2>
+                    Data Structures Simulation
+                </h2>
 
-                    <strong>
-                        {{ source.topic }}
-                    </strong>
+                <p>
+                    DSA · Intermediate
+                </p>
 
-                    <p>
-                        {{ source.description }}
-                    </p>
+                <button
+                    class="course-btn"
+                    type="button"
+                    onclick="startSimulation('data-structures')">
 
-                    <button
-                        class="course-btn"
-                        type="button">
+                    Start Simulation →
 
-                        Open Resource →
-
-                    </button>
-
-                </article>
-
-                {% endfor %}
+                </button>
 
             </div>
 
-        </section>
-
-        {% endif %}
+        </article>
 
 
+        <!-- AI LEARNING SIMULATION -->
+        <article class="video-card">
+
+            <div class="video-thumb">
+                <span>✦</span>
+                <small>15 min</small>
+            </div>
+
+            <div class="video-content">
+
+                <span>
+                    AI LEARNING
+                </span>
+
+                <h2>
+                    AI Learning Simulation
+                </h2>
+
+                <p>
+                    AI Adaptive · Beginner
+                </p>
+
+                <button
+                    class="course-btn"
+                    type="button"
+                    onclick="startSimulation('ai-learning')">
+
+                    Start Simulation →
+
+                </button>
+
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
+
+{% endif %}
         <!-- =========================
              CERTIFICATES
         ========================== -->
