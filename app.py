@@ -346,7 +346,6 @@ def register():
         confirm_password,
         full_name,
         student_id,
-        department,
         year
     ]):
 

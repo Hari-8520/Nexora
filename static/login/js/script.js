@@ -301,11 +301,8 @@ $("#registrationForm")
                     .value
                     .trim(),
 
-                department:
-                    $("#department")
-                    .value
-                    .trim(),
-
+              department:
+                        $("#department")?.value?.trim() || "",
                 year:
                     $("#year")
                     .value,
