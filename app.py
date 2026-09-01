@@ -62,8 +62,17 @@ def init_db():
             attempts INTEGER DEFAULT 0,
             created_at TEXT NOT NULL
         )
-    """)
-
+  """)
+    conn.execute("""
+            CREATE TABLE IF NOT EXISTS password_reset_otps (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                otp_hash TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                attempts INTEGER DEFAULT 0,
+                created_at TEXT NOT NULL
+            )
+        """)
     conn.commit()
     conn.close()
 
@@ -686,7 +695,381 @@ def resend_registration_otp():
                 "Could not resend OTP."
         }), 500
 
+# --------------------------------------------------
+# FORGOT PASSWORD
+# --------------------------------------------------
 
+@app.post("/api/forgot-password")
+def forgot_password():
+
+    data = request.get_json(silent=True) or {}
+
+    email = normalize_email(
+        data.get("email", "")
+    )
+
+    if not email:
+        return jsonify({
+            "ok": False,
+            "message": "Please enter your Gmail."
+        }), 400
+
+    conn = get_db()
+
+    user = conn.execute(
+        """
+        SELECT id
+        FROM users
+        WHERE email = ?
+        """,
+        (email,)
+    ).fetchone()
+
+    conn.close()
+
+    if not user:
+        return jsonify({
+            "ok": False,
+            "message": "This Gmail is not registered."
+        }), 404
+
+    otp = generate_otp()
+
+    created = current_time()
+
+    expires = created + timedelta(
+        minutes=OTP_EXPIRY_MINUTES
+    )
+
+    conn = get_db()
+
+    conn.execute(
+        """
+        DELETE FROM password_reset_otps
+        WHERE email = ?
+        """,
+        (email,)
+    )
+
+    conn.execute(
+        """
+        INSERT INTO password_reset_otps
+        (
+            email,
+            otp_hash,
+            expires_at,
+            attempts,
+            created_at
+        )
+        VALUES (?, ?, ?, 0, ?)
+        """,
+        (
+            email,
+            hash_otp(otp),
+            expires.isoformat(),
+            created.isoformat()
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+    try:
+
+        smtp_host = os.getenv(
+            "SMTP_HOST",
+            "smtp.gmail.com"
+        )
+
+        smtp_port = int(
+            os.getenv("SMTP_PORT", "587")
+        )
+
+        smtp_user = os.getenv("SMTP_USER")
+
+        smtp_password = os.getenv(
+            "SMTP_APP_PASSWORD"
+        )
+
+        if not smtp_user or not smtp_password:
+            raise RuntimeError(
+                "Gmail SMTP is not configured."
+            )
+
+        message = EmailMessage()
+
+        message["From"] = smtp_user
+        message["To"] = email
+        message["Subject"] = "Nexora - Password Reset OTP"
+
+        message.set_content(f"""
+Hello,
+
+You requested to reset your Nexora password.
+
+Your password reset OTP is:
+
+{otp}
+
+This OTP will expire in {OTP_EXPIRY_MINUTES} minutes.
+
+If you did not request this password reset,
+please ignore this email.
+
+Nexora
+""")
+
+        with smtplib.SMTP(
+            smtp_host,
+            smtp_port,
+            timeout=20
+        ) as server:
+
+            server.starttls()
+
+            server.login(
+                smtp_user,
+                smtp_password
+            )
+
+            server.send_message(message)
+
+        return jsonify({
+            "ok": True,
+            "message":
+                "Password reset OTP sent to your Gmail."
+        })
+
+    except Exception as e:
+
+        print(
+            "PASSWORD RESET EMAIL ERROR:",
+            repr(e)
+        )
+
+        return jsonify({
+            "ok": False,
+            "message":
+                "Could not send password reset OTP."
+        }), 500
+    # --------------------------------------------------
+# VERIFY PASSWORD RESET OTP
+# --------------------------------------------------
+
+@app.post("/api/verify-password-reset-otp")
+def verify_password_reset_otp():
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    email = normalize_email(
+        data.get("email", "")
+    )
+
+    otp = str(
+        data.get("otp", "")
+    ).strip()
+
+    if not email or len(otp) != 6 or not otp.isdigit():
+
+        return jsonify({
+            "ok": False,
+            "message":
+                "Enter the complete 6-digit OTP."
+        }), 400
+
+    conn = get_db()
+
+    record = conn.execute(
+        """
+        SELECT *
+        FROM password_reset_otps
+        WHERE email = ?
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        (email,)
+    ).fetchone()
+
+    if not record:
+
+        conn.close()
+
+        return jsonify({
+            "ok": False,
+            "message":
+                "OTP not found. Please request a new OTP."
+        }), 400
+
+    if record["attempts"] >= MAX_OTP_ATTEMPTS:
+
+        conn.close()
+
+        return jsonify({
+            "ok": False,
+            "message":
+                "Too many incorrect attempts."
+        }), 429
+
+    expires_at = datetime.fromisoformat(
+        record["expires_at"]
+    )
+
+    if current_time() > expires_at:
+
+        conn.execute(
+            """
+            DELETE FROM password_reset_otps
+            WHERE id = ?
+            """,
+            (record["id"],)
+        )
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            "ok": False,
+            "message":
+                "OTP expired. Please request a new OTP."
+        }), 400
+
+    if not secrets.compare_digest(
+        record["otp_hash"],
+        hash_otp(otp)
+    ):
+
+        conn.execute(
+            """
+            UPDATE password_reset_otps
+            SET attempts = attempts + 1
+            WHERE id = ?
+            """,
+            (record["id"],)
+        )
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            "ok": False,
+            "message":
+                "Incorrect OTP."
+        }), 400
+
+    conn.close()
+
+    session["password_reset_email"] = email
+
+    return jsonify({
+        "ok": True,
+        "message":
+            "OTP verified successfully."
+    })
+# --------------------------------------------------
+# RESET PASSWORD
+# --------------------------------------------------
+
+@app.post("/api/reset-password")
+def reset_password():
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    email = session.get(
+        "password_reset_email"
+    )
+
+    password = data.get(
+        "password",
+        ""
+    )
+
+    confirm_password = data.get(
+        "confirm_password",
+        ""
+    )
+
+    if not email:
+
+        return jsonify({
+            "ok": False,
+            "message":
+                "Password reset session expired."
+        }), 400
+
+    if len(password) < 8:
+
+        return jsonify({
+            "ok": False,
+            "message":
+                "Password must contain at least 8 characters."
+        }), 400
+
+    if password != confirm_password:
+
+        return jsonify({
+            "ok": False,
+            "message":
+                "Passwords do not match."
+        }), 400
+
+    conn = get_db()
+
+    user = conn.execute(
+        """
+        SELECT id
+        FROM users
+        WHERE email = ?
+        """,
+        (email,)
+    ).fetchone()
+
+    if not user:
+
+        conn.close()
+
+        return jsonify({
+            "ok": False,
+            "message":
+                "Account not found."
+        }), 404
+
+    conn.execute(
+        """
+        UPDATE users
+        SET password_hash = ?
+        WHERE email = ?
+        """,
+        (
+            generate_password_hash(password),
+            email
+        )
+    )
+
+    conn.execute(
+        """
+        DELETE FROM password_reset_otps
+        WHERE email = ?
+        """,
+        (email,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    session.pop(
+        "password_reset_email",
+        None
+    )
+
+    return jsonify({
+        "ok": True,
+        "message":
+            "Password changed successfully. Please login."
+    })
 # --------------------------------------------------
 # LOGOUT
 # --------------------------------------------------

@@ -764,26 +764,513 @@ function startResendTimer() {
             1000
         );
 
-}
-
-
-// =================================================
-// FORGOT PASSWORD
+}// =================================================
+// FORGOT PASSWORD FLOW
 // =================================================
 
-$("#forgotPassword")
-    .addEventListener(
+let resetEmail = "";
+
+
+// -------------------------------------------------
+// STEP 1: CLICK FORGOT PASSWORD
+// -------------------------------------------------
+
+$("#forgotPassword").addEventListener(
+    "click",
+    () => {
+
+        showForgotPasswordPage();
+
+    }
+);
+
+
+// -------------------------------------------------
+// STEP 2: SHOW FORGOT PASSWORD PAGE
+// -------------------------------------------------
+
+function showForgotPasswordPage() {
+
+    $(".login-content").innerHTML = `
+
+        <div class="reset-content">
+
+            <button
+                type="button"
+                class="reset-back-button"
+                id="backToLogin"
+            >
+                ← Back to Login
+            </button>
+
+            <div class="small-title">
+                PASSWORD RECOVERY
+            </div>
+
+            <h1>
+                Forgot Password?
+            </h1>
+
+            <p class="subtitle">
+                Enter your registered Gmail and
+                we'll send you a verification OTP.
+            </p>
+
+            <div class="input-group">
+
+                <label>
+                    Student Gmail
+                </label>
+
+                <input
+                    type="email"
+                    id="resetEmail"
+                    placeholder="Enter your Gmail"
+                    required
+                >
+
+            </div>
+
+            <p
+                id="resetMessage"
+                class="message">
+            </p>
+
+            <button
+                type="button"
+                class="login-button"
+                id="sendResetOTP"
+            >
+                Send OTP <span>→</span>
+            </button>
+
+        </div>
+    `;
+
+
+    // Back to Login
+    $("#backToLogin").addEventListener(
         "click",
         () => {
 
-            alert(
-                "Password reset will be added in the next authentication stage."
-            );
+            location.reload();
 
         }
     );
 
 
+    // Send OTP
+    $("#sendResetOTP").addEventListener(
+        "click",
+        sendResetOTP
+    );
+
+}
+
+
+// -------------------------------------------------
+// STEP 3: SEND OTP
+// -------------------------------------------------
+async function sendResetOTP() {
+
+    const email =
+        $("#resetEmail")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const message =
+        $("#resetMessage");
+
+    if (!email) {
+
+        showMessage(
+            message,
+            "Please enter your Gmail."
+        );
+
+        $("#resetEmail").focus();
+
+        return;
+    }
+
+    const button =
+        $("#sendResetOTP");
+
+    // Show loading state
+    button.disabled = true;
+    button.innerHTML = "Sending OTP...";
+
+    try {
+
+        const result =
+            await postJSON(
+                "/api/forgot-password",
+                {
+                    email: email
+                }
+            );
+
+        if (!result.ok) {
+
+            showMessage(
+                message,
+                result.message ||
+                "Unable to send OTP."
+            );
+
+            // Restore button
+            button.disabled = false;
+            button.innerHTML =
+                'Send OTP <span>→</span>';
+
+            return;
+        }
+
+        // OTP successfully sent
+        resetEmail = email;
+
+        // Move to OTP verification page
+        showOTPResetPage();
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            message,
+            "Unable to connect to the server."
+        );
+
+        // Restore button
+        button.disabled = false;
+        button.innerHTML =
+            'Send OTP <span>→</span>';
+    }
+}
+// -------------------------------------------------
+// STEP 4: SHOW OTP PAGE
+// -------------------------------------------------
+
+function showOTPResetPage() {
+
+    $(".login-content").innerHTML = `
+
+        <div class="reset-content">
+
+            <button
+                type="button"
+                class="reset-back-button"
+                id="backToForgot"
+            >
+                ← Back
+            </button>
+
+            <div class="small-title">
+                VERIFY OTP
+            </div>
+
+            <h1>
+                Check Your Gmail
+            </h1>
+
+            <p class="subtitle">
+                We sent a 6-digit verification code to
+                <strong class="reset-email">
+                    ${escapeHTML(resetEmail)}
+                </strong>
+            </p>
+
+            <div class="input-group">
+
+                <label>
+                    Verification OTP
+                </label>
+
+                <input
+                    type="text"
+                    id="resetOTP"
+                    placeholder="Enter 6-digit OTP"
+                    maxlength="6"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                >
+
+            </div>
+
+            <p
+                id="otpResetMessage"
+                class="message">
+            </p>
+
+            <button
+                type="button"
+                class="login-button"
+                id="verifyResetOTP"
+            >
+                Verify OTP <span>→</span>
+            </button>
+
+        </div>
+    `;
+
+
+    $("#backToForgot").addEventListener(
+        "click",
+        showForgotPasswordPage
+    );
+
+
+    $("#verifyResetOTP").addEventListener(
+        "click",
+        verifyResetOTP
+    );
+
+
+    $("#resetOTP").focus();
+
+}
+
+
+// -------------------------------------------------
+// STEP 5: VERIFY OTP
+// -------------------------------------------------
+
+async function verifyResetOTP() {
+
+    const otp =
+        $("#resetOTP")
+        .value
+        .trim();
+
+    const message =
+        $("#otpResetMessage");
+
+
+    if (!/^\d{6}$/.test(otp)) {
+
+        showMessage(
+            message,
+            "Please enter the complete 6-digit OTP."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const result =
+            await postJSON(
+                "/api/verify-password-reset-otp",
+                {
+                    email: resetEmail,
+                    otp: otp
+                }
+            );
+
+
+        if (!result.ok) {
+
+            showMessage(
+                message,
+                result.message ||
+                "Incorrect OTP."
+            );
+
+            return;
+        }
+
+
+        showResetPasswordPage();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            message,
+            "Unable to connect to the server."
+        );
+
+    }
+
+}
+
+
+// -------------------------------------------------
+// STEP 6: SHOW RESET PASSWORD PAGE
+// -------------------------------------------------
+
+function showResetPasswordPage() {
+
+    $(".login-content").innerHTML = `
+
+        <div class="reset-content">
+
+            <div class="small-title">
+                NEW PASSWORD
+            </div>
+
+            <h1>
+                Reset Password
+            </h1>
+
+            <p class="subtitle">
+                Create a new password for your
+                Nexora account.
+            </p>
+
+
+            <div class="input-group">
+
+                <label>
+                    New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="newResetPassword"
+                    placeholder="Minimum 8 characters"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>
+                    Confirm Password
+                </label>
+
+                <input
+                    type="password"
+                    id="confirmResetPassword"
+                    placeholder="Confirm your password"
+                >
+
+            </div>
+
+
+            <p
+                id="passwordResetMessage"
+                class="message">
+            </p>
+
+
+            <button
+                type="button"
+                class="login-button"
+                id="resetPasswordButton"
+            >
+                Reset Password <span>→</span>
+            </button>
+
+        </div>
+    `;
+
+
+    $("#resetPasswordButton")
+        .addEventListener(
+            "click",
+            resetPassword
+        );
+
+}
+
+
+// -------------------------------------------------
+// STEP 7: RESET PASSWORD
+// -------------------------------------------------
+
+async function resetPassword() {
+
+    const password =
+        $("#newResetPassword").value;
+
+    const confirmPassword =
+        $("#confirmResetPassword").value;
+
+    const message =
+        $("#passwordResetMessage");
+
+
+    if (password.length < 8) {
+
+        showMessage(
+            message,
+            "Password must contain at least 8 characters."
+        );
+
+        return;
+    }
+
+
+    if (password !== confirmPassword) {
+
+        showMessage(
+            message,
+            "Passwords do not match."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const result =
+            await postJSON(
+                "/api/reset-password",
+                {
+                    password: password,
+                    confirm_password: confirmPassword
+                }
+            );
+
+
+        if (!result.ok) {
+
+            showMessage(
+                message,
+                result.message ||
+                "Unable to reset password."
+            );
+
+            return;
+        }
+
+
+        showMessage(
+            message,
+            "Password changed successfully!",
+            "success"
+        );
+
+
+        setTimeout(
+            () => {
+
+                location.reload();
+
+            },
+            1500
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            message,
+            "Unable to connect to the server."
+        );
+
+    }
+
+}
 // =================================================
 // SUCCESS
 // =================================================

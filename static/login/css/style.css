@@ -2793,3 +2793,74 @@ body {
     color: #319957;
     text-decoration: underline;
 }
+/* =========================================
+   FORGOT PASSWORD FLOW
+   ========================================= */
+
+.reset-content {
+    width: 100%;
+}
+
+.reset-content h1 {
+    margin-top: 14px;
+    margin-bottom: 12px;
+    color: #222222;
+}
+
+.reset-content .subtitle {
+    margin-bottom: 32px;
+}
+
+.reset-content .input-group {
+    margin-bottom: 22px;
+}
+
+.reset-content label {
+    color: #39b86b;
+}
+
+.reset-content input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #eef8f2;
+    border: 1px solid #a8dfbf;
+    color: #222222;
+}
+
+.reset-content input:focus {
+    border-color: #55c47d;
+    box-shadow: 0 0 0 3px rgba(85, 196, 125, 0.15);
+    outline: none;
+}
+
+.reset-back-button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 28px;
+    color: #39b86b;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.reset-back-button:hover {
+    color: #2f9f5d;
+}
+
+.reset-email {
+    color: #39b86b;
+    font-weight: 600;
+}
+
+.reset-content .login-button {
+    background: #55c47d;
+}
+
+.reset-content .login-button:hover {
+    background: #3fb86c;
+}
+
+.reset-content .message {
+    margin-bottom: 18px;
+}
