@@ -2715,23 +2715,63 @@ body {
     }
 }
 /* =====================================================
-   HIDE UNNEEDED REGISTRATION FIELDS
-   Full Name
-   Student ID
-   Department
+   PASSWORD EYE ICON
+   CLEAN HORIZONTAL EYE
    ===================================================== */
 
-/* Full Name */
-#registrationForm .form-group:nth-child(1) {
-    display: none !important;
+.eye-button {
+    font-size: 0 !important;
+    color: #65736B !important;
+
+    width: 28px !important;
+    height: 28px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    background: transparent !important;
+    border: none !important;
+
+    cursor: pointer;
+
+    position: absolute !important;
+    right: 15px !important;
+    top: 50% !important;
+
+    transform: translateY(-50%) !important;
 }
 
-/* Student ID */
-#registrationForm .form-group:nth-child(2) {
-    display: none !important;
+/* Eye outline */
+.eye-button::before {
+    content: "" !important;
+
+    width: 18px;
+    height: 11px;
+
+    border: 2px solid currentColor;
+    border-radius: 50%;
+
+    transform: none !important;
+
+    display: block;
 }
 
-/* Department */
-#registrationForm .form-group:nth-child(3) {
-    display: none !important;
+/* Eye pupil */
+.eye-button::after {
+    content: "" !important;
+
+    position: absolute;
+
+    width: 5px;
+    height: 5px;
+
+    background: currentColor;
+
+    border-radius: 50%;
+}
+
+/* Hover */
+.eye-button:hover {
+    color: #45B56C !important;
 }
