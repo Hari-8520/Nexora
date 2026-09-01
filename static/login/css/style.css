@@ -1,0 +1,2737 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #08080c;
+    --card: #141319;
+    --border: #2b2933;
+    --text: #ffffff;
+    --muted: #9b99a6;
+    --purple: #8b4dff;
+    --purple-light: #b36cff;
+}
+
+body {
+    font-family: Inter, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+    background: var(--bg);
+    color: var(--text);
+
+    min-height: 100vh;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+
+/* =========================================
+   MAIN
+========================================= */
+
+.page {
+    min-height: 100vh;
+
+    display: grid;
+
+    grid-template-columns:
+        46% 54%;
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   LOGIN SIDE
+========================================= */
+
+.login-section {
+
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(112, 62, 180, .12),
+            transparent 35%
+        ),
+        #08080c;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 50px;
+}
+
+
+.login-container {
+
+    width: min(
+        430px,
+        100%
+    );
+
+    min-height: 650px;
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+.logo {
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    text-transform: uppercase;
+
+    background: linear-gradient(
+        90deg,
+        #ffffff,
+        #b36cff
+    );
+
+    background-clip: text;
+    -webkit-background-clip: text;
+
+    -webkit-text-fill-color: transparent;
+
+    text-shadow: 0 0 30px rgba(179, 108, 255, 0.25);
+}
+
+
+.logo span {
+    color: #b36cff;
+    -webkit-text-fill-color: #b36cff;
+    margin-left: 5px;
+}
+
+
+.login-content {
+    margin-top: 10px;
+}
+
+
+.small-title {
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 1.7px;
+
+    color: #a86aff;
+}
+
+
+.login-content h1 {
+
+    font-size:
+        clamp(38px, 4vw, 52px);
+
+    letter-spacing: -2.8px;
+
+    margin-top: 12px;
+}
+
+
+.subtitle {
+
+    color: var(--muted);
+
+    margin-top: 12px;
+
+    font-size: 15px;
+
+    line-height: 1.55;
+}
+
+
+/* =========================================
+   INPUTS
+========================================= */
+
+.input-group {
+    margin-top: 28px;
+}
+
+
+.input-group label {
+
+    display: block;
+
+    font-size: 13px;
+
+    color: #d2d1d8;
+
+    margin-bottom: 9px;
+}
+
+
+.input-group input,
+.registration-form input,
+.registration-form select {
+
+    width: 100%;
+
+    height: 54px;
+
+    padding: 0 17px;
+
+    background: #111116;
+
+    border: 1px solid var(--border);
+
+    border-radius: 14px;
+
+    color: white;
+
+    outline: none;
+
+    transition: .25s;
+}
+
+
+.input-group input:focus,
+.registration-form input:focus,
+.registration-form select:focus {
+
+    border-color: var(--purple);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(139, 77, 255, .10);
+}
+
+
+.input-group input::placeholder,
+.registration-form input::placeholder {
+
+    color: #a8acb8;
+    opacity: 1;
+}
+
+/* =========================================
+   PASSWORD
+========================================= */
+
+.password-label {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+
+.password-label button {
+
+    background: none;
+
+    border: none;
+
+    color: #a968ff;
+
+    font-size: 12px;
+}
+
+
+.password-wrapper {
+    position: relative;
+}
+
+
+.password-wrapper input {
+    padding-right: 50px;
+}
+
+
+.eye-button {
+
+    position: absolute;
+
+    right: 15px;
+
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+    border: none;
+
+    background: transparent;
+
+    color: #777580;
+
+    font-size: 17px;
+}
+
+
+/* =========================================
+   BUTTON
+========================================= */
+
+.login-button {
+
+    width: 100%;
+
+    min-height: 56px;
+
+    margin-top: 16px;
+
+    border: none;
+
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            100deg,
+            #7034df,
+            #b45eff
+        );
+
+    color: white;
+
+    font-weight: 700;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    box-shadow:
+        0 12px 35px
+        rgba(133, 67, 225, .25);
+
+    transition: .25s;
+}
+
+
+.login-button:hover:not(:disabled) {
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 18px 40px
+        rgba(133, 67, 225, .35);
+}
+
+
+.login-button span {
+    font-size: 20px;
+}
+
+
+/* =========================================
+   MESSAGES
+========================================= */
+
+.message {
+
+    min-height: 18px;
+
+    margin-top: 10px;
+
+    font-size: 13px;
+
+    color: #ff7d91;
+}
+
+
+.message.success {
+    color: #8cffba;
+}
+
+
+/* =========================================
+   DIVIDER
+========================================= */
+
+.divider {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 30px 0;
+}
+
+
+.divider span {
+
+    height: 1px;
+
+    background: #27262e;
+
+    flex: 1;
+}
+
+
+.divider p {
+
+    color: #676671;
+
+    font-size: 10px;
+}
+
+
+/* =========================================
+   CREATE ACCOUNT
+========================================= */
+
+.create-account {
+
+    text-align: center;
+}
+
+
+.create-account p {
+
+    display: inline;
+
+    color: #777680;
+
+    font-size: 13px;
+}
+
+
+.create-account button {
+
+    background: none;
+
+    border: none;
+
+    color: white;
+
+    font-weight: 700;
+
+    margin-left: 7px;
+}
+
+
+.create-account button:hover {
+
+    color: #b36cff;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.login-footer {
+
+    margin-top: auto;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    color: #55545e;
+
+    font-size: 10px;
+}
+
+
+/* =========================================
+   RIGHT VISUAL
+========================================= */
+
+.visual-section {
+
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            #6325bf,
+            #a247e8 50%,
+            #5028a7
+        );
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+
+.blob {
+
+    position: absolute;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255,255,255,.09);
+}
+
+
+.blob-one {
+
+    width: 420px;
+    height: 420px;
+
+    right: -150px;
+    top: -150px;
+}
+
+
+.blob-two {
+
+    width: 300px;
+    height: 300px;
+
+    left: -120px;
+    bottom: -130px;
+}
+
+
+.blob-three {
+
+    width: 170px;
+    height: 170px;
+
+    right: 30%;
+    bottom: 10%;
+
+    opacity: .5;
+}
+
+
+.visual-content {
+
+    width: 85%;
+
+    max-width: 720px;
+
+    position: relative;
+
+    z-index: 2;
+}
+
+
+.visual-label {
+
+    color: #e6ccff;
+}
+
+
+.visual-content h2 {
+
+    font-size:
+        clamp(40px, 5vw, 70px);
+
+    line-height: .96;
+
+    letter-spacing: -4px;
+
+    margin-top: 13px;
+}
+
+
+.visual-content h2 span {
+
+    color: #e6ccff;
+}
+
+
+.visual-description {
+
+    color: #eee1ff;
+
+    max-width: 590px;
+
+    line-height: 1.6;
+
+    margin-top: 20px;
+}
+
+
+/* =========================================
+   ILLUSTRATION
+========================================= */
+
+.learning-visual {
+
+    height: 390px;
+
+    position: relative;
+
+    margin-top: 25px;
+}
+
+
+.student-area {
+
+    position: absolute;
+
+    left: 12%;
+
+    bottom: 5%;
+
+    width: 60%;
+
+    height: 90%;
+}
+
+
+.student-head {
+
+    width: 78px;
+
+    height: 78px;
+
+    border-radius: 50%;
+
+    background: #f5f5f5;
+
+    position: absolute;
+
+    left: 42%;
+
+    top: 4%;
+}
+
+
+.student-body {
+
+    position: absolute;
+
+    left: 29%;
+
+    top: 23%;
+
+    width: 150px;
+
+    height: 175px;
+
+    border-radius:
+        80px 80px
+        25px 25px;
+
+    background: #f5f5f5;
+}
+
+
+.arm {
+
+    position: absolute;
+
+    height: 22px;
+
+    width: 130px;
+
+    background: #ededed;
+
+    border-radius: 20px;
+}
+
+
+.left-arm {
+
+    transform: rotate(35deg);
+
+    left: -70px;
+
+    top: 90px;
+}
+
+
+.right-arm {
+
+    transform: rotate(-30deg);
+
+    right: -75px;
+
+    top: 90px;
+}
+
+
+.laptop {
+
+    position: absolute;
+
+    left: 5%;
+
+    bottom: 2%;
+
+    width: 500px;
+}
+
+
+.laptop-screen {
+
+    height: 250px;
+
+    background: #0b0b0f;
+
+    border:
+        7px solid #e8e8e8;
+
+    border-radius:
+        18px 18px
+        7px 7px;
+
+    padding: 18px;
+
+    box-shadow:
+        0 30px 60px
+        rgba(0,0,0,.35);
+}
+
+
+.laptop-base {
+
+    height: 15px;
+
+    background: #ddd;
+
+    border-radius:
+        0 0 15px 15px;
+
+    margin:
+        0 -25px;
+}
+
+
+.screen-header {
+
+    display: flex;
+
+    gap: 5px;
+}
+
+
+.screen-header span {
+
+    width: 7px;
+    height: 7px;
+
+    background: #777;
+
+    border-radius: 50%;
+}
+
+
+.screen-title {
+
+    font-size: 14px;
+
+    margin-top: 14px;
+
+    font-weight: 700;
+}
+
+
+.dashboard-mini {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 14px;
+}
+
+
+.mini-card {
+
+    background: #18181f;
+
+    border:
+        1px solid #2d2d35;
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    flex: 1;
+}
+
+
+.mini-card small,
+.recommendation small,
+.floating-card small {
+
+    color: #888;
+
+    font-size: 8px;
+}
+
+
+.mini-card strong {
+
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 20px;
+}
+
+
+.mini-progress,
+.floating-bar {
+
+    height: 5px;
+
+    background: #292932;
+
+    margin-top: 9px;
+
+    border-radius: 10px;
+}
+
+
+.mini-progress i,
+.floating-bar i {
+
+    display: block;
+
+    height: 100%;
+
+    border-radius: 10px;
+
+    background: #a55cff;
+}
+
+
+.mini-progress i {
+    width: 72%;
+}
+
+
+.recommendation {
+
+    display: flex;
+
+    gap: 10px;
+
+    align-items: center;
+
+    margin-top: 12px;
+
+    padding: 10px;
+
+    background: #18181f;
+
+    border-radius: 10px;
+}
+
+
+.recommendation p {
+
+    font-size: 10px;
+
+    margin-top: 3px;
+}
+
+
+.ai-circle {
+
+    width: 32px;
+    height: 32px;
+
+    display: grid;
+
+    place-items: center;
+
+    border-radius: 50%;
+
+    background: #8a48df;
+}
+
+
+/* =========================================
+   FLOATING CARDS
+========================================= */
+
+.floating-card {
+
+    position: absolute;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 13px 15px;
+
+    background:
+        rgba(9,9,14,.88);
+
+    backdrop-filter:
+        blur(15px);
+
+    border:
+        1px solid
+        rgba(255,255,255,.15);
+
+    border-radius: 15px;
+
+    box-shadow:
+        0 20px 50px
+        rgba(0,0,0,.2);
+}
+
+
+.floating-card strong {
+
+    display: block;
+
+    margin-top: 3px;
+
+    font-size: 13px;
+}
+
+
+.floating-icon {
+
+    width: 35px;
+
+    height: 35px;
+
+    border-radius: 10px;
+
+    background: #25202d;
+
+    display: grid;
+
+    place-items: center;
+}
+
+
+.progress-floating {
+
+    top: 25px;
+
+    right: 3%;
+}
+
+
+.ai-floating {
+
+    left: 0;
+
+    bottom: 25%;
+}
+
+
+.mastery-floating {
+
+    right: 5%;
+
+    bottom: 3%;
+}
+
+
+.purple {
+    background: #6e35ad;
+}
+
+
+.floating-bar {
+    width: 100px;
+}
+
+
+.floating-bar i {
+    width: 82%;
+}
+
+
+/* =========================================
+   FLOW
+========================================= */
+
+.learning-flow {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: -5px;
+}
+
+
+.flow-item {
+
+    font-size: 9px;
+
+    color: #e9d9ff;
+
+    white-space: nowrap;
+}
+
+
+.flow-item span {
+
+    display: block;
+
+    font-size: 8px;
+
+    color: #b879ff;
+
+    margin-bottom: 3px;
+}
+
+
+.flow-line {
+
+    width: 30px;
+
+    height: 1px;
+
+    background:
+        rgba(255,255,255,.3);
+}
+
+
+/* =========================================
+   MODAL
+========================================= */
+
+.modal {
+
+    position: fixed;
+
+    inset: 0;
+
+    background:
+        rgba(0,0,0,.75);
+
+    backdrop-filter:
+        blur(8px);
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    z-index: 100;
+
+    padding: 20px;
+}
+
+
+.modal.active {
+    display: flex;
+}
+
+
+.modal-box {
+
+    position: relative;
+
+    width:min(720px,95%);
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: #141319;
+
+    border:
+        1px solid #302d38;
+
+    border-radius: 22px;
+
+    padding: 35px;
+
+    text-align: center;
+
+    box-shadow:
+        0 30px 80px
+        rgba(0,0,0,.5);
+}
+
+
+.close-modal {
+
+    position: absolute;
+
+    top: 14px;
+
+    right: 18px;
+
+    background: none;
+
+    border: none;
+
+    color: #aaa;
+
+    font-size: 25px;
+}
+
+
+.modal-box h2 {
+
+    margin-top: 18px;
+
+    font-size: 27px;
+}
+
+
+.modal-box > p {
+
+    color: #888;
+
+    margin-top: 8px;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   REGISTRATION
+========================================= */
+
+#registrationForm {
+
+    margin-top: 20px;
+
+    display: grid;
+
+    gap: 11px;
+}
+
+
+#registrationForm select {
+
+    color: #aaa;
+}
+
+
+#registrationForm select option {
+
+    background: #141319;
+
+    color: white;
+}
+
+
+/* =========================================
+   OTP
+========================================= */
+
+.modal-icon {
+
+    width: 60px;
+
+    height: 60px;
+
+    margin: auto;
+
+    border-radius: 50%;
+
+    display: grid;
+
+    place-items: center;
+
+    background: #7135df;
+
+    font-size: 24px;
+}
+
+
+.modal-icon.warning {
+
+    background: #693a25;
+}
+
+
+#otpEmail {
+
+    display: block;
+
+    color: #b36cff;
+
+    margin-top: 5px;
+
+    word-break: break-all;
+}
+
+
+.otp-inputs {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    margin: 25px 0;
+}
+
+
+.otp {
+
+    width: 48px;
+
+    height: 54px;
+
+    background: #0e0e13;
+
+    border:
+        1px solid #2e2c36;
+
+    border-radius: 12px;
+
+    color: white;
+
+    text-align: center;
+
+    font-size: 22px;
+
+    outline: none;
+}
+
+
+.otp:focus {
+
+    border-color: #965cff;
+}
+
+
+.resend {
+
+    margin-top: 20px !important;
+}
+
+
+.resend button {
+
+    background: none;
+
+    border: none;
+
+    color: #b36cff;
+}
+
+
+/* =========================================
+   SECONDARY
+========================================= */
+
+.secondary-button {
+
+    width: 100%;
+
+    min-height: 50px;
+
+    margin-top: 11px;
+
+    border:
+        1px solid #35323e;
+
+    border-radius: 14px;
+
+    background: transparent;
+
+    color: #ddd;
+}
+
+
+.secondary-button:hover {
+
+    background: #1c1a23;
+}
+
+
+/* =========================================
+   SUCCESS
+========================================= */
+
+.success-content {
+    text-align: center;
+}
+
+
+.success-icon {
+
+    width: 70px;
+
+    height: 70px;
+
+    margin-bottom: 20px;
+
+    display: grid;
+
+    place-items: center;
+
+    margin-left: auto;
+
+    margin-right: auto;
+
+    border-radius: 50%;
+
+    background:
+        rgba(91,209,137,.12);
+
+    border:
+        1px solid
+        rgba(91,209,137,.35);
+
+    color: #8cffba;
+
+    font-size: 30px;
+}
+
+
+.success-box {
+
+    margin-top: 25px;
+
+    padding: 18px;
+
+    background:
+        rgba(255,255,255,.03);
+
+    border:
+        1px solid #2b2933;
+
+    border-radius: 15px;
+
+    text-align: left;
+}
+
+
+.success-box div + div {
+
+    margin-top: 15px;
+}
+
+
+.success-box span {
+
+    display: block;
+
+    color: #777;
+
+    font-size: 11px;
+
+    margin-bottom: 4px;
+}
+
+
+.success-box strong {
+
+    font-size: 13px;
+
+    word-break: break-word;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1000px) {
+
+    .page {
+        grid-template-columns: 1fr;
+    }
+
+    .visual-section {
+        display: none;
+    }
+
+    .login-section {
+        min-height: 100vh;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .login-section {
+        padding: 25px;
+    }
+
+    .login-content {
+        margin-top: 60px;
+    }
+
+    .login-content h1 {
+        font-size: 40px;
+    }
+
+    .login-footer {
+        margin-top: 50px;
+    }
+
+    .modal-box {
+        padding: 28px 20px;
+    }
+
+    .otp {
+        width: 40px;
+        height: 50px;
+    }
+}
+/* Fix input text visibility */
+.input-group input,
+.registration-form input,
+.registration-form select {
+    color: #ffffff !important;
+}
+
+.input-group input::placeholder,
+.registration-form input::placeholder {
+    color: #9b99a6 !important;
+    opacity: 1;
+}
+
+.otp {
+    color: #ffffff !important;
+}
+
+.otp::placeholder {
+    color: #777580 !important;
+}
+.register-logo {
+    background: linear-gradient(90deg,#ffffff,#b86cff);
+
+    background-clip: text;          /* Standard property */
+    -webkit-background-clip: text;  /* Chrome, Edge, Safari */
+
+    color: transparent;             /* Standard */
+    -webkit-text-fill-color: transparent;
+}
+
+.register-logo span{
+    -webkit-text-fill-color:#b86cff;
+}
+
+.register-subtitle{
+    text-align:center;
+    color:#a7a7b4;
+    margin-bottom:35px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:18px;
+}
+
+.form-group label{
+    color:#d5d5dd;
+    margin-bottom:8px;
+    font-size:13px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    height: 56px;
+    padding: 0 18px;
+
+    background: #16161f;
+    color: #ffffff;
+
+    border: 1px solid #3a3a50;
+    border-radius: 14px;
+
+    font-size: 16px;
+    font-family: inherit;
+
+    outline: none;
+}
+.form-group input::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+
+.form-group select {
+    color: #ffffff;
+}
+
+.form-group select option {
+    background: #16161f;
+    color: #ffffff;
+}
+/* =========================================================
+   NEXORA LOGIN - FINAL GREEN / WHITE THEME
+   COLOR ONLY
+   HTML + JS + LOGIN LOGIC UNCHANGED
+   ========================================================= */
+
+
+/* =========================================================
+   1. PAGE BACKGROUND
+   ========================================================= */
+
+html,
+body {
+    margin: 0;
+    background: #ffffff !important;
+    color: #202522 !important;
+}
+
+
+/* =========================================================
+   2. LOGIN OUTER WRAPPER
+   ========================================================= */
+
+.login-page,
+.login-container,
+.auth-page,
+.auth-container,
+.page-container {
+    background: #ffffff !important;
+}
+
+
+/* =========================================================
+   3. LEFT LOGIN SIDE
+   PURE WHITE
+   ========================================================= */
+
+.login-left,
+.login-panel,
+.left-panel,
+.left-section,
+.login-form-section,
+.login-section,
+.form-section {
+    background: #ffffff !important;
+    color: #202522 !important;
+}
+
+
+/*
+   Important:
+   Don't allow an inner wrapper to introduce
+   the pale green background.
+*/
+
+.login-left > *,
+.login-panel > *,
+.left-panel > *,
+.left-section > *,
+.login-form-section > *,
+.login-section > * {
+    background-color: transparent;
+}
+
+
+/* =========================================================
+   4. BRAND / NEXORA
+   ========================================================= */
+
+.brand,
+.logo,
+.brand-container {
+    background: transparent !important;
+}
+
+
+/* NEXORA text */
+.brand-name,
+.logo-text,
+.logo-name,
+.brand h1,
+.brand span {
+    color: #202522 !important;
+}
+
+
+/* =========================================================
+   5. PERSONALIZED LEARNING
+   ========================================================= */
+
+.eyebrow,
+.section-label,
+.subtitle-label,
+.login-eyebrow,
+.brand-subtitle {
+    color: #45b56c !important;
+}
+
+
+/* =========================================================
+   6. WELCOME BACK
+   ========================================================= */
+
+.login-left h1,
+.login-panel h1,
+.left-panel h1,
+.left-section h1,
+.login-form-section h1 {
+    color: #202522 !important;
+}
+
+
+/* =========================================================
+   7. DESCRIPTION
+   ========================================================= */
+
+.login-left p,
+.login-panel p,
+.left-panel p,
+.left-section p,
+.login-form-section p {
+    color: #737c77 !important;
+}
+
+
+/* =========================================================
+   8. FORM LABELS
+   ========================================================= */
+
+.login-left label,
+.login-panel label,
+.left-panel label,
+.left-section label,
+.login-form-section label {
+    color: #3f4843 !important;
+    opacity: 1 !important;
+}
+
+
+/* =========================================================
+   9. GMAIL + PASSWORD INPUT BOXES
+   LIGHT GREEN BACKGROUND
+   GREEN BORDER
+   ========================================================= */
+
+.login-left input,
+.login-panel input,
+.left-panel input,
+.left-section input,
+.login-form-section input,
+.login-form input {
+    background: #eef9f2 !important;
+
+    color: #202522 !important;
+
+    border: 1px solid #b9dfc5 !important;
+
+    box-shadow: none !important;
+
+    opacity: 1 !important;
+}
+
+
+/* Placeholder */
+.login-left input::placeholder,
+.login-panel input::placeholder,
+.left-panel input::placeholder,
+.left-section input::placeholder,
+.login-form-section input::placeholder {
+    color: #718078 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* =========================================================
+   10. INPUT HOVER
+   ========================================================= */
+
+.login-left input:hover,
+.login-panel input:hover,
+.left-panel input:hover,
+.left-section input:hover,
+.login-form-section input:hover {
+    background: #e8f6ed !important;
+
+    border-color: #8dcea1 !important;
+}
+
+
+/* =========================================================
+   11. INPUT FOCUS
+   ========================================================= */
+
+.login-left input:focus,
+.login-panel input:focus,
+.left-panel input:focus,
+.left-section input:focus,
+.login-form-section input:focus {
+    background: #f7fcf9 !important;
+
+    color: #202522 !important;
+
+    border-color: #59c27d !important;
+
+    outline: none !important;
+
+    box-shadow:
+        0 0 0 3px rgba(89, 194, 125, 0.15) !important;
+}
+
+
+/* =========================================================
+   12. FORGOT PASSWORD
+   ========================================================= */
+
+.forgot-password,
+.forgot-link,
+.login-left a[href*="forgot"],
+.login-panel a[href*="forgot"] {
+    color: #3fa961 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* Hover */
+.forgot-password:hover,
+.forgot-link:hover {
+    color: #2f8e4e !important;
+}
+
+
+/* =========================================================
+   13. LOGIN BUTTON
+   ========================================================= */
+
+.login-btn,
+.login-button,
+button[type="submit"],
+.login-form button[type="submit"] {
+    background: #59c27d !important;
+
+    color: #ffffff !important;
+
+    border: 1px solid #59c27d !important;
+
+    opacity: 1 !important;
+
+    box-shadow:
+        0 8px 20px rgba(69, 181, 108, 0.20) !important;
+}
+
+
+/* Button hover */
+.login-btn:hover,
+.login-button:hover,
+button[type="submit"]:hover,
+.login-form button[type="submit"]:hover {
+    background: #45b56c !important;
+
+    border-color: #45b56c !important;
+}
+
+
+/* =========================================================
+   14. OR DIVIDER
+   ========================================================= */
+
+.divider,
+.or-divider,
+.separator {
+    color: #78827d !important;
+}
+
+.divider::before,
+.divider::after,
+.or-divider::before,
+.or-divider::after {
+    background: #cddbd2 !important;
+}
+
+
+/* =========================================================
+   15. "NEW TO THE PLATFORM?"
+   ========================================================= */
+
+.new-user,
+.signup-text,
+.register-text,
+.create-text {
+    color: #737c77 !important;
+}
+
+
+/* =========================================================
+   16. CREATE ACCOUNT
+   VERY IMPORTANT
+   ========================================================= */
+
+.create-account,
+.create-account-btn,
+.register-link,
+.signup-link,
+.register-btn,
+a.create-account {
+    color: #3fa961 !important;
+
+    background: transparent !important;
+
+    opacity: 1 !important;
+
+    font-weight: 700 !important;
+}
+
+
+/* Create Account hover */
+.create-account:hover,
+.create-account-btn:hover,
+.register-link:hover,
+.signup-link:hover,
+.register-btn:hover,
+a.create-account:hover {
+    color: #2f8e4e !important;
+}
+
+
+/* If Create Account is a button */
+button.create-account,
+button.register-btn {
+    color: #ffffff !important;
+
+    background: #59c27d !important;
+
+    border-color: #59c27d !important;
+}
+
+
+/* =========================================================
+   17. FOOTER
+   ========================================================= */
+
+.login-footer,
+.footer,
+.auth-footer {
+    color: #737c77 !important;
+}
+
+
+.login-footer *,
+.footer *,
+.auth-footer * {
+    color: #737c77 !important;
+}
+
+
+/* =========================================================
+   18. RIGHT SIDE
+   GREEN
+   ========================================================= */
+
+.login-right,
+.right-panel,
+.right-section,
+.visual-panel,
+.visual-section {
+    background:
+        linear-gradient(
+            135deg,
+            #59c27d 0%,
+            #65c985 48%,
+            #8bd6a0 100%
+        ) !important;
+
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   19. RIGHT SIDE HEADINGS
+   ========================================================= */
+
+.login-right h1,
+.login-right h2,
+.login-right h3,
+.right-panel h1,
+.right-panel h2,
+.right-panel h3,
+.right-section h1,
+.right-section h2,
+.right-section h3 {
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   20. RIGHT SIDE DESCRIPTION
+   ========================================================= */
+
+.login-right p,
+.right-panel p,
+.right-section p,
+.visual-panel p {
+    color: rgba(255, 255, 255, 0.90) !important;
+}
+
+
+/* =========================================================
+   21. RIGHT SIDE DECORATIVE BLOBS
+   ========================================================= */
+
+.login-right::before,
+.login-right::after,
+.right-panel::before,
+.right-panel::after,
+.right-section::before,
+.right-section::after {
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+
+
+/* =========================================================
+   22. DASHBOARD PREVIEW
+   WHITE CARD
+   ========================================================= */
+
+.dashboard-preview,
+.preview-dashboard,
+.dashboard-window,
+.learning-dashboard {
+    background: #ffffff !important;
+
+    color: #202522 !important;
+
+    border-color: #ffffff !important;
+}
+
+
+/* =========================================================
+   23. PREVIEW INTERNAL CARDS
+   ========================================================= */
+
+.dashboard-preview .card,
+.dashboard-preview .preview-card,
+.preview-dashboard .card,
+.preview-dashboard .preview-card {
+    background: #f6faf8 !important;
+
+    color: #202522 !important;
+
+    border-color: #e0ebe4 !important;
+}
+
+
+/* Preview text */
+.dashboard-preview h1,
+.dashboard-preview h2,
+.dashboard-preview h3,
+.dashboard-preview strong,
+.preview-dashboard h1,
+.preview-dashboard h2,
+.preview-dashboard h3,
+.preview-dashboard strong {
+    color: #202522 !important;
+}
+
+
+/* Preview secondary text */
+.dashboard-preview small,
+.preview-dashboard small {
+    color: #77817b !important;
+}
+
+
+/* =========================================================
+   24. PROGRESS BARS
+   ========================================================= */
+
+.progress-bar,
+.progress-track {
+    background: #e0eee5 !important;
+}
+
+
+.progress-fill,
+.progress-bar-fill {
+    background: #59c27d !important;
+}
+
+
+/* =========================================================
+   25. FLOATING CARDS
+   ========================================================= */
+
+.floating-card,
+.student-progress,
+.student-progress-card,
+.progress-card,
+.ai-card,
+.recommendation-card {
+    background: #ffffff !important;
+
+    color: #202522 !important;
+
+    border-color: #dfeae3 !important;
+
+    box-shadow:
+        0 12px 30px rgba(37, 95, 55, 0.15) !important;
+}
+
+
+/* Floating card headings */
+.floating-card strong,
+.student-progress strong,
+.progress-card strong,
+.ai-card strong,
+.recommendation-card strong {
+    color: #3fa961 !important;
+}
+
+
+/* Floating card secondary text */
+.floating-card small,
+.student-progress small,
+.progress-card small,
+.ai-card small,
+.recommendation-card small {
+    color: #77817b !important;
+}
+
+
+/* =========================================================
+   26. FLOATING ICONS
+   ========================================================= */
+
+.floating-icon,
+.ai-icon,
+.recommendation-icon {
+    background: #e0f4e7 !important;
+
+    color: #3fa961 !important;
+}
+
+
+/* =========================================================
+   27. PREVENT OLD DARK INPUT STYLES
+   ========================================================= */
+
+.login-left input[type="text"],
+.login-left input[type="email"],
+.login-left input[type="password"],
+.login-panel input[type="text"],
+.login-panel input[type="email"],
+.login-panel input[type="password"] {
+    background: #eef9f2 !important;
+
+    color: #202522 !important;
+}
+
+
+/* =========================================================
+   28. PASSWORD EYE ICON
+   ========================================================= */
+
+.password-toggle,
+.toggle-password,
+.show-password,
+.password-visibility {
+    color: #65736b !important;
+}
+
+
+/* =========================================================
+   29. REMOVE PALE GREEN LEFT OVERLAY
+   ========================================================= */
+
+.login-left::before,
+.login-left::after,
+.login-panel::before,
+.login-panel::after,
+.left-panel::before,
+.left-panel::after {
+    background: transparent !important;
+}
+
+
+/* =========================================================
+   30. MOBILE
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+    html,
+    body {
+        background: #ffffff !important;
+    }
+
+    .login-left,
+    .login-panel,
+    .left-panel,
+    .left-section,
+    .login-form-section {
+        background: #ffffff !important;
+    }
+
+    .login-right,
+    .right-panel,
+    .right-section,
+    .visual-panel {
+        background:
+            linear-gradient(
+                135deg,
+                #59c27d,
+                #8bd6a0
+            ) !important;
+    }
+}
+
+/* =========================================================
+   NEXORA LOGIN - FINAL COLOR OVERRIDE
+   ---------------------------------------------------------
+   COLOR CHANGES ONLY.
+   HTML / FRONTEND STRUCTURE / FLASK / JS UNCHANGED.
+   ========================================================= */
+
+/* Page background */
+body {
+    background: #ffffff !important;
+    color: #202522 !important;
+}
+
+/* Keep the existing two-column frontend exactly as it is.
+   Only recolor the login section. */
+.page {
+    background: #ffffff !important;
+}
+
+/* =========================================================
+   LEFT LOGIN SIDE - PURE WHITE
+   ========================================================= */
+
+.login-section {
+    background: #ffffff !important;
+    color: #202522 !important;
+}
+
+/* =========================================================
+   NEXORA BRAND
+   Existing .logo element, no HTML change.
+   ========================================================= */
+
+.login-section .logo {
+    background: none !important;
+    color: #45B56C !important;
+    -webkit-text-fill-color: #45B56C !important;
+    text-shadow: none !important;
+}
+
+.login-section .logo span {
+    color: #45B56C !important;
+    -webkit-text-fill-color: #45B56C !important;
+}
+
+/* =========================================================
+   PERSONALIZED LEARNING
+   ========================================================= */
+
+.login-section .small-title {
+    color: #45B56C !important;
+}
+
+/* =========================================================
+   WELCOME BACK
+   ========================================================= */
+
+.login-section .login-content h1 {
+    color: #202522 !important;
+}
+
+/* Description */
+.login-section .subtitle {
+    color: #737C77 !important;
+}
+
+/* =========================================================
+   STUDENT GMAIL + PASSWORD LABELS
+   GREEN
+   ========================================================= */
+
+.login-section .input-group label {
+    color: #45B56C !important;
+    opacity: 1 !important;
+}
+
+/* Password heading label */
+.login-section .password-label label {
+    color: #45B56C !important;
+}
+
+/* =========================================================
+   GMAIL + PASSWORD INPUT BOXES
+   LIGHT GREEN
+   ========================================================= */
+
+.login-section .input-group input,
+.login-section .password-wrapper input {
+    background: #F0F9F3 !important;
+    color: #202522 !important;
+    border: 1px solid #A9DDBA !important;
+    opacity: 1 !important;
+}
+
+/* Placeholder */
+.login-section .input-group input::placeholder,
+.login-section .password-wrapper input::placeholder {
+    color: #68756D !important;
+    opacity: 1 !important;
+}
+
+/* =========================================================
+   INPUT HOVER
+   ========================================================= */
+
+.login-section .input-group input:hover,
+.login-section .password-wrapper input:hover {
+    background: #E5F6EA !important;
+    border-color: #45B56C !important;
+}
+
+/* =========================================================
+   INPUT FOCUS
+   ========================================================= */
+
+.login-section .input-group input:focus,
+.login-section .password-wrapper input:focus {
+    background: #ffffff !important;
+    color: #202522 !important;
+    border: 2px solid #45B56C !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(69, 181, 108, 0.14) !important;
+}
+
+/* =========================================================
+   FORGOT PASSWORD
+   DEFAULT PURPLE -> GREEN ON HOVER
+   ========================================================= */
+
+.login-section .password-label button {
+    color: #8B5CF6 !important;
+}
+
+.login-section .password-label button:hover {
+    color: #45B56C !important;
+}
+
+/* =========================================================
+   PASSWORD EYE
+   ========================================================= */
+
+.login-section .eye-button {
+    color: #65736B !important;
+}
+
+.login-section .eye-button:hover {
+    color: #45B56C !important;
+}
+
+/* =========================================================
+   LOGIN BUTTON
+   ========================================================= */
+
+.login-section .login-button {
+    background: #59C27D !important;
+    color: #ffffff !important;
+    border-color: #59C27D !important;
+    box-shadow: 0 12px 35px rgba(69, 181, 108, 0.20) !important;
+}
+
+.login-section .login-button:hover:not(:disabled) {
+    background: #45B56C !important;
+    border-color: #45B56C !important;
+    box-shadow: 0 18px 40px rgba(69, 181, 108, 0.28) !important;
+}
+
+/* =========================================================
+   DIVIDER
+   ========================================================= */
+
+.login-section .divider span {
+    background: #CBDDD2 !important;
+}
+
+.login-section .divider p {
+    color: #737C77 !important;
+}
+
+/* =========================================================
+   CREATE ACCOUNT
+   GREEN AND ALWAYS VISIBLE
+   ========================================================= */
+
+.login-section .create-account p {
+    color: #737C77 !important;
+    opacity: 1 !important;
+}
+
+.login-section .create-account button {
+    color: #45B56C !important;
+    -webkit-text-fill-color: #45B56C !important;
+    background: transparent !important;
+    opacity: 1 !important;
+}
+
+.login-section .create-account button:hover {
+    color: #2F8F4E !important;
+    -webkit-text-fill-color: #2F8F4E !important;
+}
+
+/* =========================================================
+   LOGIN FOOTER
+   ========================================================= */
+
+.login-section .login-footer {
+    color: #737C77 !important;
+}
+
+/* =========================================================
+   RIGHT SIDE
+   Keep the existing frontend/illustration.
+   Only recolor its background from purple to green.
+   ========================================================= */
+
+.visual-section {
+    background:
+        linear-gradient(
+            135deg,
+            #59C27D 0%,
+            #65C985 50%,
+            #8BD6A0 100%
+        ) !important;
+}
+
+/* Right-side text */
+.visual-section .visual-label {
+    color: rgba(255, 255, 255, 0.90) !important;
+}
+
+.visual-section .visual-content h2 {
+    color: #ffffff !important;
+}
+
+.visual-section .visual-content h2 span {
+    color: #E8CFFF !important;
+}
+
+.visual-section .visual-description {
+    color: rgba(255, 255, 255, 0.90) !important;
+}
+
+/* Green/white blending for the existing decorative blobs */
+.visual-section .blob {
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* =========================================================
+   IMPORTANT:
+   The laptop/dashboard illustration stays structurally
+   identical. Only its existing purple accents are softened.
+   ========================================================= */
+
+.visual-section .mini-progress i,
+.visual-section .floating-bar i {
+    background: #A55CFF !important;
+}
+
+/* Floating cards remain part of the existing illustration,
+   but get a clean white/green treatment. */
+.visual-section .floating-card {
+    background: rgba(255, 255, 255, 0.96) !important;
+    color: #202522 !important;
+    border-color: rgba(255, 255, 255, 0.70) !important;
+    box-shadow: 0 20px 50px rgba(37, 95, 55, 0.18) !important;
+}
+
+.visual-section .floating-card small {
+    color: #77817B !important;
+}
+
+.visual-section .floating-card strong {
+    color: #45B56C !important;
+}
+
+.visual-section .floating-icon {
+    background: #E0F4E7 !important;
+    color: #45B56C !important;
+}
+
+/* Preserve the existing purple AI icon as the NEXORA accent */
+.visual-section .floating-icon.purple,
+.visual-section .purple {
+    background: #6E35AD !important;
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+    .login-section {
+        background: #ffffff !important;
+    }
+}
+/* =========================================================
+   NEXORA REGISTRATION PAGE
+   GREEN + WHITE COLOR THEME ONLY
+   FRONTEND / HTML / JS UNCHANGED
+   ========================================================= */
+
+/* Main registration modal */
+.modal-box {
+    background: #ffffff !important;
+    color: #202522 !important;
+    border: 1px solid #dceee2 !important;
+    box-shadow: 0 30px 80px rgba(45, 110, 65, 0.18) !important;
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
+.close-modal {
+    color: #65736b !important;
+}
+
+.close-modal:hover {
+    color: #45B56C !important;
+}
+
+
+/* =========================================================
+   NEXORA LOGO / BRAND
+   ========================================================= */
+
+.register-logo {
+    background: none !important;
+    color: #45B56C !important;
+    -webkit-text-fill-color: #45B56C !important;
+    text-shadow: none !important;
+}
+
+.register-logo span {
+    color: #45B56C !important;
+    -webkit-text-fill-color: #45B56C !important;
+}
+
+
+/* =========================================================
+   CREATE YOUR LEARNING PROFILE
+   ========================================================= */
+
+.modal-box h2 {
+    color: #202522 !important;
+}
+
+
+/* Subtitle */
+.register-subtitle {
+    color: #737C77 !important;
+}
+
+
+/* =========================================================
+   FORM LABELS
+   ========================================================= */
+
+.form-group label {
+    color: #45B56C !important;
+    font-weight: 600 !important;
+}
+
+
+/* =========================================================
+   INPUTS + SELECT
+   ========================================================= */
+
+.form-group input,
+.form-group select {
+    background: #F0F9F3 !important;
+    color: #202522 !important;
+    border: 1px solid #A9DDBA !important;
+}
+
+
+/* Placeholder */
+.form-group input::placeholder {
+    color: #68756D !important;
+    opacity: 1 !important;
+}
+
+
+/* Select text */
+.form-group select {
+    color: #202522 !important;
+}
+
+
+/* Select placeholder */
+.form-group select option {
+    background: #ffffff !important;
+    color: #202522 !important;
+}
+
+
+/* =========================================================
+   INPUT HOVER
+   ========================================================= */
+
+.form-group input:hover,
+.form-group select:hover {
+    background: #E5F6EA !important;
+    border-color: #45B56C !important;
+}
+
+
+/* =========================================================
+   INPUT FOCUS
+   ========================================================= */
+
+.form-group input:focus,
+.form-group select:focus {
+    background: #ffffff !important;
+    color: #202522 !important;
+
+    border: 2px solid #45B56C !important;
+
+    outline: none !important;
+
+    box-shadow:
+        0 0 0 3px rgba(69, 181, 108, 0.14) !important;
+}
+
+
+/* =========================================================
+   CONTINUE TO VERIFICATION BUTTON
+   ========================================================= */
+
+#registrationForm button[type="submit"],
+#registrationForm .login-button,
+#registrationForm .primary-button {
+    background: #59C27D !important;
+    color: #ffffff !important;
+    border-color: #59C27D !important;
+
+    box-shadow:
+        0 10px 25px rgba(69, 181, 108, 0.20) !important;
+}
+
+
+/* Button hover */
+#registrationForm button[type="submit"]:hover,
+#registrationForm .login-button:hover,
+#registrationForm .primary-button:hover {
+    background: #45B56C !important;
+    border-color: #45B56C !important;
+
+    box-shadow:
+        0 15px 35px rgba(69, 181, 108, 0.28) !important;
+}
+
+
+/* =========================================================
+   PASSWORD EYE ICON
+   ========================================================= */
+
+.password-wrapper .eye-button {
+    color: #65736B !important;
+}
+
+.password-wrapper .eye-button:hover {
+    color: #45B56C !important;
+}
+
+
+/* =========================================================
+   FORM ERROR / MESSAGE
+   ========================================================= */
+
+.modal-box .message {
+    color: #d94b61 !important;
+}
+
+.modal-box .message.success {
+    color: #45B56C !important;
+}
+
+
+/* =========================================================
+   OTP / VERIFICATION MODAL
+   KEEP SAME GREEN + WHITE THEME
+   ========================================================= */
+
+.modal-icon {
+    background: #E0F4E7 !important;
+    color: #45B56C !important;
+}
+
+.modal-icon.warning {
+    background: #FFF1E8 !important;
+    color: #C46A35 !important;
+}
+
+
+/* OTP email */
+#otpEmail {
+    color: #45B56C !important;
+}
+
+
+/* OTP boxes */
+.otp {
+    background: #F0F9F3 !important;
+    color: #202522 !important;
+    border: 1px solid #A9DDBA !important;
+}
+
+
+/* OTP placeholder */
+.otp::placeholder {
+    color: #68756D !important;
+}
+
+
+/* OTP focus */
+.otp:focus {
+    background: #ffffff !important;
+    color: #202522 !important;
+    border-color: #45B56C !important;
+
+    box-shadow:
+        0 0 0 3px rgba(69, 181, 108, 0.14) !important;
+}
+
+
+/* =========================================================
+   RESEND BUTTON
+   DEFAULT PURPLE
+   HOVER GREEN
+   ========================================================= */
+
+.resend button {
+    color: #8B5CF6 !important;
+}
+
+.resend button:hover {
+    color: #45B56C !important;
+}
+
+
+/* =========================================================
+   SECONDARY BUTTON
+   ========================================================= */
+
+.secondary-button {
+    background: #ffffff !important;
+    color: #45B56C !important;
+    border: 1px solid #A9DDBA !important;
+}
+
+.secondary-button:hover {
+    background: #E5F6EA !important;
+    color: #2F8E4E !important;
+    border-color: #45B56C !important;
+}
+
+
+/* =========================================================
+   SUCCESS SCREEN
+   ========================================================= */
+
+.success-icon {
+    background: #E0F4E7 !important;
+    border-color: #A9DDBA !important;
+    color: #45B56C !important;
+}
+
+
+.success-box {
+    background: #F6FBF8 !important;
+    border-color: #DCEEE2 !important;
+    color: #202522 !important;
+}
+
+
+.success-box span {
+    color: #737C77 !important;
+}
+
+
+.success-box strong {
+    color: #202522 !important;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 500px) {
+
+    .modal-box {
+        background: #ffffff !important;
+    }
+
+    .form-group input,
+    .form-group select {
+        background: #F0F9F3 !important;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        background: #ffffff !important;
+        border-color: #45B56C !important;
+    }
+}
+/* =====================================================
+   HIDE UNNEEDED REGISTRATION FIELDS
+   Full Name
+   Student ID
+   Department
+   ===================================================== */
+
+/* Full Name */
+#registrationForm .form-group:nth-child(1) {
+    display: none !important;
+}
+
+/* Student ID */
+#registrationForm .form-group:nth-child(2) {
+    display: none !important;
+}
+
+/* Department */
+#registrationForm .form-group:nth-child(3) {
+    display: none !important;
+}

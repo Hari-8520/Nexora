@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Nexora </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='login/css/style.css') }}">
+    
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='login/css/tailwind.generated.css') }}">      
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- ================= LEFT LOGIN ================= -->
+
+    <section class="login-section">
+
+        <div class="login-container">
+
+            <div class="logo">
+                Nexora<span>✦</span>
+            </div>
+
+            <div class="login-content">
+
+                <div class="small-title">
+                    PERSONALIZED LEARNING
+                </div>
+
+                <h1>
+                    Welcome Back
+                </h1>
+
+                <p class="subtitle">
+                    Continue your personalized learning journey
+                </p>
+
+                <!-- LOGIN -->
+
+                <form id="loginForm">
+
+                    <div class="input-group">
+
+                        <label>
+                            Student Gmail
+                        </label>
+
+                        <input
+                            type="email"
+                            id="loginEmail"
+                            placeholder="Enter your Gmail"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <div class="password-label">
+
+                            <label>
+                                Password
+                            </label>
+
+                            <button
+                                type="button"
+                                id="forgotPassword">
+                                Forgot Password?
+                            </button>
+
+                        </div>
+
+                        <div class="password-wrapper">
+
+                            <input
+                                type="password"
+                                id="loginPassword"
+                                placeholder="Enter your password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="eye-button"
+                                id="toggleLoginPassword">
+                                👁
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <p
+                        id="loginMessage"
+                        class="message">
+                    </p>
+
+
+                    <button
+                        type="submit"
+                        class="login-button"
+                        id="loginButton">
+
+                        Login
+
+                        <span>→</span>
+
+                    </button>
+
+                </form>
+
+
+                <div class="divider">
+
+                    <span></span>
+
+                    <p>OR</p>
+
+                    <span></span>
+
+                </div>
+
+
+                <div class="create-account">
+
+                    <p>
+                        New to the platform?
+                    </p>
+
+                    <button
+                        id="createAccountButton">
+
+                        Create Account
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="login-footer">
+
+                <span>
+                    © 2026 Nexora 
+                </span>
+
+                <span>
+                    Secure Learning Platform
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= RIGHT VISUAL ================= -->
+
+    <section class="visual-section">
+
+        <div class="blob blob-one"></div>
+        <div class="blob blob-two"></div>
+        <div class="blob blob-three"></div>
+
+
+        <div class="visual-content">
+
+            <div class="visual-label">
+                AI-POWERED EDUCATION
+            </div>
+
+
+            <h2>
+                Learn Smarter.
+                <br>
+                <span>Learn Your Way.</span>
+            </h2>
+
+
+            <p class="visual-description">
+
+                AI-powered personalized learning
+                that adapts to every student's
+                knowledge level and learning needs.
+
+            </p>
+
+
+            <div class="learning-visual">
+
+                <div class="student-area">
+
+                    <div class="student-head"></div>
+
+                    <div class="student-body">
+
+                        <div class="arm left-arm"></div>
+                        <div class="arm right-arm"></div>
+
+                    </div>
+
+
+                    <div class="laptop">
+
+                        <div class="laptop-screen">
+
+                            <div class="screen-header">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+
+                            <div class="screen-title">
+                                Learning Dashboard
+                            </div>
+
+
+                            <div class="dashboard-mini">
+
+                                <div class="mini-card">
+
+                                    <small>
+                                        Progress
+                                    </small>
+
+                                    <strong>
+                                        72%
+                                    </strong>
+
+                                    <div class="mini-progress">
+                                        <i></i>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="mini-card">
+
+                                    <small>
+                                        Mastery
+                                    </small>
+
+                                    <strong>
+                                        82%
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="recommendation">
+
+                                <div class="ai-circle">
+                                    ✦
+                                </div>
+
+                                <div>
+
+                                    <small>
+                                        AI Recommendation
+                                    </small>
+
+                                    <p>
+                                        Practice OOP Concepts
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="laptop-base"></div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="floating-card progress-floating">
+
+                    <div class="floating-icon">
+                        📊
+                    </div>
+
+                    <div>
+
+                        <small>
+                            Student Progress
+                        </small>
+
+                        <strong>
+                            +12.4%
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="floating-card ai-floating">
+
+                    <div class="floating-icon purple">
+                        🧠
+                    </div>
+
+                    <div>
+
+                        <small>
+                            AI Learning Engine
+                        </small>
+
+                        <strong>
+                            Active
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="floating-card mastery-floating">
+
+                    <div class="floating-icon">
+                        🎯
+                    </div>
+
+                    <div>
+
+                        <small>
+                            Knowledge Mastery
+                        </small>
+
+                        <div class="floating-bar">
+                            <i></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="learning-flow">
+
+                <div class="flow-item">
+                    <span>01</span>
+                    Performance
+                </div>
+
+                <div class="flow-line"></div>
+
+                <div class="flow-item">
+                    <span>02</span>
+                    AI Analysis
+                </div>
+
+                <div class="flow-line"></div>
+
+                <div class="flow-item">
+                    <span>03</span>
+                    Mastery
+                </div>
+
+                <div class="flow-line"></div>
+
+                <div class="flow-item">
+                    <span>04</span>
+                    Next Activity
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- REGISTRATION MODAL -->
+<!-- ================================================= -->
+
+<div
+    id="registrationModal"
+    class="modal">
+
+    <div class="modal-box">
+
+        <button
+            class="close-modal"
+            data-close="registrationModal">
+            ×
+        </button>
+
+
+        <div class="register-logo">
+            NEXORA <span>✦</span>
+        </div>
+
+        <h2>
+            Create Your Learning Profile
+        </h2>
+
+        <p class="register-subtitle">
+            Join the AI-powered personalized learning platform and start your adaptive learning journey.
+        </p>
+
+
+        <form id="registrationForm" class="registration-form">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input
+                    type="text"
+                    id="fullName"
+                    placeholder="John Doe"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label>Student ID</label>
+                <input
+                    type="text"
+                    id="studentId"
+                    placeholder="22CS101"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label>Department</label>
+                <input
+                    type="text"
+                    id="department"
+                    placeholder="Computer Science"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label>Year</label>
+
+                <select id="year" required>
+
+                    <option value="">Select Year</option>
+                    <option>1st Year</option>
+                    <option>2nd Year</option>
+                    <option>3rd Year</option>
+                    <option>4th Year</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="form-group">
+
+        <label>Student Gmail</label>
+
+        <input
+        type="email"
+        id="registerEmail"
+        placeholder="student@gmail.com"
+        required>
+
+        </div>
+
+        <div class="form-grid">
+
+        <div class="form-group">
+
+        <label>Password</label>
+
+<div class="password-wrapper">
+
+<input
+type="password"
+id="registerPassword"
+placeholder="Minimum 8 characters"
+required>
+
+<button
+type="button"
+class="eye-button"
+id="toggleRegisterPassword">
+
+👁
+
+</button>
+
+</div>
+
+</div>
+
+<div class="form-group">
+
+<label>Confirm Password</label>
+
+<input
+type="password"
+id="confirmPassword"
+placeholder="Confirm Password"
+required>
+
+</div>
+
+</div>
+
+<p id="registrationMessage" class="message"></p>
+
+<button
+type="submit"
+class="login-button"
+id="registerButton">
+
+✨ Continue to Verification →
+
+</button>
+
+</form>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- OTP MODAL -->
+<!-- ================================================= -->
+
+<div
+    id="otpModal"
+    class="modal">
+
+    <div class="modal-box otp-modal">
+
+        <button
+            class="close-modal"
+            data-close="otpModal">
+            ×
+        </button>
+
+
+        <div class="modal-icon">
+            ✉
+        </div>
+
+
+        <h2>
+            Verify Your Gmail
+        </h2>
+
+
+        <p>
+            We sent a 6-digit OTP to
+        </p>
+
+        <strong id="otpEmail"></strong>
+
+
+        <div class="otp-inputs">
+
+            <input class="otp" maxlength="1">
+            <input class="otp" maxlength="1">
+            <input class="otp" maxlength="1">
+            <input class="otp" maxlength="1">
+            <input class="otp" maxlength="1">
+            <input class="otp" maxlength="1">
+
+        </div>
+
+
+        <p
+            id="otpMessage"
+            class="message">
+        </p>
+
+
+        <button
+            class="login-button"
+            id="verifyOtpButton">
+
+            Verify & Create Account
+
+        </button>
+
+
+        <p class="resend">
+
+            Didn't receive the code?
+
+            <button
+                id="resendOtpButton">
+
+                Resend OTP
+
+            </button>
+
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- ACCOUNT NOT FOUND -->
+<!-- ================================================= -->
+
+<div
+    id="accountNotFoundModal"
+    class="modal">
+
+    <div class="modal-box">
+
+        <button
+            class="close-modal"
+            data-close="accountNotFoundModal">
+            ×
+        </button>
+
+
+        <div class="modal-icon warning">
+            !
+        </div>
+
+
+        <h2>
+            Account Not Found
+        </h2>
+
+
+        <p>
+            This Gmail is not registered
+            with Nexora.
+        </p>
+
+
+        <button
+            class="login-button"
+            id="createFromLogin">
+
+            Create New Account
+
+        </button>
+
+
+        <button
+            class="secondary-button"
+            data-close="accountNotFoundModal">
+
+            Use Another Gmail
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<script src="{{ url_for('static', filename='login/js/script.js') }}">
+</script>
+
+</body>
+
+</html>

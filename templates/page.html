@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NEXORA | {{ page|capitalize }}</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='dashboard/css/style.css') }}">
+<link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+<div class="brand-mark" aria-label="NEXORA logo">
+
+    <svg
+        class="nexora-logo"
+        viewBox="0 0 220 250"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+    >
+
+        <defs>
+            <linearGradient
+                id="nexora-gradient"
+                x1="45"
+                y1="15"
+                x2="175"
+                y2="235"
+                gradientUnits="userSpaceOnUse"
+            >
+                <stop offset="0%" stop-color="#D94AF2"/>
+                <stop offset="45%" stop-color="#B44CFF"/>
+                <stop offset="100%" stop-color="#4B35E8"/>
+            </linearGradient>
+        </defs>
+
+        <!-- Main NEXORA shape -->
+        <path
+            fill="url(#nexora-gradient)"
+            d="
+                M42 18
+                C34 12 24 16 24 27
+                V183
+                C24 192 28 198 35 203
+                L70 229
+                V82
+                C70 76 77 72 82 76
+                L166 138
+                C178 147 193 142 197 130
+                C201 118 197 108 188 101
+                L57 7
+                C51 3 45 8 42 18
+                Z
+            "
+        />
+
+        <!-- Lower-right diagonal -->
+        <path
+            fill="url(#nexora-gradient)"
+            d="
+                M126 151
+                L181 191
+                C192 199 194 211 187 221
+                C180 231 167 233 157 226
+                L113 194
+                L91 178
+                Z
+            "
+        />
+
+        <!-- Center sparkle -->
+        <path
+            fill="url(#nexora-gradient)"
+            d="
+                M91 145
+                C96 132 101 127 114 122
+                C101 117 96 112 91 99
+                C86 112 81 117 68 122
+                C81 127 86 132 91 145
+                Z
+            "
+        />
+
+    </svg>
+
+</div>
+
+            <div class="brand-text">
+                <div class="brand-name">NEXORA</div>
+            </div>
+
+        </div>
+
+
+        <!-- SIDEBAR MENU -->
+
+        <nav class="sidebar-nav">
+
+            <a href="{{ url_for('dashboard') }}"
+               class="{% if page == 'dashboard' %}active{% endif %}">
+                <span>▦</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('course_page') }}"
+               class="{% if page == 'courses' %}active{% endif %}">
+                <span>▤</span>
+                <span>Courses</span>
+            </a>
+
+            <a href="{{ url_for('video_page') }}"
+               class="{% if page == 'videos' %}active{% endif %}">
+                <span>▶</span>
+                <span>Videos</span>
+            </a>
+
+            <a href="{{ url_for('chatbot') }}"
+               class="{% if page == 'chatbot' %}active{% endif %}">
+                <span>✦</span>
+                <span>AI Chatbot</span>
+            </a>
+
+            <a href="{{ url_for('source_page') }}"
+               class="{% if page == 'sources' %}active{% endif %}">
+                <span>⌁</span>
+                <span>Sources</span>
+            </a>
+
+            <a href="{{ url_for('certificate_page') }}"
+               class="{% if page == 'certificate' %}active{% endif %}">
+                <span>◇</span>
+                <span>Certificates</span>
+            </a>
+
+        </nav>
+
+
+        <!-- BOTTOM MENU -->
+
+        <div class="sidebar-bottom">
+
+            <a href="{{ url_for('profile') }}"
+               class="{% if page == 'profile' %}active{% endif %}">
+                <span>⚙</span>
+                <span>Settings</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main class="main">
+
+        <!-- TOP BAR -->
+
+        <header class="topbar">
+
+            <div class="search">
+
+                <span>⌕</span>
+
+                <input
+                    type="text"
+                    placeholder="Search courses, topics, resources..."
+                >
+
+            </div>
+
+
+            <div class="top-actions">
+
+                <button
+                    class="icon-btn"
+                    type="button"
+                    aria-label="Notifications">
+                    ♧
+                </button>
+
+
+                <div class="profile-wrapper">
+
+                    <button
+                        class="profile-btn"
+                        id="profileButton"
+                        type="button">
+
+                        <div class="avatar">
+                            {{ student.name[:2]|upper }}
+                        </div>
+
+                        <div class="profile-info">
+
+                            <strong>
+                                {{ student.name }}
+                            </strong>
+
+                            <small>
+                                {{ student.department }}
+                            </small>
+
+                        </div>
+
+                        <span class="arrow">⌄</span>
+
+                    </button>
+
+
+                    <div
+                        class="profile-menu"
+                        id="profileMenu">
+
+                        <a href="{{ url_for('profile') }}">
+                            <span>◉</span>
+                            Profile
+                        </a>
+
+                        <a href="{{ url_for('logout') }}">
+                            <span>↪</span>
+                            Logout
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =========================
+             DASHBOARD
+        ========================== -->
+
+        {% if page == "dashboard" %}
+
+        <section class="page-content">
+
+            <!-- PAGE HEADING -->
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="eyebrow">
+                        NEXORA INTELLIGENCE
+                    </span>
+
+                    <h1>
+                        <span id="greeting">Welcome</span>,
+                        <span>
+                            {{ student.name.split()[0] }}
+                        </span>
+                        👋
+                    </h1>
+
+                    <p>
+                        Your personalized learning path is ready.
+                    </p>
+
+                </div>
+
+
+                <div class="updated">
+
+                    <small>
+                        Learning score
+                    </small>
+
+                    <strong>
+                        {{ student.mastery }}%
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- HERO -->
+
+            <section class="hero">
+
+                <div class="hero-content">
+
+                    <span class="hero-label">
+                        ✦ AI LEARNING ENGINE
+                    </span>
+
+                    <h2>
+                        Your next best
+                        learning activity.
+                    </h2>
+
+                    <p>
+                        Based on your recent quiz performance
+                        and knowledge mastery, NEXORA recommends:
+                    </p>
+
+
+                    <div class="recommendation">
+
+                        <div class="rec-icon">
+                            ◎
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Object Oriented Programming
+                            </strong>
+
+                            <small>
+                                Adaptive practice • 20 minutes
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        class="primary-btn"
+                        type="button">
+
+                        Continue Learning →
+
+                    </button>
+
+                </div>
+
+
+                <div class="hero-score">
+
+                    <div class="score-ring">
+
+                        <div>
+
+                            <strong>
+                                {{ student.mastery }}%
+                            </strong>
+
+                            <span>
+                                Mastery
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <small>
+                        +6.4% this week
+                    </small>
+
+                </div>
+
+            </section>
+
+
+            <!-- STATS -->
+
+            <section class="stats-grid">
+
+                <div class="stat-card">
+
+                    <span>
+                        Knowledge Mastery
+                    </span>
+
+                    <strong>
+                        {{ student.mastery }}%
+                    </strong>
+
+                    <div class="mini-bar">
+                        <i style="--progress: {{ student.mastery }}%;"></i>
+                    </div>
+
+                    <small>
+                        Knowledge state
+                    </small>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>
+                        Quiz Accuracy
+                    </span>
+
+                    <strong>
+                        {{ student.quiz_accuracy }}%
+                    </strong>
+
+                    <div class="mini-bar">
+                        <i style="--progress: {{ student.quiz_accuracy }}%;"></i>
+                    </div>
+
+                    <small>
+                        Recent performance
+                    </small>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>
+                        Active Days
+                    </span>
+
+                    <strong>
+                        {{ student.active_days }}
+                    </strong>
+
+                    <div class="stat-icon">
+                        ◷
+                    </div>
+
+                    <small>
+                        Learning days
+                    </small>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>
+                        Learning Streak
+                    </span>
+
+                    <strong>
+                        {{ student.streak }} days
+                    </strong>
+
+                    <div class="stat-icon">
+                        ✦
+                    </div>
+
+                    <small>
+                        Keep going
+                    </small>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 ACTIVITY + AI INSIGHT
+            ========================== -->
+
+            <section class="dashboard-grid">
+
+
+                <!-- LEARNING ACTIVITY -->
+
+                <div class="glass-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <span class="eyebrow">
+                                ACTIVITY
+                            </span>
+
+                            <h3>
+                                Learning Activity
+                            </h3>
+
+                        </div>
+
+                        <span class="pill">
+                            Last 12 months
+                        </span>
+
+                    </div>
+
+
+                    <p class="active-days-title">
+
+                        <strong>
+                            {{ student.active_days }}
+                        </strong>
+
+                        learning days active
+
+                    </p>
+
+
+                    <!-- MONTH LABELS -->
+<div class="heatmap-wrapper">
+
+    <!-- MONTH LABELS ARE GENERATED BY JAVASCRIPT -->
+    <div
+        class="month-labels"
+        id="monthLabels">
+    </div>
+
+
+    <!-- HEATMAP -->
+    <div
+        class="heatmap"
+        id="heatmap"
+        aria-label="Learning activity heatmap">
+    </div>
+
+</div>
+
+                    <!-- HEATMAP LEGEND -->
+
+                    <div class="heatmap-footer">
+
+                        <span>Less</span>
+
+                        <div class="legend">
+
+                            <i></i>
+                            <i></i>
+                            <i></i>
+                            <i></i>
+                            <i></i>
+
+                        </div>
+
+                        <span>More</span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- AI INSIGHT -->
+
+                <div class="glass-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <span class="eyebrow">
+                                AI INSIGHT
+                            </span>
+
+                            <h3>
+                                Why this recommendation?
+                            </h3>
+
+                        </div>
+
+                        <span class="ai-dot">
+                            ✦
+                        </span>
+
+                    </div>
+
+
+                    <div class="insight">
+
+                        <div class="insight-number">
+                            01
+                        </div>
+
+                        <p>
+                            Your performance in programming
+                            fundamentals is strong.
+                        </p>
+
+                    </div>
+
+
+                    <div class="insight">
+
+                        <div class="insight-number">
+                            02
+                        </div>
+
+                        <p>
+                            Your OOP mastery is below your
+                            current target level.
+                        </p>
+
+                    </div>
+
+
+                    <div class="insight">
+
+                        <div class="insight-number">
+                            03
+                        </div>
+
+                        <p>
+                            An adaptive practice session can
+                            improve your mastery efficiently.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 ROADMAP + MASTERY
+            ========================== -->
+
+            <section class="dashboard-grid">
+
+
+                <!-- ROADMAP -->
+
+                <div class="glass-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <span class="eyebrow">
+                                LEARNING PATH
+                            </span>
+
+                            <h3>
+                                Today's Roadmap
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="roadmap">
+
+                        <div class="road-item done">
+
+                            <span>✓</span>
+
+                            <div>
+
+                                <strong>
+                                    Programming Basics
+                                </strong>
+
+                                <small>
+                                    Completed
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="road-item done">
+
+                            <span>✓</span>
+
+                            <div>
+
+                                <strong>
+                                    Classes & Objects
+                                </strong>
+
+                                <small>
+                                    Completed
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="road-item active-road">
+
+                            <span>→</span>
+
+                            <div>
+
+                                <strong>
+                                    OOP Concepts
+                                </strong>
+
+                                <small>
+                                    Recommended now
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="road-item">
+
+                            <span>○</span>
+
+                            <div>
+
+                                <strong>
+                                    Adaptive Quiz
+                                </strong>
+
+                                <small>
+                                    Next
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- TOPIC MASTERY -->
+
+                <div class="glass-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <span class="eyebrow">
+                                KNOWLEDGE MAP
+                            </span>
+
+                            <h3>
+                                Topic Mastery
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="mastery-list">
+
+                        <div>
+                            <span>Python</span>
+                            <strong>92%</strong>
+                        </div>
+
+                        <div class="mastery-line">
+                            <i style="--progress:92%;"></i>
+                        </div>
+
+
+                        <div>
+                            <span>Java</span>
+                            <strong>76%</strong>
+                        </div>
+
+                        <div class="mastery-line">
+                            <i style="--progress:76%;"></i>
+                        </div>
+
+
+                        <div>
+                            <span>SQL</span>
+                            <strong>68%</strong>
+                        </div>
+
+                        <div class="mastery-line">
+                            <i style="--progress:68%;"></i>
+                        </div>
+
+
+                        <div>
+                            <span>Machine Learning</span>
+                            <strong>44%</strong>
+                        </div>
+
+                        <div class="mastery-line">
+                            <i style="--progress:44%;"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+        {% endif %}
+
+
+        <!-- =========================
+             PROFILE
+        ========================== -->
+
+        {% if page == "profile" %}
+
+        <section class="page-content">
+
+            <div class="profile-cover">
+                <div class="profile-pattern"></div>
+            </div>
+
+
+            <div class="profile-main">
+
+                <div class="profile-avatar-large">
+                    {{ student.name[:2]|upper }}
+                </div>
+
+                <div class="profile-title">
+
+                    <h1>
+                        {{ student.name }}
+                    </h1>
+
+                    <p>
+                        {{ student.email }}
+                    </p>
+
+                </div>
+
+                <button
+                    class="secondary-btn"
+                    type="button">
+
+                    Edit Profile
+
+                </button>
+
+            </div>
+
+
+            <div class="info-grid">
+
+                <div class="info-box">
+
+                    <small>
+                        Student ID
+                    </small>
+
+                    <strong>
+                        {{ student.student_id }}
+                    </strong>
+
+                </div>
+
+
+                <div class="info-box">
+
+                    <small>
+                        Department
+                    </small>
+
+                    <strong>
+                        {{ student.department }}
+                    </strong>
+
+                </div>
+
+
+                <div class="info-box">
+
+                    <small>
+                        Year
+                    </small>
+
+                    <strong>
+                        {{ student.year }}
+                    </strong>
+
+                </div>
+
+
+                <div class="info-box">
+
+                    <small>
+                        Batch
+                    </small>
+
+                    <strong>
+                        {{ student.batch }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-tabs">
+
+                <button class="tab active-tab">
+                    Overview
+                </button>
+
+                <button class="tab">
+                    Personal Information
+                </button>
+
+                <button class="tab">
+                    Academic Information
+                </button>
+
+                <button class="tab">
+                    Learning Analytics
+                </button>
+
+                <button class="tab">
+                    Achievements
+                </button>
+
+            </div>
+
+
+            <div class="profile-grid">
+
+                <div class="glass-card">
+
+                    <span class="eyebrow">
+                        PERSONAL INFORMATION
+                    </span>
+
+                    <h3>
+                        {{ student.name }}
+                    </h3>
+
+
+                    <div class="detail-row">
+
+                        <span>Email</span>
+
+                        <strong>
+                            {{ student.email }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span>Student ID</span>
+
+                        <strong>
+                            {{ student.student_id }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span>Learning Level</span>
+
+                        <strong>
+                            {{ student.learning_level }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="glass-card">
+
+                    <span class="eyebrow">
+                        LEARNING STATISTICS
+                    </span>
+
+
+                    <div class="big-stat">
+
+                        <strong>
+                            {{ student.mastery }}%
+                        </strong>
+
+                        <span>
+                            Overall Mastery
+                        </span>
+
+                    </div>
+
+
+                    <div class="big-stat">
+
+                        <strong>
+                            {{ student.quiz_accuracy }}%
+                        </strong>
+
+                        <span>
+                            Quiz Accuracy
+                        </span>
+
+                    </div>
+
+
+                    <div class="big-stat">
+
+                        <strong>
+                            {{ student.completed_topics }}
+                        </strong>
+
+                        <span>
+                            Topics Completed
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+
+        <!-- =========================
+             COURSES
+        ========================== -->
+
+        {% if page == "courses" %}
+
+        <section class="page-content">
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="eyebrow">
+                        NEXORA LEARNING LIBRARY
+                    </span>
+
+                    <h1>
+                        My Courses
+                    </h1>
+
+                    <p>
+                        Continue learning and build your mastery.
+                    </p>
+
+                </div>
+
+                <button
+                    class="secondary-btn"
+                    type="button">
+
+                    Filter Courses
+
+                </button>
+
+            </div>
+
+
+            <div class="course-grid">
+
+                {% for course in courses %}
+
+                <article class="course-card">
+
+                    <div class="course-icon">
+                        ✦
+                    </div>
+
+                    <span class="course-category">
+                        {{ course.category }}
+                    </span>
+
+                    <h2>
+                        {{ course.title }}
+                    </h2>
+
+                    <p>
+                        {{ course.description }}
+                    </p>
+
+
+                    <div class="course-progress">
+
+                        <div class="course-progress-head">
+
+                            <span>
+                                Progress
+                            </span>
+
+                            <strong>
+                                {{ course.progress }}%
+                            </strong>
+
+                        </div>
+
+
+                        <div class="progress-track">
+
+                            <i style="--progress: {{ course.progress }}%;"></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="course-meta">
+
+                        <span>
+                            {{ course.lessons }} Lessons
+                        </span>
+
+                        <span>
+                            {{ course.assessments }} Tests
+                        </span>
+
+                        <span>
+                            {{ course.duration }}
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        class="course-btn"
+                        type="button">
+
+                        {{ course.status }} →
+
+                    </button>
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+
+        <!-- =========================
+             VIDEOS
+        ========================== -->
+
+        {% if page == "videos" %}
+
+        <section class="page-content">
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="eyebrow">
+                        VIDEO LEARNING
+                    </span>
+
+                    <h1>
+                        Videos
+                    </h1>
+
+                    <p>
+                        Learn concepts visually and at your own pace.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="video-grid">
+
+                {% for video in videos %}
+
+                <article class="video-card">
+
+                    <div class="video-thumb">
+
+                        <span>
+                            ▶
+                        </span>
+
+                        <small>
+                            {{ video.duration }}
+                        </small>
+
+                    </div>
+
+
+                    <div class="video-content">
+
+                        <span>
+                            {{ video.topic }}
+                        </span>
+
+                        <h2>
+                            {{ video.title }}
+                        </h2>
+
+                        <p>
+                            {{ video.level }}
+                        </p>
+
+
+                        <button
+                            class="course-btn"
+                            type="button">
+
+                            Watch Video →
+
+                        </button>
+
+                    </div>
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+
+        <!-- =========================
+             CHATBOT
+        ========================== -->
+
+        {% if page == "chatbot" %}
+
+        <section class="page-content">
+
+            <div class="chat-wrapper">
+
+                <div class="chat-header">
+
+                    <div class="ai-avatar">
+                        ✦
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            NEXORA AI
+                        </h2>
+
+                        <small>
+                            Your personalized learning assistant
+                        </small>
+
+                    </div>
+
+                    <span class="online">
+                        ● Online
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="chat-body"
+                    id="chatBody">
+
+                    <div class="message ai-message">
+
+                        Hello {{ student.name.split()[0] }}! 👋
+
+                        <br><br>
+
+                        I analyzed your current mastery.
+                        Would you like help with OOP,
+                        Python, Java, or your next learning activity?
+
+                    </div>
+
+                </div>
+
+
+                <div class="chat-suggestions">
+
+                    <button
+                        type="button"
+                        onclick="sendSuggestion('Explain my weak topics')">
+
+                        Explain my weak topics
+
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="sendSuggestion('Give me a quiz')">
+
+                        Give me a quiz
+
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="sendSuggestion('Recommend my next lesson')">
+
+                        Recommend my next lesson
+
+                    </button>
+
+                </div>
+
+
+                <div class="chat-input">
+
+                    <input
+                        id="chatInput"
+                        type="text"
+                        placeholder="Ask NEXORA anything...">
+
+                    <button
+                        type="button"
+                        onclick="sendMessage()">
+
+                        →
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+
+        <!-- =========================
+             SOURCES
+        ========================== -->
+
+        {% if page == "sources" %}
+
+        <section class="page-content">
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="eyebrow">
+                        LEARNING RESOURCES
+                    </span>
+
+                    <h1>
+                        Sources
+                    </h1>
+
+                    <p>
+                        Curated resources for your learning journey.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="source-grid">
+
+                {% for source in sources %}
+
+                <article class="source-card">
+
+                    <div class="source-icon">
+                        ↗
+                    </div>
+
+                    <span>
+                        {{ source.type }}
+                    </span>
+
+                    <h2>
+                        {{ source.title }}
+                    </h2>
+
+                    <strong>
+                        {{ source.topic }}
+                    </strong>
+
+                    <p>
+                        {{ source.description }}
+                    </p>
+
+                    <button
+                        class="course-btn"
+                        type="button">
+
+                        Open Resource →
+
+                    </button>
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+
+        <!-- =========================
+             CERTIFICATES
+        ========================== -->
+
+        {% if page == "certificate" %}
+
+        <section class="page-content">
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="eyebrow">
+                        ACHIEVEMENT CENTER
+                    </span>
+
+                    <h1>
+                        Certificates
+                    </h1>
+
+                    <p>
+                        Track the achievements you've earned through learning.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="certificate-grid">
+
+                {% for cert in certificates %}
+
+                <article class="
+                    certificate-card
+                    {% if cert.status == 'Locked' %}locked{% endif %}
+                ">
+
+                    <div class="certificate-symbol">
+                        ◇
+                    </div>
+
+                    <span>
+                        {{ cert.status }}
+                    </span>
+
+                    <h2>
+                        {{ cert.title }}
+                    </h2>
+
+                    <p>
+                        {{ cert.topic }}
+                    </p>
+
+                    <small>
+                        {{ cert.date }}
+                    </small>
+
+
+                    {% if cert.status == "Earned" %}
+
+                    <button
+                        class="course-btn"
+                        type="button">
+
+                        View Certificate →
+
+                    </button>
+
+                    {% else %}
+
+                    <button
+                        class="course-btn"
+                        type="button">
+
+                        Continue Learning →
+
+                    </button>
+
+                    {% endif %}
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+
+<script src="{{ url_for('static', filename='dashboard/js/app.js') }}"></script>
+
+</body>
+</html>

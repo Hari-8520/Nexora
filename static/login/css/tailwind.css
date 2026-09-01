@@ -1,0 +1,321 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* ================================
+   LEARNADAPT ANIMATIONS
+================================ */
+
+
+/* Page entrance */
+
+@keyframes pageEnter {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Visual entrance */
+
+@keyframes visualEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+/* Floating animation */
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-12px);
+    }
+}
+
+
+/* Slow floating */
+
+@keyframes floatSlow {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-18px) rotate(2deg);
+    }
+}
+
+
+/* Background movement */
+
+@keyframes blobMove {
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(-25px, 20px) scale(1.08);
+    }
+}
+
+
+/* Glow */
+
+@keyframes pulseGlow {
+    0%,
+    100% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+}
+
+
+/* Progress animation */
+
+@keyframes progressMove {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+
+/* Flow animation */
+
+@keyframes flowPulse {
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+/* Modal */
+
+@keyframes modalEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+
+/* ================================
+   APPLY ANIMATIONS
+================================ */
+
+.page {
+    animation: pageEnter 0.8s ease-out both;
+}
+
+.login-container {
+    animation: pageEnter 0.9s ease-out both;
+}
+
+.visual-content {
+    animation: visualEnter 1s ease-out both;
+}
+
+
+/* Background blobs */
+
+.blob-one {
+    animation: blobMove 8s ease-in-out infinite;
+}
+
+.blob-two {
+    animation: blobMove 10s ease-in-out infinite reverse;
+}
+
+.blob-three {
+    animation: pulseGlow 4s ease-in-out infinite;
+}
+
+
+/* Student area */
+
+.student-area {
+    animation: floatSlow 6s ease-in-out infinite;
+}
+
+
+/* Floating cards */
+
+.progress-floating {
+    animation: float 4s ease-in-out infinite;
+}
+
+.ai-floating {
+    animation: floatSlow 5s ease-in-out infinite;
+}
+
+.mastery-floating {
+    animation: float 4.5s ease-in-out infinite;
+}
+
+
+/* AI circle */
+
+.ai-circle {
+    animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+
+/* Buttons */
+
+.login-button {
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        filter 0.25s ease;
+}
+
+.login-button:hover {
+    transform: translateY(-3px) scale(1.01);
+    filter: brightness(1.08);
+}
+
+.login-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+
+/* Inputs */
+
+.input-group input {
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.2s ease;
+}
+
+.input-group input:hover {
+    transform: translateY(-1px);
+}
+
+
+/* Eye button */
+
+.eye-button {
+    transition:
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+.eye-button:hover {
+    transform: translateY(-50%) scale(1.15);
+}
+
+
+/* Modal */
+
+.modal.active .modal-box {
+    animation: modalEnter 0.35s ease-out both;
+}
+
+
+/* Close button */
+
+.close-modal {
+    transition:
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+.close-modal:hover {
+    transform: rotate(90deg) scale(1.1);
+}
+
+
+/* OTP */
+
+.otp {
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.otp:focus {
+    transform: translateY(-3px) scale(1.04);
+}
+
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+}
+/* =========================================
+   FORM TEXT VISIBILITY
+========================================= */
+
+input,
+textarea,
+select {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #ffffff !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #8f8f9f !important;
+    -webkit-text-fill-color: #8f8f9f !important;
+    opacity: 1 !important;
+}
+
+select {
+    background-color: #111116 !important;
+}
+
+select option {
+    color: #ffffff !important;
+    background-color: #111116 !important;
+}
