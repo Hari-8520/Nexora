@@ -2775,3 +2775,21 @@ body {
 .eye-button:hover {
     color: #45B56C !important;
 }
+.forgot-password-row {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.forgot-password-row a {
+    color: #45B56C;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.forgot-password-row a:hover {
+    color: #319957;
+    text-decoration: underline;
+}

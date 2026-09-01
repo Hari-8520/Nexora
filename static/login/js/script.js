@@ -58,57 +58,52 @@ async function postJSON(url, data) {
 
     return result;
 }
-
-
 // =================================================
 // PASSWORD VISIBILITY
 // =================================================
 
-function setupPasswordToggle(
-    button,
-    input
-) {
+function setupPasswordToggle(button, input) {
+    if (!button || !input) {
+        return;
+    }
+    button.addEventListener("click", function () {
 
-    button.addEventListener(
-        "click",
-        () => {
+        // Show password
+        if (input.type === "password") {
 
-            if (
-                input.type ===
-                "password"
-            ) {
+            input.type = "text";
 
-                input.type = "text";
-
-                button.textContent =
-                    "🙈";
-
-            } else {
-
-                input.type =
-                    "password";
-
-                button.textContent =
-                    "👁";
-
-            }
+            button.setAttribute(
+                "aria-label",
+                "Hide password"
+            );
 
         }
-    );
+
+        // Hide password
+        else {
+
+            input.type = "password";
+
+            button.setAttribute(
+                "aria-label",
+                "Show password"
+            );
+
+        }
+
+    });
 }
-
-
+// Login password
 setupPasswordToggle(
-    $("#toggleLoginPassword"),
-    $("#loginPassword")
+    document.getElementById("toggleLoginPassword"),
+    document.getElementById("loginPassword")
 );
-
+// Registration password
 setupPasswordToggle(
-    $("#toggleRegisterPassword"),
-    $("#registerPassword")
+    document.getElementById("toggleRegisterPassword"),
+    document.getElementById("registerPassword")
 );
-
-
 // =================================================
 // LOGIN
 // =================================================
@@ -957,3 +952,4 @@ $$(".modal")
 
         }
     );
+    
