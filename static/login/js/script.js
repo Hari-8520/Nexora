@@ -1307,7 +1307,7 @@ function showLoginSuccess(
             <p class="subtitle">
                 Welcome, ${escapeHTML(name)}.
                 You are successfully logged in
-                to LearnAdapt AI.
+                to Nexora.
             </p>
 
 
