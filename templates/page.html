@@ -148,6 +148,11 @@
                 <span>⌁</span>
                 <span>Sources</span>
             </a>
+            <a href="{{ url_for('simulation') }}"
+   class="{% if page == 'simulation' %}active{% endif %}">
+    <span>◈</span>
+    <span>Simulation</span>
+</a>
 
             <a href="{{ url_for('certificate_page') }}"
                class="{% if page == 'certificate' %}active{% endif %}">
@@ -212,9 +217,21 @@
                         id="profileButton"
                         type="button">
 
-                        <div class="avatar">
-                            {{ student.name[:2]|upper }}
-                        </div>
+                        <div
+    class="avatar"
+    {% if student.profile_picture %}
+    style="
+        background-image: url('{{ student.profile_picture }}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    "
+    {% endif %}
+>
+    {% if not student.profile_picture %}
+        {{ student.name[:2]|upper }}
+    {% endif %}
+</div>
 
                         <div class="profile-info">
 
@@ -828,10 +845,21 @@
 
             <div class="profile-main">
 
-                <div class="profile-avatar-large">
-                    {{ student.name[:2]|upper }}
-                </div>
-
+                <div
+    class="profile-avatar-large"
+    {% if student.profile_picture %}
+    style="
+        background-image: url('{{ student.profile_picture }}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    "
+    {% endif %}
+>
+    {% if not student.profile_picture %}
+        {{ student.name[:2]|upper }}
+    {% endif %}
+</div>
                 <div class="profile-title">
 
                     <h1>
@@ -844,14 +872,163 @@
 
                 </div>
 
-                <button
-                    class="secondary-btn"
-                    type="button">
+               <button
+    class="secondary-btn"
+    type="button"
+    id="editProfileButton">
 
-                    Edit Profile
+    Edit Profile
 
-                </button>
+</button>
+<div id="editProfilePanel" class="edit-profile-panel" style="display: none;">
 
+    <div class="glass-card">
+
+        <span class="eyebrow">
+            EDIT PROFILE
+        </span>
+
+        <h3>
+            Update Your Profile
+        </h3>
+
+        <!-- PROFILE PICTURE -->
+
+        <div class="edit-profile-picture">
+
+            <div class="profile-avatar-edit" id="profileAvatarPreview">
+                {{ student.name[:2]|upper }}
+            </div>
+
+            <label for="profilePictureInput" class="secondary-btn">
+                Choose Profile Picture
+            </label>
+
+            <input
+                type="file"
+                id="profilePictureInput"
+                accept="image/*"
+                style="display: none;"
+            >
+
+        </div>
+
+
+        <!-- FULL NAME -->
+
+        <div class="input-group">
+
+            <label>
+                Full Name
+            </label>
+
+            <input
+                type="text"
+                id="editFullName"
+                value="{{ student.name }}"
+            >
+
+        </div>
+
+
+        <!-- STUDENT ID -->
+
+        <div class="input-group">
+
+            <label>
+                Student ID
+            </label>
+
+            <input
+                type="text"
+                id="editStudentId"
+                value="{{ student.student_id }}"
+            >
+
+        </div>
+
+
+        <!-- YEAR -->
+
+        <div class="input-group">
+
+            <label>
+                Year
+            </label>
+
+            <select id="editYear">
+
+                <option value="1st Year"
+                    {% if student.year == "1st Year" %}selected{% endif %}>
+                    1st Year
+                </option>
+
+                <option value="2nd Year"
+                    {% if student.year == "2nd Year" %}selected{% endif %}>
+                    2nd Year
+                </option>
+
+                <option value="3rd Year"
+                    {% if student.year == "3rd Year" %}selected{% endif %}>
+                    3rd Year
+                </option>
+
+                <option value="4th Year"
+                    {% if student.year == "4th Year" %}selected{% endif %}>
+                    4th Year
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- EMAIL -->
+
+        <div class="input-group">
+
+            <label>
+                Student Gmail
+            </label>
+
+            <input
+                type="email"
+                id="editEmail"
+                value="{{ student.email }}"
+            >
+
+        </div>
+
+
+        <p id="editProfileMessage" class="message"></p>
+
+
+        <div class="edit-profile-actions">
+
+            <button
+                type="button"
+                class="secondary-btn"
+                id="cancelEditProfile">
+
+                Cancel
+
+            </button>
+
+
+            <button
+                type="button"
+                class="primary-btn"
+                id="saveProfileButton">
+
+                Save Changes →
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
             </div>
 
 
@@ -868,20 +1045,6 @@
                     </strong>
 
                 </div>
-
-
-                <div class="info-box">
-
-                    <small>
-                        Department
-                    </small>
-
-                    <strong>
-                        {{ student.department }}
-                    </strong>
-
-                </div>
-
 
                 <div class="info-box">
 
@@ -1353,76 +1516,153 @@
              SOURCES
         ========================== -->
 
-        {% if page == "sources" %}
+        <!-- =========================
+     SIMULATION
+========================== -->
+<!-- ==================== SIMULATION PAGE ==================== -->
+<!-- =========================
+     SIMULATION
+========================== -->
 
-        <section class="page-content">
+{% if page == "simulation" %}
 
-            <div class="page-heading">
+<section class="page-content">
 
-                <div>
+    <!-- PAGE HEADING -->
+    <div class="page-heading">
 
-                    <span class="eyebrow">
-                        LEARNING RESOURCES
-                    </span>
+        <div>
+            <span class="eyebrow">
+                NEXORA SIMULATION
+            </span>
 
-                    <h1>
-                        Sources
-                    </h1>
+            <h1>
+                Simulation
+            </h1>
 
-                    <p>
-                        Curated resources for your learning journey.
-                    </p>
+            <p>
+                Practice concepts through interactive learning simulations.
+            </p>
+        </div>
 
-                </div>
+    </div>
+
+
+    <!-- SIMULATION CARDS -->
+    <div class="video-grid">
+
+        <!-- CODING SIMULATION -->
+        <article class="video-card">
+
+            <div class="video-thumb">
+                <span>◇</span>
+                <small>20 min</small>
+            </div>
+
+            <div class="video-content">
+
+                <span>
+                    PROGRAMMING
+                </span>
+
+                <h2>
+                    Coding Simulation
+                </h2>
+
+                <p>
+                    Java · Beginner
+                </p>
+
+                <button
+                    class="course-btn"
+                    type="button"
+                    onclick="startSimulation('coding')">
+
+                    Start Simulation →
+
+                </button>
 
             </div>
 
+        </article>
 
-            <div class="source-grid">
 
-                {% for source in sources %}
+        <!-- DATA STRUCTURES SIMULATION -->
+        <article class="video-card">
 
-                <article class="source-card">
+            <div class="video-thumb">
+                <span>◇</span>
+                <small>25 min</small>
+            </div>
 
-                    <div class="source-icon">
-                        ↗
-                    </div>
+            <div class="video-content">
 
-                    <span>
-                        {{ source.type }}
-                    </span>
+                <span>
+                    DATA STRUCTURES
+                </span>
 
-                    <h2>
-                        {{ source.title }}
-                    </h2>
+                <h2>
+                    Data Structures Simulation
+                </h2>
 
-                    <strong>
-                        {{ source.topic }}
-                    </strong>
+                <p>
+                    DSA · Intermediate
+                </p>
 
-                    <p>
-                        {{ source.description }}
-                    </p>
+                <button
+                    class="course-btn"
+                    type="button"
+                    onclick="startSimulation('data-structures')">
 
-                    <button
-                        class="course-btn"
-                        type="button">
+                    Start Simulation →
 
-                        Open Resource →
-
-                    </button>
-
-                </article>
-
-                {% endfor %}
+                </button>
 
             </div>
 
-        </section>
-
-        {% endif %}
+        </article>
 
 
+        <!-- AI LEARNING SIMULATION -->
+        <article class="video-card">
+
+            <div class="video-thumb">
+                <span>✦</span>
+                <small>15 min</small>
+            </div>
+
+            <div class="video-content">
+
+                <span>
+                    AI LEARNING
+                </span>
+
+                <h2>
+                    AI Learning Simulation
+                </h2>
+
+                <p>
+                    AI Adaptive · Beginner
+                </p>
+
+                <button
+                    class="course-btn"
+                    type="button"
+                    onclick="startSimulation('ai-learning')">
+
+                    Start Simulation →
+
+                </button>
+
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
+
+{% endif %}
         <!-- =========================
              CERTIFICATES
         ========================== -->
@@ -1518,8 +1758,9 @@
 
 </div>
 
-
 <script src="{{ url_for('static', filename='dashboard/js/app.js') }}"></script>
+
+<script src="{{ url_for('static', filename='login/js/script.js') }}"></script>
 
 </body>
 </html>

@@ -48,9 +48,13 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
-
 def init_db():
+
     conn = get_db()
+
+    # --------------------------------------------------
+    # USERS TABLE
+    # --------------------------------------------------
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -61,9 +65,32 @@ def init_db():
             student_id TEXT NOT NULL,
             department TEXT NOT NULL,
             year TEXT NOT NULL,
+            profile_picture TEXT,
             created_at TEXT NOT NULL
         )
     """)
+
+
+    # --------------------------------------------------
+    # ADD PROFILE PICTURE TO EXISTING DATABASE
+    # --------------------------------------------------
+
+    try:
+
+        conn.execute("""
+            ALTER TABLE users
+            ADD COLUMN profile_picture TEXT
+        """)
+
+    except sqlite3.OperationalError:
+
+        # Column already exists
+        pass
+
+
+    # --------------------------------------------------
+    # REGISTRATION OTP TABLE
+    # --------------------------------------------------
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS registration_otps (
@@ -74,21 +101,27 @@ def init_db():
             attempts INTEGER DEFAULT 0,
             created_at TEXT NOT NULL
         )
-  """)
+    """)
+
+
+    # --------------------------------------------------
+    # PASSWORD RESET OTP TABLE
+    # --------------------------------------------------
+
     conn.execute("""
-            CREATE TABLE IF NOT EXISTS password_reset_otps (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT NOT NULL,
-                otp_hash TEXT NOT NULL,
-                expires_at TEXT NOT NULL,
-                attempts INTEGER DEFAULT 0,
-                created_at TEXT NOT NULL
-            )
-        """)
+        CREATE TABLE IF NOT EXISTS password_reset_otps (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            otp_hash TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            attempts INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL
+        )
+    """)
+
+
     conn.commit()
     conn.close()
-
-
 # --------------------------------------------------
 # HELPERS
 # --------------------------------------------------
@@ -230,10 +263,15 @@ def create_registration_otp(email):
 
 @app.route("/")
 def home():
-    if session.get("user_id"):
-        return redirect(url_for("dashboard"))
-    return render_template("index.html")
 
+    user = require_login()
+
+    if user:
+        return redirect(url_for("dashboard"))
+
+    session.clear()
+
+    return render_template("index.html")
 # --------------------------------------------------
 # LOGIN
 # --------------------------------------------------
@@ -1328,8 +1366,155 @@ def logout():
         "message":
             "Logged out successfully."
     })
+# --------------------------------------------------
+# UPDATE PROFILE
+# --------------------------------------------------
+
+@app.post("/api/profile/update")
+def update_profile():
+
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({
+            "ok": False,
+            "message": "You are not logged in."
+        }), 401
+
+    data = request.get_json(silent=True) or {}
+
+    full_name = data.get("full_name", "").strip()
+    student_id = data.get("student_id", "").strip()
+    year = data.get("year", "").strip()
+    email = normalize_email(
+        data.get("email", "")
+    )
+
+    profile_picture = data.get(
+        "profile_picture"
+    )
 
 
+    # -----------------------------------------------
+    # VALIDATION
+    # -----------------------------------------------
+
+    if not full_name:
+        return jsonify({
+            "ok": False,
+            "message": "Full name is required."
+        }), 400
+
+    if not student_id:
+        return jsonify({
+            "ok": False,
+            "message": "Student ID is required."
+        }), 400
+
+    if not year:
+        return jsonify({
+            "ok": False,
+            "message": "Year is required."
+        }), 400
+
+    if not email:
+        return jsonify({
+            "ok": False,
+            "message": "Email is required."
+        }), 400
+
+
+    conn = get_db()
+
+    try:
+
+        # -------------------------------------------
+        # CHECK DUPLICATE EMAIL
+        # -------------------------------------------
+
+        existing_user = conn.execute(
+            """
+            SELECT id
+            FROM users
+            WHERE email = ?
+            AND id != ?
+            """,
+            (
+                email,
+                user_id
+            )
+        ).fetchone()
+
+
+        if existing_user:
+
+            conn.close()
+
+            return jsonify({
+                "ok": False,
+                "message":
+                    "That email is already registered."
+            }), 400
+
+
+        # -------------------------------------------
+        # UPDATE PROFILE
+        # -------------------------------------------
+
+        conn.execute(
+            """
+            UPDATE users
+            SET
+                full_name = ?,
+                student_id = ?,
+                year = ?,
+                email = ?,
+                profile_picture =
+                    COALESCE(?, profile_picture)
+            WHERE id = ?
+            """,
+            (
+                full_name,
+                student_id,
+                year,
+                email,
+                profile_picture,
+                user_id
+            )
+        )
+
+
+        conn.commit()
+
+
+        # Update session email
+        session["email"] = email
+
+
+    except Exception as error:
+
+        conn.rollback()
+        conn.close()
+
+        app.logger.exception(
+            "Profile update failed"
+        )
+
+        return jsonify({
+            "ok": False,
+            "message":
+                f"Could not update profile: {error}"
+        }), 500
+
+
+    conn.close()
+
+
+    return jsonify({
+        "ok": True,
+        "message":
+            "Profile updated successfully."
+    })
 # --------------------------------------------------
 # CURRENT USER
 # --------------------------------------------------
@@ -1357,7 +1542,8 @@ def current_user():
             full_name,
             student_id,
             department,
-            year
+            year,
+            profile_picture
         FROM users
         WHERE id = ?
         """,
@@ -1396,32 +1582,53 @@ videos = [{'title': 'Introduction to Python', 'topic': 'Python', 'duration': '18
 sources = [{'title': 'Python Documentation', 'type': 'Documentation', 'topic': 'Python', 'description': 'Official Python language documentation and reference.'}, {'title': 'Java OOP Guide', 'type': 'Article', 'topic': 'Java', 'description': 'Learn classes, objects, inheritance and polymorphism.'}, {'title': 'Data Structures Notes', 'type': 'PDF Notes', 'topic': 'DSA', 'description': 'Quick revision notes for common data structures.'}, {'title': 'SQL Practice Problems', 'type': 'Practice', 'topic': 'Database', 'description': 'Practice SQL queries and database concepts.'}]
 
 certificates = [{'title': 'Python Programming Fundamentals', 'topic': 'Python', 'status': 'Earned', 'date': '20 Aug 2026'}, {'title': 'Object Oriented Programming', 'topic': 'Java', 'status': 'In Progress', 'date': '-'}, {'title': 'Data Structures Mastery', 'topic': 'DSA', 'status': 'Locked', 'date': '-'}]
-
 def require_login():
+
     user_id = session.get("user_id")
+
     if not user_id:
         return None
+
     conn = get_db()
+
     user = conn.execute(
-        "SELECT id, email, full_name, student_id, department, year FROM users WHERE id = ?",
+        """
+             SELECT
+            id,
+            email,
+            full_name,
+            student_id,
+            department,
+            year,
+            profile_picture
+        FROM users
+        WHERE id = ?
+        """,
         (user_id,)
     ).fetchone()
+
     conn.close()
+
+    if not user:
+
+        session.clear()
+
+        return None
+
     return user
-
-
 def dashboard_student():
     user = require_login()
     if not user:
         return None
     data = dict(student_defaults)
     data.update({
-        "name": user["full_name"],
-        "email": user["email"],
-        "student_id": user["student_id"],
-        "department": user["department"],
-        "year": user["year"]
-    })
+    "name": user["full_name"],
+    "email": user["email"],
+    "student_id": user["student_id"],
+    "department": user["department"],
+    "year": user["year"],
+    "profile_picture": user["profile_picture"]
+})
     return data
 
 
@@ -1464,6 +1671,9 @@ def chatbot():
 def source_page():
     return render_dashboard_page("sources")
 
+@app.route("/simulation")
+def simulation():
+    return render_dashboard_page("simulation")
 
 @app.route("/certificate")
 def certificate_page():
@@ -1491,3 +1701,4 @@ if __name__ == "__main__":
     app.run( 
         debug=True
     )
+    # Add profile_picture column to existing databases
