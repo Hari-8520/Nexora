@@ -1447,6 +1447,343 @@ $$(".modal")
 
         }
     );
+// ======================================================
+// VIDEO LEARNING
+// ======================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const videoButtons = document.querySelectorAll(
+        ".video-card .course-btn"
+    );
+
+    videoButtons.forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            const card = button.closest(".video-card");
+
+            if (!card) {
+                return;
+            }
+
+            const videoTitle =
+                card.dataset.videoTitle ||
+                card.querySelector("h3")?.textContent.trim() ||
+                "";
+
+            const videoTopic =
+                card.dataset.videoTopic ||
+                "";
+
+            openVideoLearning(
+                videoTitle,
+                videoTopic
+            );
+
+        });
+
+    });
+
+});
+
+
+// ======================================================
+// VIDEO LEARNING DATA
+// ======================================================
+
+function openVideoLearning(title, topic) {
+
+    const videoData = {
+
+        "Understanding Linked Lists": {
+
+            reference: "nptel_linked_list",
+
+            subtopics: [
+
+                {
+                    title: "Introduction to Linked List in C",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Insertion at the Beginning in Singly Linked List",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Insertion at a Position in Singly Linked List",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Insertion at the End in Singly Linked List",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Traversal of a Linked List in Singly Linked List",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Deletion at the Beginning in Singly Linked List",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Deletion at a Position in Singly Linked List",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Deletion at the End in Singly Linked List",
+                    videoUrl: ""
+                }
+
+            ]
+
+        },
+
+
+        "Understanding Doubly Linked List": {
+
+            reference: "nptel_doubly_linked_list",
+
+            subtopics: [
+
+                {
+                    title: "Insertion at the Beginning in Doubly Linked List",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Insertion at a Position in Doubly Linked List",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Insertion at the End in Doubly Linked List",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Deletion at the Beginning in Doubly Linked List",
+                    videoUrl: ""
+                }
+
+            ]
+
+        },
+
+
+        "Circular Linked List": {
+
+            reference: null,
+
+            subtopics: [
+
+                {
+                    title: "Deletion at the End in Circular Linked List",
+                    videoUrl: ""
+                },
+
+                {
+                    title: "Insertion at the End in Circular Linked List",
+                    videoUrl: ""
+                }
+
+            ]
+
+        }
+
+    };
+
+
+    const selectedVideo =
+        videoData[title];
+
+
+    if (!selectedVideo) {
+
+        console.error(
+            "Video data not found:",
+            title
+        );
+
+        return;
+
+    }
+
+
+    window.currentVideoLearning = {
+
+        title: title,
+
+        topic: topic,
+
+        reference:
+            selectedVideo.reference,
+
+        subtopics:
+            selectedVideo.subtopics
+
+    };
+
+
+    console.log(
+        "Selected video:",
+        window.currentVideoLearning
+    );
+
+
+    // ==================================================
+    // OPEN EXISTING VIDEO LEARNING SECTION
+    // ==================================================
+
+    const videoSection =
+        document.getElementById(
+            "videoLearningSection"
+        );
+
+
+    if (videoSection) {
+
+        videoSection.classList.add("active");
+
+        videoSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    }
+
+
+    // ==================================================
+    // OPEN EXISTING VIDEO MODAL
+    // ==================================================
+
+    const videoModal =
+        document.getElementById(
+            "videoLearningModal"
+        );
+
+
+    if (videoModal) {
+
+        videoModal.classList.add("active");
+
+    }
+
+
+    // ==================================================
+    // UPDATE EXISTING TITLE
+    // ==================================================
+
+    const titleElement =
+        document.getElementById(
+            "videoLearningTitle"
+        );
+
+
+    if (titleElement) {
+
+        titleElement.textContent =
+            title;
+
+    }
+
+
+    // ==================================================
+    // UPDATE EXISTING TOPIC
+    // ==================================================
+
+    const topicElement =
+        document.getElementById(
+            "videoLearningTopic"
+        );
+
+
+    if (topicElement) {
+
+        topicElement.textContent =
+            topic;
+
+    }
+
+
+    // ==================================================
+    // NPTEL REFERENCE
+    // ==================================================
+
+    const referenceElement =
+        document.getElementById(
+            "videoReference"
+        );
+
+
+    if (referenceElement) {
+
+        referenceElement.dataset.reference =
+            selectedVideo.reference || "";
+
+    }
+
+
+    // ==================================================
+    // SUBTOPICS
+    // ==================================================
+
+    const subtopicContainer =
+        document.getElementById(
+            "videoSubtopics"
+        );
+
+
+    if (subtopicContainer) {
+
+        subtopicContainer.innerHTML = "";
+
+        selectedVideo.subtopics.forEach(
+            (subtopic, index) => {
+
+                const item =
+                    document.createElement("div");
+
+                item.className =
+                    "video-subtopic";
+
+                item.innerHTML = `
+
+                    <span>
+                        ${index + 1}.
+                        ${subtopic.title}
+                    </span>
+
+                    <button
+                        class="course-btn"
+                        type="button"
+                        data-video-url="${subtopic.videoUrl}"
+                    >
+                        Watch Video →
+                    </button>
+
+                `;
+
+                subtopicContainer.appendChild(
+                    item
+                );
+
+            }
+        );
+
+    }
+
+}
+
+
+
     function startSimulation(type) {
     console.log("Starting simulation:", type);
 
