@@ -2975,3 +2975,77 @@ body {
     }
 
 }
+/* =========================================
+   EDIT PROFILE
+========================================= */
+
+.edit-profile-panel {
+    margin-top: 30px;
+    max-width: 900px;
+}
+
+.edit-profile-panel .glass-card {
+    padding: 32px;
+}
+
+.edit-profile-picture {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin: 25px 0;
+}
+
+.profile-avatar-edit {
+    width: 100px;
+    height: 100px;
+    border-radius: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(
+        135deg,
+        #9b4dff,
+        #7b3ff2
+    );
+
+    color: white;
+
+    font-size: 30px;
+    font-weight: 700;
+
+    background-size: cover;
+    background-position: center;
+}
+
+.edit-profile-panel .input-group {
+    margin-bottom: 20px;
+}
+
+.edit-profile-panel .input-group label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.edit-profile-panel .input-group input,
+.edit-profile-panel .input-group select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 15px 18px;
+    border: 1px solid #b9dfca;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #f4faf7;
+}
+
+.edit-profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.edit-profile-actions button {
+    cursor: pointer;
+}

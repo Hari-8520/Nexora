@@ -1,7 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => document.querySelectorAll(selector);
-
-
+document.addEventListener("DOMContentLoaded", () => {
 // =================================================
 // MODAL FUNCTIONS
 // =================================================
@@ -107,10 +106,13 @@ setupPasswordToggle(
 // =================================================
 // LOGIN
 // =================================================
+const loginForm = $("#loginForm");
 
-$("#loginForm").addEventListener(
-    "submit",
-    async (event) => {
+if (loginForm) {
+
+    loginForm.addEventListener(
+        "submit",
+        async (event) => {
 
         event.preventDefault();
 
@@ -129,7 +131,7 @@ $("#loginForm").addEventListener(
             $("#loginMessage"),
             ""
         );
-
+    
 
         if (!email || !password) {
 
@@ -213,15 +215,19 @@ $("#loginForm").addEventListener(
         }
 
     }
+    
 );
-
 
 // =================================================
 // CREATE ACCOUNT BUTTON
 // =================================================
 
-$("#createAccountButton")
-    .addEventListener(
+const createAccountButton =
+    $("#createAccountButton");
+
+if (createAccountButton) {
+
+    createAccountButton.addEventListener(
         "click",
         () => {
 
@@ -237,14 +243,19 @@ $("#createAccountButton")
 
         }
     );
+}
 
-
+}
 // =================================================
 // CREATE ACCOUNT FROM LOGIN
 // =================================================
 
-$("#createFromLogin")
-    .addEventListener(
+const createFromLogin =
+    $("#createFromLogin");
+
+if (createFromLogin) {
+
+    createFromLogin.addEventListener(
         "click",
         () => {
 
@@ -270,14 +281,14 @@ $("#createFromLogin")
 
         }
     );
-
+}
 
 // =================================================
 // REGISTRATION
 // =================================================
-
-$("#registrationForm")
-    .addEventListener(
+const registrationForm = $("#registrationForm");
+if (registrationForm) {
+    registrationForm.addEventListener(
         "submit",
         async (event) => {
 
@@ -295,9 +306,6 @@ $("#registrationForm")
                     $("#studentId")
                     .value
                     .trim(),
-
-              department:
-                        $("#department")?.value?.trim() || "",
                 year:
                     $("#year")
                     .value,
@@ -441,7 +449,7 @@ $("#registrationForm")
 
         }
     );
-
+}
 
 // =================================================
 // OTP
@@ -1454,3 +1462,157 @@ $$(".modal")
         window.location.href = "/simulation/ai-learning";
     }
 }
+// =================================================
+// EDIT PROFILE
+// =================================================
+
+const editProfileButton =
+    document.getElementById("editProfileButton");
+
+const editProfilePanel =
+    document.getElementById("editProfilePanel");
+
+const cancelEditProfile =
+    document.getElementById("cancelEditProfile");
+
+
+if (editProfileButton && editProfilePanel) {
+
+    editProfileButton.addEventListener(
+        "click",
+        () => {
+
+            editProfilePanel.style.display = "block";
+
+            editProfilePanel.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+        }
+    );
+
+}
+
+
+if (cancelEditProfile && editProfilePanel) {
+
+    cancelEditProfile.addEventListener(
+        "click",
+        () => {
+
+            editProfilePanel.style.display = "none";
+
+        }
+    );
+
+}
+// =================================================
+// PROFILE PICTURE PREVIEW
+// =================================================
+
+const profilePictureInput =
+    document.getElementById("profilePictureInput");
+
+const profileAvatarPreview =
+    document.getElementById("profileAvatarPreview");
+
+
+if (profilePictureInput && profileAvatarPreview) {
+
+    profilePictureInput.addEventListener(
+        "change",
+        (event) => {
+
+            const file =
+                event.target.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            if (!file.type.startsWith("image/")) {
+
+                alert("Please select an image file.");
+
+                return;
+            }
+
+            const reader =
+                new FileReader();
+
+            reader.onload = (e) => {
+
+                profileAvatarPreview.style.backgroundImage =
+                    `url("${e.target.result}")`;
+
+                profileAvatarPreview.style.backgroundSize =
+                    "cover";
+
+                profileAvatarPreview.style.backgroundPosition =
+                    "center";
+
+                profileAvatarPreview.style.backgroundRepeat =
+                    "no-repeat";
+
+                profileAvatarPreview.textContent = "";
+
+            };
+
+            reader.readAsDataURL(file);
+
+        }
+    );
+}
+});
+// =================================================
+// EDIT PROFILE
+// =================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const editProfileButton =
+        document.getElementById("editProfileButton");
+
+    const editProfilePanel =
+        document.getElementById("editProfilePanel");
+
+    const cancelEditProfile =
+        document.getElementById("cancelEditProfile");
+
+
+    // OPEN EDIT PROFILE
+    if (editProfileButton && editProfilePanel) {
+
+        editProfileButton.addEventListener(
+            "click",
+            () => {
+
+                editProfilePanel.style.display = "block";
+
+                editProfilePanel.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+            }
+        );
+
+    }
+
+
+    // CANCEL EDIT PROFILE
+    if (cancelEditProfile && editProfilePanel) {
+
+        cancelEditProfile.addEventListener(
+            "click",
+            () => {
+
+                editProfilePanel.style.display = "none";
+
+            }
+        );
+
+    }
+
+});

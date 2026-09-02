@@ -217,9 +217,21 @@
                         id="profileButton"
                         type="button">
 
-                        <div class="avatar">
-                            {{ student.name[:2]|upper }}
-                        </div>
+                        <div
+    class="avatar"
+    {% if student.profile_picture %}
+    style="
+        background-image: url('{{ student.profile_picture }}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    "
+    {% endif %}
+>
+    {% if not student.profile_picture %}
+        {{ student.name[:2]|upper }}
+    {% endif %}
+</div>
 
                         <div class="profile-info">
 
@@ -833,10 +845,21 @@
 
             <div class="profile-main">
 
-                <div class="profile-avatar-large">
-                    {{ student.name[:2]|upper }}
-                </div>
-
+                <div
+    class="profile-avatar-large"
+    {% if student.profile_picture %}
+    style="
+        background-image: url('{{ student.profile_picture }}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    "
+    {% endif %}
+>
+    {% if not student.profile_picture %}
+        {{ student.name[:2]|upper }}
+    {% endif %}
+</div>
                 <div class="profile-title">
 
                     <h1>
@@ -849,14 +872,163 @@
 
                 </div>
 
-                <button
-                    class="secondary-btn"
-                    type="button">
+               <button
+    class="secondary-btn"
+    type="button"
+    id="editProfileButton">
 
-                    Edit Profile
+    Edit Profile
 
-                </button>
+</button>
+<div id="editProfilePanel" class="edit-profile-panel" style="display: none;">
 
+    <div class="glass-card">
+
+        <span class="eyebrow">
+            EDIT PROFILE
+        </span>
+
+        <h3>
+            Update Your Profile
+        </h3>
+
+        <!-- PROFILE PICTURE -->
+
+        <div class="edit-profile-picture">
+
+            <div class="profile-avatar-edit" id="profileAvatarPreview">
+                {{ student.name[:2]|upper }}
+            </div>
+
+            <label for="profilePictureInput" class="secondary-btn">
+                Choose Profile Picture
+            </label>
+
+            <input
+                type="file"
+                id="profilePictureInput"
+                accept="image/*"
+                style="display: none;"
+            >
+
+        </div>
+
+
+        <!-- FULL NAME -->
+
+        <div class="input-group">
+
+            <label>
+                Full Name
+            </label>
+
+            <input
+                type="text"
+                id="editFullName"
+                value="{{ student.name }}"
+            >
+
+        </div>
+
+
+        <!-- STUDENT ID -->
+
+        <div class="input-group">
+
+            <label>
+                Student ID
+            </label>
+
+            <input
+                type="text"
+                id="editStudentId"
+                value="{{ student.student_id }}"
+            >
+
+        </div>
+
+
+        <!-- YEAR -->
+
+        <div class="input-group">
+
+            <label>
+                Year
+            </label>
+
+            <select id="editYear">
+
+                <option value="1st Year"
+                    {% if student.year == "1st Year" %}selected{% endif %}>
+                    1st Year
+                </option>
+
+                <option value="2nd Year"
+                    {% if student.year == "2nd Year" %}selected{% endif %}>
+                    2nd Year
+                </option>
+
+                <option value="3rd Year"
+                    {% if student.year == "3rd Year" %}selected{% endif %}>
+                    3rd Year
+                </option>
+
+                <option value="4th Year"
+                    {% if student.year == "4th Year" %}selected{% endif %}>
+                    4th Year
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- EMAIL -->
+
+        <div class="input-group">
+
+            <label>
+                Student Gmail
+            </label>
+
+            <input
+                type="email"
+                id="editEmail"
+                value="{{ student.email }}"
+            >
+
+        </div>
+
+
+        <p id="editProfileMessage" class="message"></p>
+
+
+        <div class="edit-profile-actions">
+
+            <button
+                type="button"
+                class="secondary-btn"
+                id="cancelEditProfile">
+
+                Cancel
+
+            </button>
+
+
+            <button
+                type="button"
+                class="primary-btn"
+                id="saveProfileButton">
+
+                Save Changes →
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
             </div>
 
 
@@ -873,20 +1045,6 @@
                     </strong>
 
                 </div>
-
-
-                <div class="info-box">
-
-                    <small>
-                        Department
-                    </small>
-
-                    <strong>
-                        {{ student.department }}
-                    </strong>
-
-                </div>
-
 
                 <div class="info-box">
 
@@ -1600,8 +1758,9 @@
 
 </div>
 
-
 <script src="{{ url_for('static', filename='dashboard/js/app.js') }}"></script>
+
+<script src="{{ url_for('static', filename='login/js/script.js') }}"></script>
 
 </body>
 </html>
