@@ -308,77 +308,44 @@ function appendMessage(text, type) {
 // AI RESPONSE
 // ======================================================
 
-function aiReply(text) {
+async function aiReply(text) {
 
-    let response =
-        "Based on your learning profile, I recommend practicing Object Oriented Programming next. This can improve your current mastery efficiently.";
+    try {
 
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: text
+            })
+        });
 
-    const lowerText =
-        text.toLowerCase();
+        const data = await response.json();
 
-
-    if (
-        lowerText.includes("quiz")
-    ) {
-
-        response =
-            "I recommend a 5-question adaptive quiz focusing on OOP, inheritance and polymorphism.";
-
-    }
-
-
-    else if (
-        lowerText.includes("weak")
-    ) {
-
-        response =
-            "Your current weaker areas are Machine Learning fundamentals and advanced OOP concepts.";
-
-    }
-
-
-    else if (
-        lowerText.includes("next")
-    ) {
-
-        response =
-            "Your next recommended activity is an adaptive OOP practice session for approximately 20 minutes.";
-
-    }
-
-
-    else if (
-        lowerText.includes("python")
-    ) {
-
-        response =
-            "Your Python mastery is currently strong. Try solving practical problems involving functions, classes and data structures.";
-
-    }
-
-
-    else if (
-        lowerText.includes("java")
-    ) {
-
-        response =
-            "For Java, I recommend practicing classes, inheritance, interfaces and exception handling.";
-
-    }
-
-
-    setTimeout(
-        function () {
-
+        if (!response.ok || !data.ok) {
             appendMessage(
-                response,
+                data.message || "Something went wrong.",
                 "ai"
             );
+            return;
+        }
 
-        },
-        500
-    );
+        appendMessage(
+            data.response,
+            "ai"
+        );
+
+    } catch (error) {
+
+        console.error("Chatbot error:", error);
+
+        appendMessage(
+            "I couldn't connect to NEXORA AI. Please try again.",
+            "ai"
+        );
+    }
 }
 
 

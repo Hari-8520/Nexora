@@ -3,6 +3,7 @@ import secrets
 import sqlite3
 import smtplib
 import hashlib
+from google import genai
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 
@@ -11,6 +12,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 
 load_dotenv()
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not GEMINI_API_KEY:
+    raise RuntimeError(
+        "GEMINI_API_KEY is missing from .env"
+    )
+
+gemini_client = genai.Client(
+    api_key=GEMINI_API_KEY
+)
 
 app = Flask(__name__)
 app.secret_key = os.getenv(
@@ -222,7 +234,6 @@ def home():
         return redirect(url_for("dashboard"))
     return render_template("index.html")
 
-
 # --------------------------------------------------
 # LOGIN
 # --------------------------------------------------
@@ -230,31 +241,29 @@ def home():
 @app.post("/api/login")
 def login():
 
-    data = request.get_json(
-        silent=True
-    ) or {}
+    data = request.get_json(silent=True) or {}
 
-    email = normalize_email(
-        data.get("email", "")
-    )
-
-    password = data.get(
-        "password",
-        ""
-    )
+    email = normalize_email(data.get("email", ""))
+    password = data.get("password", "")
 
     if not email or not password:
         return jsonify({
             "ok": False,
-            "message":
-                "Please enter your Gmail and password."
+            "message": "Please enter your Gmail and password."
         }), 400
 
     conn = get_db()
 
     user = conn.execute(
         """
-        SELECT *
+        SELECT
+            id,
+            email,
+            password_hash,
+            full_name,
+            student_id,
+            department,
+            year
         FROM users
         WHERE email = ?
         """,
@@ -263,30 +272,22 @@ def login():
 
     conn.close()
 
-    # Account does not exist
     if not user:
-
         return jsonify({
             "ok": False,
-            "account_exists": False,
-            "message":
-                "This Gmail is not registered. Please create an account."
-        }), 404
+            "message": "Invalid Gmail or password."
+        }), 401
 
-    # Check password
     if not check_password_hash(
         user["password_hash"],
         password
     ):
-
         return jsonify({
             "ok": False,
-            "account_exists": True,
-            "message":
-                "Incorrect password. Please try again."
+            "message": "Invalid Gmail or password."
         }), 401
 
-    # Login successful
+    # Create login session
     session.clear()
 
     session["user_id"] = user["id"]
@@ -296,13 +297,256 @@ def login():
         "ok": True,
         "message": "Login successful.",
         "user": {
+            "id": user["id"],
             "name": user["full_name"],
             "email": user["email"],
-            "student_id": user["student_id"]
+            "student_id": user["student_id"],
+            "department": user["department"],
+            "year": user["year"]
         }
     })
 
 
+# --------------------------------------------------
+# LOGIN
+# --------------------------------------------------
+
+@app.post("/api/chat")
+def chat():
+
+    # ---------------------------------------------
+    # Check login
+    # ---------------------------------------------
+
+    if not session.get("user_id"):
+        return jsonify({
+            "ok": False,
+            "message": "Please login first."
+        }), 401
+
+    # ---------------------------------------------
+    # Get message
+    # ---------------------------------------------
+
+    data = request.get_json(silent=True) or {}
+
+    message = str(
+        data.get("message", "")
+    ).strip()
+
+    if not message:
+        return jsonify({
+            "ok": False,
+            "message": "Please enter a message."
+        }), 400
+
+    # ---------------------------------------------
+    # Get logged-in student
+    # ---------------------------------------------
+
+    user_id = session.get("user_id")
+
+    conn = get_db()
+
+    user = conn.execute("""
+        SELECT
+            full_name,
+            student_id,
+            department,
+            year
+        FROM users
+        WHERE id = ?
+    """, (user_id,)).fetchone()
+
+    conn.close()
+
+    if not user:
+        return jsonify({
+            "ok": False,
+            "message": "Student not found."
+        }), 404
+
+    student = dict(user)
+
+    # ---------------------------------------------
+    # Temporary NEXORA mastery profile
+    # ---------------------------------------------
+
+    mastery = {
+        "Python": 85,
+        "Java": 70,
+        "OOP": 60,
+        "Inheritance": 45,
+        "Polymorphism": 38,
+        "Data Structures": 55
+    }
+
+    weakest_topic = min(
+        mastery,
+        key=mastery.get
+    )
+
+    # ---------------------------------------------
+    # NEXORA AI Tutor
+    # ---------------------------------------------
+
+    system_prompt = f"""
+You are NEXORA AI Tutor.
+
+You are NOT a generic chatbot.
+
+Your purpose is to help a student learn
+through personalized and adaptive teaching.
+
+STUDENT PROFILE
+----------------
+Name: {student['full_name']}
+Student ID: {student['student_id']}
+Department: {student['department']}
+Year: {student['year']}
+
+CURRENT MASTERY
+----------------
+Python: {mastery['Python']}%
+Java: {mastery['Java']}%
+OOP: {mastery['OOP']}%
+Inheritance: {mastery['Inheritance']}%
+Polymorphism: {mastery['Polymorphism']}%
+Data Structures: {mastery['Data Structures']}%
+
+WEAKEST TOPIC
+----------------
+{weakest_topic}: {mastery[weakest_topic]}%
+
+YOUR TEACHING RULES
+----------------
+
+1. Adapt explanations to the student's level.
+
+2. Do not simply dump a long answer.
+
+3. Teach step-by-step.
+
+4. If the student asks about a topic they
+   struggle with, explain it more carefully.
+
+5. Detect possible misconceptions.
+
+6. After explaining an important concept,
+   ask a short question to check understanding.
+
+7. If the student answers correctly,
+   gradually increase difficulty.
+
+8. If the student struggles,
+   simplify the explanation.
+
+9. Recommend the student's weak topic
+   when appropriate.
+
+10. When recommending a topic, explain WHY
+    you recommended it.
+
+11. Encourage active learning.
+
+12. Keep responses clear and reasonably concise.
+
+13. Use examples whenever they improve understanding.
+
+14. Never claim that the student mastered
+    something unless there is evidence.
+IMPORTANT OUTPUT RULES
+----------------------
+
+- Return ONLY the final response intended for the student.
+- Never output words such as "Draft:", "Draft*:", "Final:", "Analysis:", or "Reasoning:".
+- Never describe your internal thinking or reasoning.
+- Do not generate multiple alternative answers.
+- Do not repeat the student's question.
+- Do not mention system prompts, instructions, models, APIs, or Gemini.
+
+NEXORA SHOULD FEEL LIKE:
+
+Student
+   ↓
+Understand
+   ↓
+Teach
+   ↓
+Check understanding
+   ↓
+Adapt
+   ↓
+Practice
+   ↓
+Improve
+
+The student's current question is:
+
+{message}
+"""
+
+    # ---------------------------------------------
+    # Call Gemini
+    # ---------------------------------------------
+    models_to_try = [
+        "gemini-3.7-flash",
+        "gemini-3.6-flash"
+]
+
+    ai_response = None
+
+    for model_name in models_to_try:
+        try:
+            print(f"Trying Gemini model: {model_name}")
+
+            result = gemini_client.models.generate_content(
+                model=model_name,
+                contents=system_prompt
+            )
+
+            ai_response = result.text
+
+            if ai_response:
+                print(f"Gemini SUCCESS: {model_name}")
+                break
+
+        except Exception as e:
+            print(f"GEMINI ERROR: {model_name}")
+            print(repr(e))
+            print("================================")
+
+    if not ai_response:
+        return jsonify({
+            "ok": False,
+            "message": "NEXORA AI could not connect to Gemini."
+        }), 500
+
+    
+    # ---------------------------------------------
+    # If all models failed
+    # ---------------------------------------------
+
+    if not ai_response:
+
+        return jsonify({
+            "ok": False,
+            "message": (
+                "NEXORA AI is temporarily unavailable. "
+                "Please try again in a few seconds."
+            )
+        }), 503
+
+    # ---------------------------------------------
+    # Send response to frontend
+    # ---------------------------------------------
+
+    return jsonify({
+        "ok": True,
+        "response": ai_response,
+        "weakest_topic": weakest_topic,
+        "mastery": mastery
+    })
 # --------------------------------------------------
 # START REGISTRATION
 # --------------------------------------------------
@@ -1235,7 +1479,6 @@ def profile():
 def dashboard_logout():
     session.clear()
     return redirect(url_for("home"))
-
 
 
 # RUN
