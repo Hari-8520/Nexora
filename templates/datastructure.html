@@ -1,0 +1,5320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NEXORA | Data Structures</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='dashboard/css/style.css') }}">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Font -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        nexora: {
+                            green: "#16a34a",
+                            darkgreen: "#15803d",
+                            lightgreen: "#dcfce7"
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+
+        /* =========================================================
+           GLOBAL
+        ========================================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            background: #ffffff;
+            color: #10251a;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: "";
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: rgba(22, 163, 74, 0.07);
+            top: -200px;
+            right: -150px;
+            filter: blur(60px);
+            animation: floatingGlow 7s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: rgba(34, 197, 94, 0.06);
+            bottom: -150px;
+            left: -150px;
+            filter: blur(60px);
+            animation: floatingGlow2 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes floatingGlow {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-30px, 30px);
+            }
+        }
+
+        @keyframes floatingGlow2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(30px, -25px);
+            }
+        }
+
+
+        /* =========================================================
+           PAGE
+        ========================================================= */
+
+        .course-page {
+            width: 100%;
+            max-width: 1450px;
+            margin: auto;
+            padding: 35px;
+        }
+
+
+        /* =========================================================
+           HEADER
+        ========================================================= */
+
+        .course-header {
+            margin-bottom: 40px;
+            animation: fadeDown 0.7s ease forwards;
+        }
+
+        @keyframes fadeDown {
+
+            from {
+                opacity: 0;
+                transform: translateY(-25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 28px;
+            padding: 11px 18px;
+            border-radius: 12px;
+            border: 1px solid #bbf7d0;
+            background: white;
+            color: #15803d;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #16a34a;
+            color: white;
+            transform: translateX(-4px);
+            box-shadow: 0 8px 25px rgba(22, 163, 74, 0.22);
+        }
+
+        .course-title {
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 700;
+            color: #14532d;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .course-title::after {
+            content: "";
+            display: block;
+            width: 70px;
+            height: 5px;
+            margin-top: 10px;
+            border-radius: 20px;
+            background: #16a34a;
+            animation: expandLine 1s ease forwards;
+        }
+
+        @keyframes expandLine {
+
+            from {
+                width: 0;
+            }
+
+            to {
+                width: 70px;
+            }
+        }
+
+        .course-subtitle {
+            margin-top: 15px;
+            color: #52705d;
+            font-size: 16px;
+        }
+
+
+        /* =========================================================
+           PROGRESS
+        ========================================================= */
+
+        .progress-container {
+            width: 100%;
+            max-width: 700px;
+            margin-top: 25px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #dcfce7;
+            border: 1px solid #bbf7d0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 20px;
+            background: linear-gradient(
+                90deg,
+                #16a34a,
+                #22c55e
+            );
+            box-shadow: 0 0 12px rgba(22, 163, 74, 0.35);
+            transition: width 0.6s ease;
+        }
+
+        .progress-text {
+            margin-top: 8px;
+            color: #52705d;
+            font-size: 14px;
+        }
+
+
+        /* =========================================================
+           TOPICS
+        ========================================================= */
+
+        .topic-section {
+            margin-bottom: 38px;
+            animation: fadeUp 0.7s ease forwards;
+        }
+
+        @keyframes fadeUp {
+
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .topic-heading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #14532d;
+            font-size: 25px;
+            margin-bottom: 18px;
+        }
+
+        .topic-heading::before {
+            content: "";
+            width: 5px;
+            height: 27px;
+            border-radius: 10px;
+            background: #16a34a;
+        }
+
+        .lesson-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(230px, 1fr));
+            gap: 16px;
+        }
+
+
+        /* =========================================================
+           LESSON CARDS
+        ========================================================= */
+
+        .lesson-card {
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+            min-height: 125px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #dcfce7;
+            box-shadow: 0 5px 20px rgba(20, 83, 45, 0.06);
+            cursor: pointer;
+            transition:
+                transform 0.3s ease,
+                box-shadow 0.3s ease,
+                border 0.3s ease;
+        }
+
+        .lesson-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 3px;
+            background: #16a34a;
+            transition: width 0.35s ease;
+        }
+
+        .lesson-card::after {
+            content: "";
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(22, 163, 74, 0.06);
+            right: -40px;
+            top: -40px;
+            transition: transform 0.4s ease;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-7px);
+            border-color: #86efac;
+            box-shadow:
+                0 15px 35px rgba(20, 83, 45, 0.12);
+        }
+
+        .lesson-card:hover::before {
+            width: 100%;
+        }
+
+        .lesson-card:hover::after {
+            transform: scale(1.5);
+        }
+
+        .lesson-card.active {
+            border: 2px solid #16a34a;
+            background: #f0fdf4;
+            box-shadow:
+                0 10px 30px rgba(22, 163, 74, 0.16);
+        }
+
+        .lesson-number {
+            color: #16a34a;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .lesson-name {
+            position: relative;
+            z-index: 2;
+            color: #173d27;
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.45;
+        }
+
+
+        /* =========================================================
+           LESSON READER
+        ========================================================= */
+
+        .lesson-reader {
+            display: none;
+            margin-top: 45px;
+            padding: 32px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.97);
+            border: 1px solid #bbf7d0;
+            box-shadow:
+                0 20px 60px rgba(20, 83, 45, 0.09);
+        }
+
+        .lesson-reader.show {
+            display: block;
+            animation: readerAppear 0.6s ease forwards;
+        }
+
+        @keyframes readerAppear {
+
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        #lessonTitle {
+            color: #14532d;
+            font-size: clamp(25px, 4vw, 34px);
+            margin-bottom: 12px;
+        }
+
+        #lessonDescription {
+            color: #52705d;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+
+        /* =========================================================
+           DIAGRAM
+        ========================================================= */
+
+        .diagram {
+            padding: 27px;
+            margin-top: 15px;
+            border-radius: 18px;
+            background:
+                linear-gradient(
+                    135deg,
+                    #f0fdf4,
+                    #ffffff
+                );
+            border: 1px solid #bbf7d0;
+            overflow-x: auto;
+        }
+
+        .diagram-title {
+            color: #166534;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+
+        /* =========================================================
+           STEPS
+        ========================================================= */
+
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .step-card {
+            position: relative;
+            padding: 23px;
+            border-radius: 17px;
+            background: white;
+            border: 1px solid #dcfce7;
+            box-shadow: 0 5px 20px rgba(20, 83, 45, 0.05);
+            animation: stepAppear 0.6s ease both;
+        }
+
+        .step-card:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .step-card:nth-child(2) {
+            animation-delay: 0.12s;
+        }
+
+        .step-card:nth-child(3) {
+            animation-delay: 0.19s;
+        }
+
+        .step-card:nth-child(4) {
+            animation-delay: 0.26s;
+        }
+
+        .step-card:nth-child(5) {
+            animation-delay: 0.33s;
+        }
+
+        @keyframes stepAppear {
+
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .step-card:hover {
+            border-color: #86efac;
+            box-shadow:
+                0 10px 30px rgba(22, 163, 74, 0.09);
+        }
+
+        .step-label {
+            color: #166534;
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 9px;
+        }
+
+        .step-label::before {
+            content: "✓";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 25px;
+            height: 25px;
+            margin-right: 8px;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #16a34a;
+            font-size: 13px;
+        }
+
+        .step-description {
+            color: #63806d;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+
+
+        /* =========================================================
+           STRUCTURE
+        ========================================================= */
+
+        .structure {
+            min-height: 125px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            position: relative;
+            padding: 45px 20px 25px;
+            min-width: max-content;
+        }
+
+        .head-label {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #15803d;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .head-arrow {
+            position: absolute;
+            top: 21px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #16a34a;
+            font-size: 18px;
+            animation: headBounce 1.3s ease-in-out infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes headBounce {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(5px);
+            }
+        }
+
+
+        /* =========================================================
+           NODE
+        ========================================================= */
+
+        .node {
+            min-width: 105px;
+            min-height: 70px;
+            border: 2px solid #22c55e;
+            border-radius: 12px;
+            background: white;
+            box-shadow:
+                0 5px 15px rgba(22, 163, 74, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 9px 13px;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: nodePop 0.55s ease both;
+        }
+
+        .node:hover {
+            transform: translateY(-5px) scale(1.04);
+            border-color: #15803d;
+            box-shadow:
+                0 12px 25px rgba(22, 163, 74, 0.18);
+        }
+
+        @keyframes nodePop {
+
+            from {
+                opacity: 0;
+                transform: scale(0.75);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .node.new-node {
+            border-style: dashed;
+            border-width: 2px;
+            background: #f0fdf4;
+            animation:
+                nodePop 0.55s ease both,
+                newNodeGlow 1.8s ease-in-out infinite;
+        }
+
+        @keyframes newNodeGlow {
+
+            0%,
+            100% {
+                box-shadow:
+                    0 5px 15px rgba(22, 163, 74, 0.08);
+            }
+
+            50% {
+                box-shadow:
+                    0 5px 25px rgba(22, 163, 74, 0.3);
+            }
+        }
+
+        .node.deleted-node {
+            opacity: 0.42;
+            border-color: #9ca3af;
+            text-decoration: line-through;
+        }
+
+        .node-data {
+            color: #14532d;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .node-next,
+        .node-prev {
+            color: #6b8a74;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+
+        .node-prev {
+            margin-top: 0;
+            margin-bottom: 3px;
+        }
+
+        .arrow {
+            color: #16a34a;
+            font-size: 27px;
+            font-weight: 700;
+            padding: 0 10px;
+            animation: arrowPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes arrowPulse {
+
+            0%,
+            100% {
+                opacity: 0.55;
+                transform: translateX(0);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateX(3px);
+            }
+        }
+
+        .double-arrow {
+            color: #16a34a;
+            font-size: 24px;
+            font-weight: 700;
+            padding: 0 10px;
+            animation: doubleArrowPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes doubleArrowPulse {
+
+            0%,
+            100% {
+                opacity: 0.55;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .null-box {
+            color: #52705d;
+            font-weight: 700;
+            padding: 10px;
+        }
+
+
+        /* =========================================================
+           CIRCULAR LIST
+        ========================================================= */
+
+        .circular-wrapper {
+            position: relative;
+            min-height: 235px;
+            min-width: 680px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 52px;
+        }
+
+        .circular-structure {
+            display: flex;
+            align-items: center;
+        }
+
+        .circular-head-arrow {
+            position: absolute;
+            left: 50%;
+            top: 18px;
+            transform: translateX(-50%);
+            color: #15803d;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            animation: headBounce 1.3s ease-in-out infinite;
+            white-space: nowrap;
+        }
+
+        .circular-return {
+            position: absolute;
+            left: 50%;
+            top: 103px;
+            width: 550px;
+            height: 115px;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .circular-return svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .circular-return path {
+            fill: none;
+            stroke: #16a34a;
+            stroke-width: 3;
+            stroke-dasharray: 10 7;
+            animation: circularFlow 1.8s linear infinite;
+        }
+
+        @keyframes circularFlow {
+
+            to {
+                stroke-dashoffset: -34;
+            }
+        }
+
+        .circular-return marker polygon {
+            fill: #16a34a;
+        }
+
+
+        /* =========================================================
+           CODE
+        ========================================================= */
+
+        .code-section {
+            margin-top: 38px;
+        }
+
+        .code-heading {
+            color: #14532d;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .code-container {
+            position: relative;
+        }
+
+        #lessonCode {
+            width: 100%;
+            min-height: 350px;
+            padding: 22px;
+            border-radius: 15px;
+            border: 1px solid #166534;
+            background: #0b1710;
+            color: #dcfce7;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 14px;
+            line-height: 1.7;
+            resize: vertical;
+            outline: none;
+            box-shadow:
+                0 10px 35px rgba(20, 83, 45, 0.12);
+            transition: box-shadow 0.3s ease;
+        }
+
+        #lessonCode:focus {
+            box-shadow:
+                0 0 0 3px rgba(34, 197, 94, 0.15),
+                0 15px 40px rgba(20, 83, 45, 0.12);
+        }
+
+
+        /* =========================================================
+           RUN BUTTON
+        ========================================================= */
+
+        .run-btn {
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 11px;
+            background: #16a34a;
+            color: white;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow:
+                0 8px 20px rgba(22, 163, 74, 0.22);
+            transition: all 0.3s ease;
+        }
+
+        .run-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.25),
+                transparent
+            );
+            transition: left 0.5s ease;
+        }
+
+        .run-btn:hover {
+            background: #15803d;
+            transform: translateY(-3px);
+            box-shadow:
+                0 12px 28px rgba(22, 163, 74, 0.3);
+        }
+
+        .run-btn:hover::before {
+            left: 100%;
+        }
+
+        .run-btn:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+
+        /* =========================================================
+           OUTPUT
+        ========================================================= */
+
+        .output-section {
+            margin-top: 22px;
+        }
+
+        .output-heading {
+            color: #166534;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        #codeOutput {
+            min-height: 110px;
+            padding: 20px;
+            border-radius: 14px;
+            background: #0b1710;
+            color: #86efac;
+            border: 1px solid #166534;
+            font-family: Consolas, "Courier New", monospace;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            box-shadow:
+                0 8px 25px rgba(20, 83, 45, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        #codeOutput.running {
+            animation: outputPulse 0.5s ease;
+        }
+
+        @keyframes outputPulse {
+
+            0% {
+                opacity: 0.5;
+                transform: translateY(5px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        /* =========================================================
+           NAVIGATION
+        ========================================================= */
+
+        .lesson-navigation {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            padding: 12px 22px;
+            border-radius: 11px;
+            border: 1px solid #bbf7d0;
+            background: white;
+            color: #166534;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #16a34a;
+            color: white;
+            border-color: #16a34a;
+            transform: translateY(-3px);
+            box-shadow:
+                0 8px 20px rgba(22, 163, 74, 0.2);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+
+        /* =========================================================
+           MOBILE
+        ========================================================= */
+
+        @media (max-width: 700px) {
+
+            .course-page {
+                padding: 18px;
+            }
+
+            .course-title {
+                font-size: 32px;
+            }
+
+            .lesson-reader {
+                padding: 20px;
+            }
+
+            .diagram {
+                padding: 15px;
+            }
+
+            .step-card {
+                padding: 17px;
+            }
+
+            .structure {
+                justify-content: flex-start;
+            }
+
+            .circular-wrapper {
+                min-width: 620px;
+            }
+
+            .lesson-navigation {
+                flex-direction: column;
+            }
+
+            .nav-btn {
+                width: 100%;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="course-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="course-header">
+
+        <button class="back-btn" onclick="goBack()">
+            ← Back to Courses
+        </button>
+
+        <div class="course-title">
+            Data Structures
+        </div>
+
+        <div class="course-subtitle">
+            Learn Linked Lists step by step with visual structures and C programs.
+        </div>
+
+        <div class="progress-container">
+
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+
+            <div id="progressText" class="progress-text">
+                0 / 14 lessons
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         SINGLY LINKED LIST
+    ========================================================== -->
+
+    <section class="topic-section">
+
+        <h2 class="topic-heading">
+            Singly Linked List
+        </h2>
+
+        <div class="lesson-grid">
+
+            <div class="lesson-card" onclick="openLesson(1)">
+                <div class="lesson-number">Lesson 1</div>
+                <div class="lesson-name">
+                    Introduction to Linked List in C
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(2)">
+                <div class="lesson-number">Lesson 2</div>
+                <div class="lesson-name">
+                    Insertion at the Beginning in Singly Linked List
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(3)">
+                <div class="lesson-number">Lesson 3</div>
+                <div class="lesson-name">
+                    Insertion at a Position in Singly Linked List
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(4)">
+                <div class="lesson-number">Lesson 4</div>
+                <div class="lesson-name">
+                    Insertion at the End in Singly Linked List
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(5)">
+                <div class="lesson-number">Lesson 5</div>
+                <div class="lesson-name">
+                    Traversal of a Linked List
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(6)">
+                <div class="lesson-number">Lesson 6</div>
+                <div class="lesson-name">
+                    Deletion at the Beginning in Singly Linked List
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(7)">
+                <div class="lesson-number">Lesson 7</div>
+                <div class="lesson-name">
+                    Deletion at a Position in Singly Linked List
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(8)">
+                <div class="lesson-number">Lesson 8</div>
+                <div class="lesson-name">
+                    Deletion at the End in Singly Linked List
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         DOUBLY LINKED LIST
+    ========================================================== -->
+
+    <section class="topic-section">
+
+        <h2 class="topic-heading">
+            Doubly Linked List
+        </h2>
+
+        <div class="lesson-grid">
+
+            <div class="lesson-card" onclick="openLesson(9)">
+                <div class="lesson-number">Lesson 9</div>
+                <div class="lesson-name">
+                    Insertion at the Beginning in Doubly Linked List
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(10)">
+                <div class="lesson-number">Lesson 10</div>
+                <div class="lesson-name">
+                    Insertion at a Position in Doubly Linked List
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(11)">
+                <div class="lesson-number">Lesson 11</div>
+                <div class="lesson-name">
+                    Insertion at the End in Doubly Linked List
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(12)">
+                <div class="lesson-number">Lesson 12</div>
+                <div class="lesson-name">
+                    Deletion at the Beginning in Doubly Linked List
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         CIRCULAR LINKED LIST
+    ========================================================== -->
+
+    <section class="topic-section">
+
+        <h2 class="topic-heading">
+            Circular Linked List
+        </h2>
+
+        <div class="lesson-grid">
+
+            <div class="lesson-card" onclick="openLesson(13)">
+                <div class="lesson-number">Lesson 13</div>
+                <div class="lesson-name">
+                    Deletion at the End in Circular Linked List
+                </div>
+            </div>
+
+            <div class="lesson-card" onclick="openLesson(14)">
+                <div class="lesson-number">Lesson 14</div>
+                <div class="lesson-name">
+                    Insertion at the End in Circular Linked List
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         LESSON READER
+    ========================================================== -->
+
+    <section id="lessonReader" class="lesson-reader">
+
+        <h2 id="lessonTitle"></h2>
+
+        <p id="lessonDescription"></p>
+
+
+        <!-- =====================================================
+             DIAGRAM
+        ====================================================== -->
+
+        <div class="diagram">
+
+            <div id="diagramTitle" class="diagram-title"></div>
+
+            <div id="diagramNodes"></div>
+
+        </div>
+
+
+        <!-- =====================================================
+             CODE
+        ====================================================== -->
+
+        <div class="code-section">
+
+            <div class="code-heading">
+                C Program
+            </div>
+
+            <div class="code-container">
+
+                <textarea
+                    id="lessonCode"
+                    readonly></textarea>
+
+            </div>
+
+            <button
+                class="run-btn"
+                onclick="runCode()">
+
+                ▶ Run Code
+
+            </button>
+
+
+            <div class="output-section">
+
+                <div class="output-heading">
+                    Output
+                </div>
+
+                <div id="codeOutput">
+                    Click "Run Code" to see the expected output.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             NAVIGATION
+        ====================================================== -->
+
+        <div class="lesson-navigation">
+
+            <button
+                id="previousButton"
+                class="nav-btn"
+                onclick="previousLesson()">
+
+                ← Previous
+
+            </button>
+
+            <button
+                id="nextButton"
+                class="nav-btn"
+                onclick="nextLesson()">
+
+                Next →
+
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+
+    /* =========================================================
+       LESSON DATA
+    ========================================================= */
+
+    const lessons = {
+
+        /* =====================================================
+           LESSON 1
+        ====================================================== */
+
+        1: {
+            title: "Introduction to Linked List in C",
+
+            description:
+                "A linked list is a dynamic data structure where each node contains data and a pointer to the next node.",
+
+            diagramTitle:
+                "How a Singly Linked List is Created",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Create the first node",
+
+                    description:
+                        "The first node becomes the HEAD of the linked list.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    next
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">
+                                →
+                            </div>
+
+                            <div class="null-box">
+                                NULL
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Create another node",
+
+                    description:
+                        "A second node is created to store another value.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    next
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">
+                                →
+                            </div>
+
+                            <div class="node new-node">
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    next
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">
+                                →
+                            </div>
+
+                            <div class="null-box">
+                                NULL
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Link the nodes",
+
+                    description:
+                        "The first node points to the second node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    next → 20
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">
+                                →
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    next → NULL
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">
+                                →
+                            </div>
+
+                            <div class="null-box">
+                                NULL
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+int main() {
+
+    struct Node* head = NULL;
+
+    struct Node* first =
+        (struct Node*)malloc(sizeof(struct Node));
+
+    first->data = 10;
+    first->next = NULL;
+
+    head = first;
+
+    printf("%d", head->data);
+
+    return 0;
+}`,
+
+            output: `10`
+        },
+
+
+        /* =====================================================
+           LESSON 2
+        ====================================================== */
+
+        2: {
+            title: "Insertion at the Beginning in Singly Linked List",
+
+            description:
+                "To insert a node at the beginning, create a new node, connect it to the current HEAD, and then make the new node the HEAD.",
+
+            diagramTitle:
+                "Insertion at Beginning — Step by Step",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing linked list",
+
+                    description:
+                        "The current HEAD points to the first node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">
+                                    10
+                                </div>
+                                <div class="node-next">
+                                    next
+                                </div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">
+                                    20
+                                </div>
+                                <div class="node-next">
+                                    next
+                                </div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="null-box">
+                                NULL
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Create the new node",
+
+                    description:
+                        "Create a new node containing 5.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node new-node">
+
+                                <div class="node-data">
+                                    5
+                                </div>
+
+                                <div class="node-next">
+                                    next
+                                </div>
+
+                            </div>
+
+                            <div style="padding:0 30px;color:#16a34a;font-weight:700;">
+                                +
+                            </div>
+
+                            <div>
+
+                                <div style="margin-bottom:10px;color:#166534;font-weight:700;">
+                                    Existing List
+                                </div>
+
+                                <div style="display:flex;align-items:center;">
+
+                                    <div class="node">
+
+                                        <div class="node-data">
+                                            10
+                                        </div>
+
+                                        <div class="node-next">
+                                            next
+                                        </div>
+
+                                    </div>
+
+                                    <div class="arrow">
+                                        →
+                                    </div>
+
+                                    <div class="node">
+
+                                        <div class="node-data">
+                                            20
+                                        </div>
+
+                                        <div class="node-next">
+                                            next
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Connect new node to HEAD",
+
+                    description:
+                        "The new node's next pointer points to the current HEAD node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node new-node">
+
+                                <div class="node-data">
+                                    5
+                                </div>
+
+                                <div class="node-next">
+                                    next → 10
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">
+                                →
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    next → 20
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">
+                                →
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    next → NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Update HEAD",
+
+                    description:
+                        "Finally, HEAD is changed to point to the new node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node new-node">
+
+                                <div class="node-data">
+                                    5
+                                </div>
+
+                                <div class="node-next">
+                                    next → 10
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">
+                                →
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    next → 20
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">
+                                →
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    next → NULL
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">
+                                →
+                            </div>
+
+                            <div class="null-box">
+                                NULL
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* newNode =
+    (struct Node*)malloc(sizeof(struct Node));
+
+newNode->data = 5;
+
+newNode->next = head;
+
+head = newNode;`,
+
+            output: `5 10 20`
+        },
+
+
+        /* =====================================================
+           LESSON 3
+        ====================================================== */
+
+        3: {
+            title: "Insertion at a Position in Singly Linked List",
+
+            description:
+                "Insertion at a specific position requires reaching the node before the target position and adjusting the links.",
+
+            diagramTitle:
+                "Insertion at Position — Step by Step",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing list",
+
+                    description:
+                        "Suppose we want to insert 15 between 10 and 20.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    next → 20
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    next → 30
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    next → NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Create new node",
+
+                    description:
+                        "Create a new node containing 15.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node new-node">
+
+                                <div class="node-data">
+                                    15
+                                </div>
+
+                                <div class="node-next">
+                                    next
+                                </div>
+
+                            </div>
+
+                            <div style="margin-left:30px;color:#166534;font-weight:700;">
+                                New Node
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Reach the previous node",
+
+                    description:
+                        "Move to node 10 because it comes before the insertion position.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    CURRENT
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    next
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    next
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Connect the new node",
+
+                    description:
+                        "The new node points to 20 and node 10 points to the new node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    next → 15
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node new-node">
+
+                                <div class="node-data">
+                                    15
+                                </div>
+
+                                <div class="node-next">
+                                    next → 20
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    next → 30
+                                </div>
+
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    next → NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* newNode =
+    (struct Node*)malloc(sizeof(struct Node));
+
+newNode->data = 15;
+
+newNode->next = temp->next;
+
+temp->next = newNode;`,
+
+            output: `10 15 20 30`
+        },
+
+
+        /* =====================================================
+           LESSON 4
+        ====================================================== */
+
+        4: {
+            title: "Insertion at the End in Singly Linked List",
+
+            description:
+                "To insert at the end, create a new node, traverse to the last node, and connect the new node to it.",
+
+            diagramTitle:
+                "Insertion at End — Step by Step",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing list",
+
+                    description:
+                        "The list currently contains 10 and 20.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next → 20</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="null-box">
+                                NULL
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Create new node",
+
+                    description:
+                        "Create node 30 with next initially set to NULL.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node new-node">
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    next → NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Traverse to the last node",
+
+                    description:
+                        "Move through the list until node 20 is reached.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">LAST</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Link the new node",
+
+                    description:
+                        "The last node now points to the new node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next → 20</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">next → 30</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node new-node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* newNode =
+    (struct Node*)malloc(sizeof(struct Node));
+
+newNode->data = 30;
+newNode->next = NULL;
+
+struct Node* temp = head;
+
+while(temp->next != NULL)
+    temp = temp->next;
+
+temp->next = newNode;`,
+
+            output: `10 20 30`
+        },
+
+
+        /* =====================================================
+           LESSON 5
+        ====================================================== */
+
+        5: {
+            title: "Traversal of a Linked List",
+
+            description:
+                "Traversal means visiting every node from HEAD until NULL is reached.",
+
+            diagramTitle:
+                "Linked List Traversal — Step by Step",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Start from HEAD",
+
+                    description:
+                        "The traversal pointer starts at HEAD.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next → 20</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">next → 30</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Move to the second node",
+
+                    description:
+                        "After processing 10, current moves to 20.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">visited</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">CURRENT</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Move to the third node",
+
+                    description:
+                        "The traversal continues to node 30.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">visited</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">visited</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">CURRENT</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Reach NULL",
+
+                    description:
+                        "When current becomes NULL, traversal stops.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">visited</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">visited</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="null-box">
+                                CURRENT = NULL
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* temp = head;
+
+while(temp != NULL) {
+
+    printf("%d ", temp->data);
+
+    temp = temp->next;
+}`,
+
+            output: `10 20 30`
+        },
+
+
+        /* =====================================================
+           LESSON 6
+        ====================================================== */
+
+        6: {
+            title: "Deletion at the Beginning in Singly Linked List",
+
+            description:
+                "To delete the first node, store the current HEAD, move HEAD to the next node, and then free the old node.",
+
+            diagramTitle:
+                "Deletion at Beginning — Step by Step",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing list",
+
+                    description:
+                        "HEAD currently points to node 10.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node deleted-node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next → 20</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">next → 30</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Store old HEAD",
+
+                    description:
+                        "A temporary pointer stores the first node before deleting it.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD / TEMP
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node deleted-node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">to delete</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">next → 30</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Move HEAD",
+
+                    description:
+                        "HEAD moves from 10 to the next node, 20.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node deleted-node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">removed</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">next → 30</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Final list",
+
+                    description:
+                        "Node 10 is removed and HEAD now points to 20.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">next → 30</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="null-box">
+                                NULL
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* temp = head;
+
+head = head->next;
+
+free(temp);`,
+
+            output: `20 30`
+        },
+
+
+        /* =====================================================
+           LESSON 7
+        ====================================================== */
+
+        7: {
+            title: "Deletion at a Position in Singly Linked List",
+
+            description:
+                "To delete a node at a position, reach the node before it, bypass the target node, and free the deleted node.",
+
+            diagramTitle:
+                "Deletion at Position — Step by Step",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing list",
+
+                    description:
+                        "Suppose node 20 needs to be deleted.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next → 20</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node deleted-node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">TARGET</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Reach previous node",
+
+                    description:
+                        "Move to node 10, which is immediately before the target node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">PREVIOUS</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node deleted-node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">TARGET</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Bypass target node",
+
+                    description:
+                        "Node 10 is connected directly to node 30.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node new-node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next → 30</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                            <div style="margin-left:30px;color:#63806d;">
+                                Node 20 bypassed
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Final list",
+
+                    description:
+                        "The target node is removed.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next → 30</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="null-box">
+                                NULL
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* temp = head;
+
+for(int i = 1; i < position - 1; i++)
+    temp = temp->next;
+
+struct Node* deleteNode = temp->next;
+
+temp->next = deleteNode->next;
+
+free(deleteNode);`,
+
+            output: `10 30`
+        },
+
+
+        /* =====================================================
+           LESSON 8
+        ====================================================== */
+
+        8: {
+            title: "Deletion at the End in Singly Linked List",
+
+            description:
+                "To delete the last node, traverse to the second-last node, free the last node, and set the second-last node's next pointer to NULL.",
+
+            diagramTitle:
+                "Deletion at End — Step by Step",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing list",
+
+                    description:
+                        "Node 30 is the last node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next → 20</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">next → 30</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node deleted-node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">LAST</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Reach second-last node",
+
+                    description:
+                        "Move to node 20, the node before the last node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">SECOND LAST</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node deleted-node">
+                                <div class="node-data">30</div>
+                                <div class="node-next">LAST</div>
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Remove last node",
+
+                    description:
+                        "Node 30 is disconnected from the list.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next → 20</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node new-node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                            <div style="margin-left:30px;color:#63806d;">
+                                30 removed
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Final list",
+
+                    description:
+                        "The second-last node now points to NULL.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+                                <div class="node-data">10</div>
+                                <div class="node-next">next → 20</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="node">
+                                <div class="node-data">20</div>
+                                <div class="node-next">next → NULL</div>
+                            </div>
+
+                            <div class="arrow">→</div>
+
+                            <div class="null-box">
+                                NULL
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* temp = head;
+
+while(temp->next->next != NULL)
+    temp = temp->next;
+
+free(temp->next);
+
+temp->next = NULL;`,
+
+            output: `10 20`
+        },
+
+
+        /* =====================================================
+           LESSON 9
+        ====================================================== */
+
+        9: {
+            title: "Insertion at the Beginning in Doubly Linked List",
+
+            description:
+                "In a doubly linked list, every node contains both previous and next pointers. Inserting at the beginning requires updating both links.",
+
+            diagramTitle:
+                "Doubly Linked List — Insert at Beginning",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing doubly linked list",
+
+                    description:
+                        "HEAD points to the first node. The first node's previous pointer is NULL.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 20
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 10
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Create new node",
+
+                    description:
+                        "Create a new node containing 5.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    5
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Connect new node",
+
+                    description:
+                        "The new node points forward to the old HEAD, and the old HEAD points backward to the new node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    5
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 10
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 5
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 20
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 10
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Update HEAD",
+
+                    description:
+                        "HEAD now points to the new first node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    5
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 10
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 5
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 20
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 10
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* newNode =
+    (struct Node*)malloc(sizeof(struct Node));
+
+newNode->data = 5;
+
+newNode->prev = NULL;
+
+newNode->next = head;
+
+head->prev = newNode;
+
+head = newNode;`,
+
+            output: `5 10 20`
+        },
+
+
+        /* =====================================================
+           LESSON 10
+        ====================================================== */
+
+        10: {
+            title: "Insertion at a Position in Doubly Linked List",
+
+            description:
+                "Insertion at a position in a doubly linked list requires updating both previous and next links of surrounding nodes.",
+
+            diagramTitle:
+                "Doubly Linked List — Insert at Position",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing list",
+
+                    description:
+                        "We want to insert 15 between 10 and 20.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 20
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">↔</div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 10
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 30
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">↔</div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 20
+                                </div>
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Create new node",
+
+                    description:
+                        "Create node 15.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV
+                                </div>
+
+                                <div class="node-data">
+                                    15
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Update four links",
+
+                    description:
+                        "Connect 10 ↔ 15 ↔ 20 by updating both previous and next pointers.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 15
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV: 10
+                                </div>
+
+                                <div class="node-data">
+                                    15
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 20
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 15
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 30
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Final structure",
+
+                    description:
+                        "The complete doubly linked list is now updated.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 15
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV: 10
+                                </div>
+
+                                <div class="node-data">
+                                    15
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 20
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 15
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 30
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 20
+                                </div>
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* newNode =
+    (struct Node*)malloc(sizeof(struct Node));
+
+newNode->data = 15;
+
+newNode->prev = temp;
+
+newNode->next = temp->next;
+
+temp->next->prev = newNode;
+
+temp->next = newNode;`,
+
+            output: `10 15 20 30`
+        },
+
+
+        /* =====================================================
+           LESSON 11
+        ====================================================== */
+
+        11: {
+            title: "Insertion at the End in Doubly Linked List",
+
+            description:
+                "To insert at the end of a doubly linked list, reach the last node and connect the new node in both directions.",
+
+            diagramTitle:
+                "Doubly Linked List — Insert at End",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing list",
+
+                    description:
+                        "The list ends at node 20.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 20
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 10
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Create new node",
+
+                    description:
+                        "Create node 30.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV
+                                </div>
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Connect to last node",
+
+                    description:
+                        "Node 20's next points to 30 and node 30's previous points to 20.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 20
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 10
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 30
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV: 20
+                                </div>
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Final structure",
+
+                    description:
+                        "The new node becomes the last node.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 20
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 10
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 30
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV: 20
+                                </div>
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* newNode =
+    (struct Node*)malloc(sizeof(struct Node));
+
+newNode->data = 30;
+
+newNode->next = NULL;
+
+struct Node* temp = head;
+
+while(temp->next != NULL)
+    temp = temp->next;
+
+temp->next = newNode;
+
+newNode->prev = temp;`,
+
+            output: `10 20 30`
+        },
+
+
+        /* =====================================================
+           LESSON 12
+        ====================================================== */
+
+        12: {
+            title: "Deletion at the Beginning in Doubly Linked List",
+
+            description:
+                "To delete the first node in a doubly linked list, move HEAD to the next node and set the new HEAD's previous pointer to NULL.",
+
+            diagramTitle:
+                "Doubly Linked List — Delete at Beginning",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing list",
+
+                    description:
+                        "HEAD points to node 10.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node deleted-node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 20
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 10
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 30
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 20
+                                </div>
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Move HEAD",
+
+                    description:
+                        "HEAD moves from 10 to 20.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="node deleted-node">
+
+                                <div class="node-prev">
+                                    removed
+                                </div>
+
+                                <div class="node-data">
+                                    10
+                                </div>
+
+                                <div class="node-next">
+                                    removed
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 30
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 20
+                                </div>
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Set new HEAD previous to NULL",
+
+                    description:
+                        "The new HEAD must have PREV = NULL.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node new-node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 30
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 20
+                                </div>
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Final structure",
+
+                    description:
+                        "Node 10 has been removed.",
+
+                    diagram: `
+                        <div class="structure">
+
+                            <div class="head-label">
+                                HEAD
+                            </div>
+
+                            <div class="head-arrow">
+                                ↓
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: NULL
+                                </div>
+
+                                <div class="node-data">
+                                    20
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: 30
+                                </div>
+
+                            </div>
+
+                            <div class="double-arrow">
+                                ↔
+                            </div>
+
+                            <div class="node">
+
+                                <div class="node-prev">
+                                    PREV: 20
+                                </div>
+
+                                <div class="node-data">
+                                    30
+                                </div>
+
+                                <div class="node-next">
+                                    NEXT: NULL
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* temp = head;
+
+head = head->next;
+
+head->prev = NULL;
+
+free(temp);`,
+
+            output: `20 30`
+        },
+
+
+        /* =====================================================
+           LESSON 13
+        ====================================================== */
+
+        13: {
+            title: "Deletion at the End in Circular Linked List",
+
+            description:
+                "In a circular linked list, the last node points back to HEAD. To delete the last node, find the node before it and connect that node directly to HEAD.",
+
+            diagramTitle:
+                "Circular Linked List — Delete at End",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing circular list",
+
+                    description:
+                        "The last node 30 points back to HEAD.",
+
+                    diagram: `
+                        <div class="circular-wrapper">
+
+                            <div class="circular-head-arrow">
+                                HEAD ↓
+                            </div>
+
+                            <div class="circular-structure">
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        10
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → 20
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        20
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → 30
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node deleted-node">
+
+                                    <div class="node-data">
+                                        30
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → HEAD
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="circular-return">
+
+                                <svg viewBox="0 0 550 115">
+
+                                    <defs>
+
+                                        <marker
+                                            id="arrowHead13"
+                                            markerWidth="10"
+                                            markerHeight="7"
+                                            refX="9"
+                                            refY="3.5"
+                                            orient="auto">
+
+                                            <polygon
+                                                points="0 0, 10 3.5, 0 7">
+                                            </polygon>
+
+                                        </marker>
+
+                                    </defs>
+
+                                    <path
+                                        d="M 495 25
+                                           C 535 25, 535 105, 275 105
+                                           C 80 105, 45 70, 45 25"
+                                        marker-end="url(#arrowHead13)">
+                                    </path>
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Find the node before last",
+
+                    description:
+                        "Node 20 is the node before the last node 30.",
+
+                    diagram: `
+                        <div class="circular-wrapper">
+
+                            <div class="circular-head-arrow">
+                                HEAD ↓
+                            </div>
+
+                            <div class="circular-structure">
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        10
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → 20
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        20
+                                    </div>
+
+                                    <div class="node-next">
+                                        PREVIOUS OF LAST
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node deleted-node">
+
+                                    <div class="node-data">
+                                        30
+                                    </div>
+
+                                    <div class="node-next">
+                                        LAST
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="circular-return">
+
+                                <svg viewBox="0 0 550 115">
+
+                                    <defs>
+
+                                        <marker
+                                            id="arrowHead13b"
+                                            markerWidth="10"
+                                            markerHeight="7"
+                                            refX="9"
+                                            refY="3.5"
+                                            orient="auto">
+
+                                            <polygon
+                                                points="0 0, 10 3.5, 0 7">
+                                            </polygon>
+
+                                        </marker>
+
+                                    </defs>
+
+                                    <path
+                                        d="M 495 25
+                                           C 535 25, 535 105, 275 105
+                                           C 80 105, 45 70, 45 25"
+                                        marker-end="url(#arrowHead13b)">
+                                    </path>
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Connect previous node to HEAD",
+
+                    description:
+                        "Node 20 now points directly to HEAD instead of node 30.",
+
+                    diagram: `
+                        <div class="circular-wrapper">
+
+                            <div class="circular-head-arrow">
+                                HEAD ↓
+                            </div>
+
+                            <div class="circular-structure">
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        10
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → 20
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node new-node">
+
+                                    <div class="node-data">
+                                        20
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → HEAD
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="circular-return">
+
+                                <svg viewBox="0 0 550 115">
+
+                                    <defs>
+
+                                        <marker
+                                            id="arrowHead13c"
+                                            markerWidth="10"
+                                            markerHeight="7"
+                                            refX="9"
+                                            refY="3.5"
+                                            orient="auto">
+
+                                            <polygon
+                                                points="0 0, 10 3.5, 0 7">
+                                            </polygon>
+
+                                        </marker>
+
+                                    </defs>
+
+                                    <path
+                                        d="M 395 25
+                                           C 470 25, 470 105, 275 105
+                                           C 100 105, 45 70, 45 25"
+                                        marker-end="url(#arrowHead13c)">
+                                    </path>
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Final circular list",
+
+                    description:
+                        "Node 30 is deleted. The last remaining node points back to HEAD.",
+
+                    diagram: `
+                        <div class="circular-wrapper">
+
+                            <div class="circular-head-arrow">
+                                HEAD ↓
+                            </div>
+
+                            <div class="circular-structure">
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        10
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → 20
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        20
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → HEAD
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="circular-return">
+
+                                <svg viewBox="0 0 550 115">
+
+                                    <defs>
+
+                                        <marker
+                                            id="arrowHead13d"
+                                            markerWidth="10"
+                                            markerHeight="7"
+                                            refX="9"
+                                            refY="3.5"
+                                            orient="auto">
+
+                                            <polygon
+                                                points="0 0, 10 3.5, 0 7">
+                                            </polygon>
+
+                                        </marker>
+
+                                    </defs>
+
+                                    <path
+                                        d="M 395 25
+                                           C 470 25, 470 105, 275 105
+                                           C 100 105, 45 70, 45 25"
+                                        marker-end="url(#arrowHead13d)">
+                                    </path>
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* temp = head;
+
+while(temp->next->next != head)
+    temp = temp->next;
+
+free(temp->next);
+
+temp->next = head;`,
+
+            output: `10 20 10 20 ...`
+        },
+
+
+        /* =====================================================
+           LESSON 14
+        ====================================================== */
+
+        14: {
+            title: "Insertion at the End in Circular Linked List",
+
+            description:
+                "To insert at the end of a circular linked list, create a new node, connect it after the current last node, and make it point back to HEAD.",
+
+            diagramTitle:
+                "Circular Linked List — Insert at End",
+
+            steps: [
+
+                {
+                    title: "Step 1 — Existing circular list",
+
+                    description:
+                        "The last node 20 points back to HEAD.",
+
+                    diagram: `
+                        <div class="circular-wrapper">
+
+                            <div class="circular-head-arrow">
+                                HEAD ↓
+                            </div>
+
+                            <div class="circular-structure">
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        10
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → 20
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        20
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → HEAD
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="circular-return">
+
+                                <svg viewBox="0 0 550 115">
+
+                                    <defs>
+
+                                        <marker
+                                            id="arrowHead14"
+                                            markerWidth="10"
+                                            markerHeight="7"
+                                            refX="9"
+                                            refY="3.5"
+                                            orient="auto">
+
+                                            <polygon
+                                                points="0 0, 10 3.5, 0 7">
+                                            </polygon>
+
+                                        </marker>
+
+                                    </defs>
+
+                                    <path
+                                        d="M 395 25
+                                           C 470 25, 470 105, 275 105
+                                           C 100 105, 45 70, 45 25"
+                                        marker-end="url(#arrowHead14)">
+                                    </path>
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 2 — Create new node",
+
+                    description:
+                        "Create node 30.",
+
+                    diagram: `
+                        <div class="circular-wrapper">
+
+                            <div class="circular-structure">
+
+                                <div class="node new-node">
+
+                                    <div class="node-data">
+                                        30
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → HEAD
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 3 — Connect last node to new node",
+
+                    description:
+                        "The current last node 20 now points to node 30.",
+
+                    diagram: `
+                        <div class="circular-wrapper">
+
+                            <div class="circular-head-arrow">
+                                HEAD ↓
+                            </div>
+
+                            <div class="circular-structure">
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        10
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → 20
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        20
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → 30
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node new-node">
+
+                                    <div class="node-data">
+                                        30
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → HEAD
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="circular-return">
+
+                                <svg viewBox="0 0 550 115">
+
+                                    <defs>
+
+                                        <marker
+                                            id="arrowHead14c"
+                                            markerWidth="10"
+                                            markerHeight="7"
+                                            refX="9"
+                                            refY="3.5"
+                                            orient="auto">
+
+                                            <polygon
+                                                points="0 0, 10 3.5, 0 7">
+                                            </polygon>
+
+                                        </marker>
+
+                                    </defs>
+
+                                    <path
+                                        d="M 495 25
+                                           C 535 25, 535 105, 275 105
+                                           C 80 105, 45 70, 45 25"
+                                        marker-end="url(#arrowHead14c)">
+                                    </path>
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+                    `
+                },
+
+                {
+                    title: "Step 4 — Final circular list",
+
+                    description:
+                        "The new last node points back to HEAD, completing the circle.",
+
+                    diagram: `
+                        <div class="circular-wrapper">
+
+                            <div class="circular-head-arrow">
+                                HEAD ↓
+                            </div>
+
+                            <div class="circular-structure">
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        10
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → 20
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node">
+
+                                    <div class="node-data">
+                                        20
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → 30
+                                    </div>
+
+                                </div>
+
+                                <div class="arrow">
+                                    →
+                                </div>
+
+                                <div class="node new-node">
+
+                                    <div class="node-data">
+                                        30
+                                    </div>
+
+                                    <div class="node-next">
+                                        next → HEAD
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="circular-return">
+
+                                <svg viewBox="0 0 550 115">
+
+                                    <defs>
+
+                                        <marker
+                                            id="arrowHead14d"
+                                            markerWidth="10"
+                                            markerHeight="7"
+                                            refX="9"
+                                            refY="3.5"
+                                            orient="auto">
+
+                                            <polygon
+                                                points="0 0, 10 3.5, 0 7">
+                                            </polygon>
+
+                                        </marker>
+
+                                    </defs>
+
+                                    <path
+                                        d="M 495 25
+                                           C 535 25, 535 105, 275 105
+                                           C 80 105, 45 70, 45 25"
+                                        marker-end="url(#arrowHead14d)">
+                                    </path>
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+                    `
+                }
+
+            ],
+
+            code: `struct Node* newNode =
+    (struct Node*)malloc(sizeof(struct Node));
+
+newNode->data = 30;
+
+struct Node* temp = head;
+
+while(temp->next != head)
+    temp = temp->next;
+
+temp->next = newNode;
+
+newNode->next = head;`,
+
+            output: `10 20 30 10 20 30 ...`
+        }
+
+    };
+
+
+    /* =========================================================
+       VARIABLES
+    ========================================================= */
+
+    let currentLesson = 1;
+
+    const totalLessons =
+        Object.keys(lessons).length;
+
+
+    /* =========================================================
+       DIAGRAM HEAD POSITIONING
+       HEAD must always point to the first node of the list.
+       For deletion steps where the old first node is shown as
+       deleted/removed, the first node after the HEAD label is used.
+    ========================================================= */
+
+    function alignHeadPointers(root) {
+
+        const structures =
+            root.querySelectorAll(".structure, .circular-wrapper");
+
+        structures.forEach(container => {
+
+            const headLabel =
+                container.querySelector(".head-label");
+
+            const headArrow =
+                container.querySelector(".head-arrow");
+
+            const circularHead =
+                container.querySelector(".circular-head-arrow");
+
+            if (headLabel || headArrow) {
+
+                const nodes =
+                    Array.from(
+                        container.querySelectorAll(".node")
+                    );
+
+                if (nodes.length) {
+
+                    let target =
+                        nodes.find(node =>
+                            headLabel &&
+                            (
+                                headLabel.compareDocumentPosition(node) &
+                                Node.DOCUMENT_POSITION_FOLLOWING
+                            )
+                        );
+
+                    if (!target) {
+                        target = nodes[0];
+                    }
+
+                    const containerRect =
+                        container.getBoundingClientRect();
+
+                    const nodeRect =
+                        target.getBoundingClientRect();
+
+                    const center =
+                        nodeRect.left -
+                        containerRect.left +
+                        (nodeRect.width / 2);
+
+                    if (headLabel) {
+                        headLabel.style.left =
+                            center + "px";
+                    }
+
+                    if (headArrow) {
+                        headArrow.style.left =
+                            center + "px";
+                    }
+
+                }
+
+            }
+
+            if (circularHead) {
+
+                const circularNodes =
+                    Array.from(
+                        container.querySelectorAll(
+                            ".circular-structure .node"
+                        )
+                    );
+
+                if (circularNodes.length) {
+
+                    const firstNode =
+                        circularNodes[0];
+
+                    const containerRect =
+                        container.getBoundingClientRect();
+
+                    const nodeRect =
+                        firstNode.getBoundingClientRect();
+
+                    const center =
+                        nodeRect.left -
+                        containerRect.left +
+                        (nodeRect.width / 2);
+
+                    circularHead.style.left =
+                        center + "px";
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+    /* =========================================================
+       OPEN LESSON
+    ========================================================= */
+
+    function openLesson(number) {
+
+        currentLesson = number;
+
+        const lesson = lessons[number];
+
+        if (!lesson) {
+            return;
+        }
+
+
+        /* TITLE */
+
+        document.getElementById(
+            "lessonTitle"
+        ).textContent = lesson.title;
+
+
+        /* DESCRIPTION */
+
+        document.getElementById(
+            "lessonDescription"
+        ).textContent = lesson.description;
+
+
+        /* DIAGRAM TITLE */
+
+        document.getElementById(
+            "diagramTitle"
+        ).textContent = lesson.diagramTitle;
+
+
+        /* RENDER STEPS */
+
+        const diagramNodes =
+            document.getElementById(
+                "diagramNodes"
+            );
+
+        diagramNodes.innerHTML = "";
+
+
+        const stepContainer =
+            document.createElement(
+                "div"
+            );
+
+        stepContainer.className =
+            "step-container";
+
+
+        lesson.steps.forEach(
+            (step) => {
+
+                const stepCard =
+                    document.createElement(
+                        "div"
+                    );
+
+                stepCard.className =
+                    "step-card";
+
+
+                const stepLabel =
+                    document.createElement(
+                        "div"
+                    );
+
+                stepLabel.className =
+                    "step-label";
+
+                stepLabel.textContent =
+                    step.title;
+
+
+                const stepDescription =
+                    document.createElement(
+                        "div"
+                    );
+
+                stepDescription.className =
+                    "step-description";
+
+                stepDescription.textContent =
+                    step.description;
+
+
+                const diagramContent =
+                    document.createElement(
+                        "div"
+                    );
+
+                diagramContent.innerHTML =
+                    step.diagram;
+
+
+                stepCard.appendChild(
+                    stepLabel
+                );
+
+                stepCard.appendChild(
+                    stepDescription
+                );
+
+                stepCard.appendChild(
+                    diagramContent
+                );
+
+                stepContainer.appendChild(
+                    stepCard
+                );
+
+            }
+        );
+
+
+        diagramNodes.appendChild(
+            stepContainer
+        );
+
+        /* Keep every HEAD label aligned with the actual first node. */
+        alignHeadPointers(diagramNodes);
+
+
+        /* CODE */
+
+        document.getElementById(
+            "lessonCode"
+        ).value = lesson.code;
+
+
+        /* RESET OUTPUT */
+
+        document.getElementById(
+            "codeOutput"
+        ).textContent =
+            'Click "Run Code" to see the expected output.';
+
+
+        /* SHOW READER */
+
+        document.getElementById(
+            "lessonReader"
+        ).classList.add("show");
+
+
+        /* ACTIVE CARD */
+
+        document
+            .querySelectorAll(".lesson-card")
+            .forEach(card => {
+
+                card.classList.remove(
+                    "active"
+                );
+
+            });
+
+
+        const cards =
+            document.querySelectorAll(
+                ".lesson-card"
+            );
+
+
+        if (cards[number - 1]) {
+
+            cards[number - 1]
+                .classList.add("active");
+
+        }
+
+
+        /* BUTTONS */
+
+        document.getElementById(
+            "previousButton"
+        ).disabled =
+            number === 1;
+
+
+        document.getElementById(
+            "nextButton"
+        ).disabled =
+            number === totalLessons;
+
+
+        /* PROGRESS */
+
+        updateProgress();
+
+
+        /* SCROLL */
+
+        setTimeout(() => {
+
+            document
+                .getElementById(
+                    "lessonReader"
+                )
+                .scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+        }, 100);
+
+    }
+
+
+    /* =========================================================
+       RUN CODE
+    ========================================================= */
+
+    function runCode() {
+
+        const lesson =
+            lessons[currentLesson];
+
+        const output =
+            document.getElementById(
+                "codeOutput"
+            );
+
+
+        if (!lesson) {
+
+            output.textContent =
+                "No lesson selected.";
+
+            return;
+
+        }
+
+
+        output.classList.remove(
+            "running"
+        );
+
+
+        void output.offsetWidth;
+
+
+        output.classList.add(
+            "running"
+        );
+
+
+        output.textContent =
+            "$ ./program\n\n" +
+            lesson.output;
+
+    }
+
+
+    /* =========================================================
+       NEXT
+    ========================================================= */
+
+    function nextLesson() {
+
+        if (
+            currentLesson <
+            totalLessons
+        ) {
+
+            openLesson(
+                currentLesson + 1
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       PREVIOUS
+    ========================================================= */
+
+    function previousLesson() {
+
+        if (
+            currentLesson > 1
+        ) {
+
+            openLesson(
+                currentLesson - 1
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       PROGRESS
+    ========================================================= */
+
+    function updateProgress() {
+
+        const percentage =
+            (currentLesson /
+                totalLessons) *
+            100;
+
+
+        document.getElementById(
+            "progressFill"
+        ).style.width =
+            percentage + "%";
+
+
+        document.getElementById(
+            "progressText"
+        ).textContent =
+            currentLesson +
+            " / " +
+            totalLessons +
+            " lessons";
+
+    }
+
+
+    /* =========================================================
+       BACK
+    ========================================================= */
+
+    function goBack() {
+
+        window.location.href =
+            "/courses";
+
+    }
+
+
+    /* =========================================================
+       RESPONSIVE DIAGRAM HEAD POSITIONING
+    ========================================================= */
+
+    window.addEventListener(
+        "resize",
+        () => {
+            const diagramNodes =
+                document.getElementById("diagramNodes");
+
+            if (diagramNodes) {
+                alignHeadPointers(diagramNodes);
+            }
+        }
+    );
+
+
+    /* =========================================================
+       INITIAL
+    ========================================================= */
+
+    updateProgress();
+
+</script>
+
+</body>
+</html>

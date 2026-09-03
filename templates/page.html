@@ -1302,13 +1302,11 @@
                     </div>
 
 
-                    <button
-                        class="course-btn"
-                        type="button">
-
-                        {{ course.status }} →
-
-                    </button>
+                    <a
+                     href="{% if course.title == 'Data Structures' %}{{ url_for('data_structures') }}{% elif course.title == 'Computer Architecture' %}{{ url_for('computer_architecture') }}{% endif %}"
+                     class="course-btn">
+                     {{ course.status }} →
+                   </a>
 
                 </article>
 

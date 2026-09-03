@@ -1953,3 +1953,1270 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+// ======================================================
+// COURSE LEARNING PAGE
+// ======================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    // --------------------------------------------------
+    // DATA STRUCTURES COURSE LESSONS
+    // --------------------------------------------------
+
+    const dataStructuresLessons = {
+
+        "Singly Linked List": [
+
+            "Introduction to Linked List in C",
+
+            "Insertion at the Beginning in Singly Linked List",
+
+            "Insertion at a Position in Singly Linked List",
+
+            "Insertion at the End in Singly Linked List",
+
+            "Traversal of a Linked List in Singly Linked List",
+
+            "Deletion at the Beginning in Singly Linked List",
+
+            "Deletion at a Position in Singly Linked List",
+
+            "Deletion at the End in Singly Linked List"
+
+        ],
+
+
+        "Doubly Linked List": [
+
+            "Insertion at the Beginning in Doubly Linked List",
+
+            "Insertion at a Position in Doubly Linked List",
+
+            "Insertion at the End in Doubly Linked List",
+
+            "Deletion at the Beginning in Doubly Linked List"
+
+        ],
+
+
+        "Circular Linked List": [
+
+            "Deletion at the End in Circular Linked List",
+
+            "Insertion at the End in Circular Linked List"
+
+        ]
+
+    };
+
+
+    // --------------------------------------------------
+    // FIND DATA STRUCTURES COURSE BUTTON
+    // --------------------------------------------------
+
+    const courseButtons =
+        document.querySelectorAll(
+            ".course-card .course-btn"
+        );
+
+
+    courseButtons.forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            const card =
+                button.closest(".course-card");
+
+            if (!card) {
+                return;
+            }
+
+
+            const title =
+                card.querySelector("h3")
+                    ?.textContent
+                    .trim();
+
+
+            if (title === "Data Structures") {
+
+                openDataStructuresCourse();
+
+            }
+
+        });
+
+    });
+
+
+    // --------------------------------------------------
+    // OPEN DATA STRUCTURES COURSE
+    // --------------------------------------------------
+
+    function openDataStructuresCourse() {
+
+        const coursePage =
+            document.getElementById(
+                "courseLearningPage"
+            );
+
+
+        if (coursePage) {
+
+            coursePage.style.display = "block";
+
+            coursePage.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+            return;
+        }
+
+
+        // ------------------------------------------------
+        // CREATE COURSE LEARNING PAGE
+        // ------------------------------------------------
+
+        const page =
+            document.createElement("section");
+
+        page.id =
+            "courseLearningPage";
+
+
+        page.innerHTML = `
+
+            <div class="course-learning-container">
+
+                <button
+                    type="button"
+                    class="course-back-button"
+                    id="backToCourses"
+                >
+                    ← Back to Courses
+                </button>
+
+
+                <div class="course-learning-header">
+
+                    <div class="course-learning-label">
+                        NEXORA LEARNING LIBRARY
+                    </div>
+
+                    <h1>
+                        Data Structures
+                    </h1>
+
+                    <p>
+                        Learn data structures step by step
+                        through structured lessons.
+                    </p>
+
+                </div>
+
+
+                <div class="course-progress-box">
+
+                    <div>
+                        <strong>
+                            Course Progress
+                        </strong>
+
+                        <span id="courseProgressText">
+                            0%
+                        </span>
+                    </div>
+
+                    <div class="course-progress-bar">
+
+                        <div
+                            id="courseProgressBar"
+                            class="course-progress-fill">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="courseLessonList"
+                    class="course-lesson-list">
+                </div>
+
+            </div>
+        `;
+
+
+        // Add after the main page content
+        document.body.appendChild(page);
+
+
+        // ------------------------------------------------
+        // DISPLAY LESSONS
+        // ------------------------------------------------
+
+        const lessonList =
+            document.getElementById(
+                "courseLessonList"
+            );
+
+
+        let lessonNumber = 1;
+
+
+        Object.entries(
+            dataStructuresLessons
+        ).forEach(
+            ([topic, lessons]) => {
+
+
+                const topicSection =
+                    document.createElement("div");
+
+                topicSection.className =
+                    "course-topic-section";
+
+
+                topicSection.innerHTML = `
+
+                    <div class="course-topic-header">
+
+                        <span class="course-topic-icon">
+                            ✦
+                        </span>
+
+                        <div>
+
+                            <small>
+                                TOPIC
+                            </small>
+
+                            <h2>
+                                ${topic}
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="course-topic-lessons">
+                    </div>
+
+                `;
+
+
+                const lessonContainer =
+                    topicSection.querySelector(
+                        ".course-topic-lessons"
+                    );
+
+
+                lessons.forEach(
+                    lessonTitle => {
+
+                        const lesson =
+                            document.createElement("button");
+
+                        lesson.type =
+                            "button";
+
+                        lesson.className =
+                            "course-lesson-item";
+
+
+                        lesson.dataset.lessonNumber =
+                            lessonNumber;
+
+
+                        lesson.innerHTML = `
+
+                            <span class="lesson-number">
+                                ${lessonNumber}
+                            </span>
+
+                            <span class="lesson-info">
+
+                                <strong>
+                                    ${lessonTitle}
+                                </strong>
+
+                                <small>
+                                    Lesson ${lessonNumber}
+                                </small>
+
+                            </span>
+
+                            <span class="lesson-arrow">
+                                →
+                            </span>
+
+                        `;
+
+
+                        lesson.addEventListener(
+                            "click",
+                            () => {
+
+                                openLesson(
+                                    topic,
+                                    lessonTitle,
+                                    lessonNumber
+                                );
+
+                            }
+                        );
+
+
+                        lessonContainer.appendChild(
+                            lesson
+                        );
+
+
+                        lessonNumber++;
+
+                    }
+                );
+
+
+                lessonList.appendChild(
+                    topicSection
+                );
+
+            }
+        );
+
+
+        // ------------------------------------------------
+        // BACK TO COURSES
+        // ------------------------------------------------
+
+        document
+            .getElementById("backToCourses")
+            .addEventListener(
+                "click",
+                () => {
+
+                    page.style.display =
+                        "none";
+
+                    window.scrollTo({
+                        top: 0,
+                        behavior: "smooth"
+                    });
+
+                }
+            );
+
+
+        // ------------------------------------------------
+        // OPEN PAGE
+        // ------------------------------------------------
+
+        page.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    }
+
+
+    // --------------------------------------------------
+    // OPEN INDIVIDUAL LESSON
+    // --------------------------------------------------
+   function openLesson(topic, lessonTitle, lessonNumber) {
+
+    // Remove previous lesson page
+    const oldPage =
+        document.getElementById("individualLessonPage");
+
+    if (oldPage) {
+        oldPage.remove();
+    }
+
+    // =====================================================
+    // UNIQUE CONTENT FOR EVERY LESSON
+    // =====================================================
+
+    const lessonData = {
+
+        // =================================================
+        // SINGLY LINKED LIST
+        // =================================================
+
+        "Introduction to Linked List in C": {
+
+            explanation:
+                "A singly linked list is a dynamic data structure where each node contains data and a pointer to the next node. The last node points to NULL.",
+
+            diagram: `
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>30</strong>
+                    <span>NULL</span>
+                </div>
+            `,
+
+            code: `struct Node {
+    int data;
+    struct Node *next;
+};`
+
+        },
+
+
+        "Insertion at the Beginning in Singly Linked List": {
+
+            explanation:
+                "Insertion at the beginning adds a new node before the current first node. The new node points to the current head, and then head is updated to the new node.",
+
+            diagram: `
+                <div class="node">
+                    <strong>5</strong>
+                    <span>New Head</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>NULL</span>
+                </div>
+            `,
+
+            code: `struct Node *newNode;
+
+newNode = malloc(sizeof(struct Node));
+
+newNode->data = 5;
+newNode->next = head;
+
+head = newNode;`
+
+        },
+
+
+        "Insertion at a Position in Singly Linked List": {
+
+            explanation:
+                "Insertion at a specific position places a new node between two existing nodes. The previous node is connected to the new node, and the new node points to the next node.",
+
+            diagram: `
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>15</strong>
+                    <span>Inserted</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>NULL</span>
+                </div>
+            `,
+
+            code: `newNode->data = 15;
+
+newNode->next = current->next;
+
+current->next = newNode;`
+
+        },
+
+
+        "Insertion at the End in Singly Linked List": {
+
+            explanation:
+                "Insertion at the end adds a new node after the current last node. The next pointer of the last node is changed to point to the new node.",
+
+            diagram: `
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>30</strong>
+                    <span>New End</span>
+                </div>
+            `,
+
+            code: `newNode->data = 30;
+newNode->next = NULL;
+
+temp = head;
+
+while(temp->next != NULL)
+    temp = temp->next;
+
+temp->next = newNode;`
+
+        },
+
+
+        "Traversal of a Linked List in Singly Linked List": {
+
+            explanation:
+                "Traversal means visiting every node from the head until NULL is reached. A temporary pointer is used to move through each node.",
+
+            diagram: `
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Visit 1</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>Visit 2</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>30</strong>
+                    <span>Visit 3</span>
+                </div>
+            `,
+
+            code: `struct Node *temp = head;
+
+while(temp != NULL) {
+
+    printf("%d ", temp->data);
+
+    temp = temp->next;
+}`
+
+        },
+
+
+        "Deletion at the Beginning in Singly Linked List": {
+
+            explanation:
+                "Deletion at the beginning removes the first node. The head is moved to the second node and the old first node is released from memory.",
+
+            diagram: `
+                <div class="node">
+                    <strong>20</strong>
+                    <span>New Head</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>30</strong>
+                    <span>NULL</span>
+                </div>
+            `,
+
+            code: `struct Node *temp;
+
+temp = head;
+
+head = head->next;
+
+free(temp);`
+
+        },
+
+
+        "Deletion at a Position in Singly Linked List": {
+
+            explanation:
+                "Deletion at a position removes a node from the middle of the list. The previous node is connected directly to the node after the deleted node.",
+
+            diagram: `
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>30</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>40</strong>
+                    <span>NULL</span>
+                </div>
+            `,
+
+            code: `temp = head;
+
+for(int i = 1; i < position - 1; i++)
+    temp = temp->next;
+
+deleteNode = temp->next;
+
+temp->next =
+    deleteNode->next;
+
+free(deleteNode);`
+
+        },
+
+
+        "Deletion at the End in Singly Linked List": {
+
+            explanation:
+                "Deletion at the end removes the last node. The second-last node is changed so that its next pointer becomes NULL.",
+
+            diagram: `
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>NULL</span>
+                </div>
+            `,
+
+            code: `temp = head;
+
+while(temp->next->next != NULL)
+    temp = temp->next;
+
+free(temp->next);
+
+temp->next = NULL;`
+
+        },
+
+
+        // =================================================
+        // DOUBLY LINKED LIST
+        // =================================================
+
+        "Insertion at the Beginning in Doubly Linked List": {
+
+            explanation:
+                "A doubly linked list node contains three parts: previous address, data and next address. During insertion at the beginning, the new node becomes the head.",
+
+            diagram: `
+                <div class="node">
+                    <strong>5</strong>
+                    <span>Prev: NULL<br>Next →</span>
+                </div>
+
+                <div class="arrow">⇄</div>
+
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Prev ←<br>Next →</span>
+                </div>
+
+                <div class="arrow">⇄</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>Prev ←<br>Next: NULL</span>
+                </div>
+            `,
+
+            code: `struct Node {
+    int data;
+    struct Node *prev;
+    struct Node *next;
+};
+
+newNode->data = 5;
+
+newNode->prev = NULL;
+
+newNode->next = head;
+
+head->prev = newNode;
+
+head = newNode;`
+
+        },
+
+
+        "Insertion at a Position in Doubly Linked List": {
+
+            explanation:
+                "Insertion at a position in a doubly linked list requires updating both previous and next pointers. The new node is connected between two existing nodes.",
+
+            diagram: `
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Prev ← / Next →</span>
+                </div>
+
+                <div class="arrow">⇄</div>
+
+                <div class="node">
+                    <strong>15</strong>
+                    <span>Inserted Node</span>
+                </div>
+
+                <div class="arrow">⇄</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>Prev ← / Next →</span>
+                </div>
+            `,
+
+            code: `newNode->data = 15;
+
+newNode->prev = current;
+
+newNode->next =
+    current->next;
+
+current->next->prev =
+    newNode;
+
+current->next =
+    newNode;`
+
+        },
+
+
+        "Insertion at the End in Doubly Linked List": {
+
+            explanation:
+                "Insertion at the end adds a new node after the current last node. The new node's previous pointer points to the old last node and its next pointer is NULL.",
+
+            diagram: `
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Prev ← / Next →</span>
+                </div>
+
+                <div class="arrow">⇄</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>Prev ← / Next →</span>
+                </div>
+
+                <div class="arrow">⇄</div>
+
+                <div class="node">
+                    <strong>30</strong>
+                    <span>Prev ←<br>Next: NULL</span>
+                </div>
+            `,
+
+            code: `newNode->data = 30;
+
+newNode->next = NULL;
+
+newNode->prev = tail;
+
+tail->next = newNode;
+
+tail = newNode;`
+
+        },
+
+
+        "Deletion at the Beginning in Doubly Linked List": {
+
+            explanation:
+                "Deletion at the beginning removes the first node. The head moves to the next node and the new head's previous pointer becomes NULL.",
+
+            diagram: `
+                <div class="node">
+                    <strong>20</strong>
+                    <span>Prev: NULL<br>Next →</span>
+                </div>
+
+                <div class="arrow">⇄</div>
+
+                <div class="node">
+                    <strong>30</strong>
+                    <span>Prev ←<br>Next: NULL</span>
+                </div>
+            `,
+
+            code: `temp = head;
+
+head = head->next;
+
+head->prev = NULL;
+
+free(temp);`
+
+        },
+
+
+        // =================================================
+        // CIRCULAR LINKED LIST
+        // =================================================
+
+        "Deletion at the End in Circular Linked List": {
+
+            explanation:
+                "In a circular linked list, the last node does not point to NULL. It points back to the first node. During deletion at the end, the second-last node is connected to the head.",
+
+            diagram: `
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">↘</div>
+
+                <div class="node">
+                    <strong>HEAD</strong>
+                    <span>↖ Circular</span>
+                </div>
+            `,
+
+            code: `temp = head;
+
+while(temp->next->next != head)
+    temp = temp->next;
+
+free(temp->next);
+
+temp->next = head;`
+
+        },
+
+
+        "Insertion at the End in Circular Linked List": {
+
+            explanation:
+                "Insertion at the end of a circular linked list adds a new node after the current last node. The new node points back to the head, maintaining the circular connection.",
+
+            diagram: `
+                <div class="node">
+                    <strong>10</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>20</strong>
+                    <span>Next →</span>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="node">
+                    <strong>30</strong>
+                    <span>Next → HEAD</span>
+                </div>
+
+                <div class="arrow">↖</div>
+            `,
+
+            code: `newNode->data = 30;
+
+temp = head;
+
+while(temp->next != head)
+    temp = temp->next;
+
+temp->next = newNode;
+
+newNode->next = head;`
+
+        }
+
+    };
+
+
+    // =====================================================
+    // GET SELECTED LESSON CONTENT
+    // =====================================================
+
+    const content =
+        lessonData[lessonTitle] || {
+
+            explanation:
+                "This lesson explains the selected data structures topic.",
+
+            diagram: `
+                <div class="node">
+                    <strong>Data</strong>
+                    <span>Next →</span>
+                </div>
+            `,
+
+            code:
+                "// Example code will appear here"
+
+        };
+
+
+    // =====================================================
+    // CREATE LESSON PAGE
+    // =====================================================
+
+    const page =
+        document.createElement("section");
+
+    page.id =
+        "individualLessonPage";
+
+
+    page.innerHTML = `
+
+        <div class="individual-lesson-container">
+
+            <button
+                type="button"
+                class="course-back-button"
+                id="backToLessonList"
+            >
+                ← Back to Lessons
+            </button>
+
+
+            <div class="lesson-breadcrumb">
+
+                Data Structures /
+                ${topic}
+
+            </div>
+
+
+            <div class="lesson-header">
+
+                <div class="lesson-number-badge">
+
+                    Lesson ${lessonNumber}
+
+                </div>
+
+                <h1>
+                    ${lessonTitle}
+                </h1>
+
+                <p>
+                    ${content.explanation}
+                </p>
+
+            </div>
+
+
+            <div class="lesson-content">
+
+
+                <!-- EXPLANATION -->
+
+                <div class="lesson-text-card">
+
+                    <h2>
+                        ${lessonTitle}
+                    </h2>
+
+                    <p>
+                        ${content.explanation}
+                    </p>
+
+                </div>
+
+
+                <!-- DIAGRAM -->
+
+                <div class="lesson-diagram-card">
+
+                    <h3>
+                        Visual Explanation
+                    </h3>
+
+                    <div class="linked-list-diagram">
+
+                        ${content.diagram}
+
+                    </div>
+
+                </div>
+
+
+                <!-- CODE -->
+
+                <div class="lesson-text-card">
+
+                    <h3>
+                        C Program Example
+                    </h3>
+
+                    <pre class="lesson-code"><code>${content.code}</code></pre>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="lesson-navigation">
+
+                <button
+                    type="button"
+                    class="lesson-nav-button"
+                    id="previousLesson"
+                >
+                    ← Previous
+                </button>
+
+
+                <button
+                    type="button"
+                    class="lesson-complete-button"
+                    id="markLessonComplete"
+                >
+                    Mark as Complete ✓
+                </button>
+
+
+                <button
+                    type="button"
+                    class="lesson-nav-button"
+                    id="nextLesson"
+                >
+                    Next →
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+
+    document.body.appendChild(page);
+
+
+    // =====================================================
+    // BACK BUTTON
+    // =====================================================
+
+    document
+        .getElementById("backToLessonList")
+        .addEventListener(
+            "click",
+            () => {
+
+                page.remove();
+
+                const coursePage =
+                    document.getElementById(
+                        "courseLearningPage"
+                    );
+
+                if (coursePage) {
+
+                    coursePage.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+
+                }
+
+            }
+        );
+
+
+    // =====================================================
+    // COMPLETE BUTTON
+    // =====================================================
+
+    document
+        .getElementById("markLessonComplete")
+        .addEventListener(
+            "click",
+            function () {
+
+                this.textContent =
+                    "Completed ✓";
+
+                this.classList.add(
+                    "completed"
+                );
+
+            }
+        );
+
+
+    // =====================================================
+    // PREVIOUS LESSON
+    // =====================================================
+
+    document
+        .getElementById("previousLesson")
+        .addEventListener(
+            "click",
+            () => {
+
+                const allLessons =
+                    Object.values(
+                        dataStructuresLessons
+                    ).flat();
+
+                if (lessonNumber > 1) {
+
+                    const previousTitle =
+                        allLessons[
+                            lessonNumber - 2
+                        ];
+
+                    let previousTopic = "";
+
+                    for (
+                        const [topicName, lessons]
+                        of Object.entries(
+                            dataStructuresLessons
+                        )
+                    ) {
+
+                        if (
+                            lessons.includes(
+                                previousTitle
+                            )
+                        ) {
+
+                            previousTopic =
+                                topicName;
+
+                            break;
+                        }
+
+                    }
+
+                    openLesson(
+                        previousTopic,
+                        previousTitle,
+                        lessonNumber - 1
+                    );
+
+                }
+
+            }
+        );
+
+
+    // =====================================================
+    // NEXT LESSON
+    // =====================================================
+
+    document
+        .getElementById("nextLesson")
+        .addEventListener(
+            "click",
+            () => {
+
+                const allLessons =
+                    Object.values(
+                        dataStructuresLessons
+                    ).flat();
+
+                if (
+                    lessonNumber <
+                    allLessons.length
+                ) {
+
+                    const nextTitle =
+                        allLessons[
+                            lessonNumber
+                        ];
+
+                    let nextTopic = "";
+
+                    for (
+                        const [topicName, lessons]
+                        of Object.entries(
+                            dataStructuresLessons
+                        )
+                    ) {
+
+                        if (
+                            lessons.includes(
+                                nextTitle
+                            )
+                        ) {
+
+                            nextTopic =
+                                topicName;
+
+                            break;
+                        }
+
+                    }
+
+                    openLesson(
+                        nextTopic,
+                        nextTitle,
+                        lessonNumber + 1
+                    );
+
+                }
+
+            }
+        );
+
+
+    // =====================================================
+    // SCROLL TO LESSON
+    // =====================================================
+
+    page.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+}
+
+});

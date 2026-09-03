@@ -1575,7 +1575,29 @@ def current_user():
 
 student_defaults = {'name': 'Ashwin Kumaar', 'email': 'ashwinkumaar@gmail.com', 'student_id': '2501014', 'department': 'Computer Science and Engineering', 'year': '3rd Year', 'college': 'Sri Ramakrishna Engineering College', 'batch': '2029', 'learning_level': 'Intermediate', 'mastery': 74, 'quiz_accuracy': 89, 'streak': 15, 'active_days': 42, 'completed_topics': 28}
 
-courses = [{'title': 'Python Programming', 'description': 'Learn Python from fundamentals to object-oriented programming.', 'category': 'Programming', 'progress': 82, 'lessons': 24, 'assessments': 5, 'duration': '18 Hours', 'status': 'In Progress'}, {'title': 'Java Programming', 'description': 'Master Java programming, OOP, inheritance and advanced concepts.', 'category': 'Programming', 'progress': 64, 'lessons': 30, 'assessments': 6, 'duration': '22 Hours', 'status': 'Continue'}, {'title': 'Data Structures', 'description': 'Build strong foundations in arrays, linked lists, trees and graphs.', 'category': 'Computer Science', 'progress': 48, 'lessons': 32, 'assessments': 7, 'duration': '25 Hours', 'status': 'Continue'}, {'title': 'Database Management', 'description': 'Understand SQL, relational databases and database design.', 'category': 'Database', 'progress': 36, 'lessons': 20, 'assessments': 4, 'duration': '14 Hours', 'status': 'Start Learning'}, {'title': 'Machine Learning', 'description': 'Learn machine learning fundamentals and predictive modeling.', 'category': 'AI / ML', 'progress': 21, 'lessons': 28, 'assessments': 5, 'duration': '20 Hours', 'status': 'Start Learning'}, {'title': 'Web Development', 'description': 'Build modern websites using HTML, CSS, JavaScript and Flask.', 'category': 'Development', 'progress': 55, 'lessons': 26, 'assessments': 5, 'duration': '19 Hours', 'status': 'Continue'}]
+courses = [
+    {
+        'title': 'Data Structures',
+        'description': 'Build strong foundations in arrays, linked lists, trees and graphs.',
+        'category': 'Computer Science',
+        'progress': 48,
+        'lessons': 32,
+        'assessments': 7,
+        'duration': '25 Hours',
+        'status': 'Continue'
+    },
+   
+    {
+        'title': 'Computer Architecture',
+        'description': 'Learn computer organization, CPU, memory, registers and system architecture.',
+        'category': 'Computer Science',
+        'progress': 0,
+        'lessons': 30,
+        'assessments': 5,
+        'duration': '20 Hours',
+        'status': 'Start Learning'
+    }
+]
 
 videos = [
     {'title': 'Understanding Linked Lists', 'topic': 'Data Structures', 'duration': '', 'level': '', 'reference': 'nptel_linked_list', 'subtopics': [
@@ -1677,6 +1699,14 @@ def dashboard():
 @app.route("/courses")
 def course_page():
     return render_dashboard_page("courses")
+@app.route("/data-structures")
+def data_structures():
+    return render_template("datastructure.html")
+
+
+@app.route("/computer-architecture")
+def computer_architecture():
+    return render_template("computer_architecture.html")
 
 
 @app.route("/videos")
