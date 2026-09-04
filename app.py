@@ -2270,6 +2270,9 @@ def data_structures():
         return redirect(url_for("quiz_page", course="data-structures"))
 
     return render_template("datastructure.html")
+@app.route("/linked-list-simulation")
+def linked_list_simulation():
+    return render_template("linklist.html")
 
 
 @app.route("/computer-architecture")

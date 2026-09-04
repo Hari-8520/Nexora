@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXORA | 3D Data Structures Simulation</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eefaf3;color:#17221c}
+.page{min-height:100vh;display:flex}
+.sidebar{width:320px;min-width:320px;height:100vh;position:sticky;top:0;overflow-y:auto;padding:28px 18px;background:#fff;border-right:1px solid #dcefe4}
+.brand{padding:8px 12px 22px;border-bottom:1px solid #e4f1e9;margin-bottom:18px}
+.brand small{color:#42b978;font-weight:800;letter-spacing:2px}.brand h2{margin:7px 0 0;font-size:24px}
+.topic{margin-bottom:18px}.topic-title{padding:11px 12px;font-weight:800;color:#145b37;font-size:15px;text-transform:uppercase;letter-spacing:.6px}
+.subtopic{width:100%;display:block;border:0;background:transparent;text-align:left;padding:10px 12px 10px 24px;margin:3px 0;border-radius:10px;color:#66766e;cursor:pointer;font-size:14px;line-height:1.35;transition:.2s}
+.subtopic:hover{background:#edf9f2;color:#269c5d;transform:translateX(2px)}
+.subtopic.active{background:#dff5e8;color:#168a4d;font-weight:700;box-shadow:inset 3px 0 #42b978}
+.main{flex:1;min-width:0;padding:42px}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:28px}
+.eyebrow{color:#35ae6d;font-weight:800;letter-spacing:2px;font-size:13px;margin-bottom:9px}
+.topline h1{margin:0;font-size:clamp(32px,4vw,52px);letter-spacing:-1.5px}
+.description{margin:12px 0 0;color:#718178;font-size:16px}
+.back-btn{border:1px solid #d5e9dd;background:#fff;color:#208b53;padding:11px 17px;border-radius:11px;text-decoration:none;font-weight:700;white-space:nowrap}
+.workspace{background:#fff;border:1px solid #e0eee5;border-radius:24px;min-height:680px;padding:28px;box-shadow:0 18px 50px rgba(32,111,68,.08)}
+.simulation-header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:25px}
+.simulation-header h2{margin:0;font-size:25px}.simulation-header p{margin:8px 0 0;color:#77857d}
+.badge{padding:8px 12px;border-radius:999px;background:#e8f8ee;color:#20955a;font-size:12px;font-weight:800;white-space:nowrap}
+.visual{height:430px;position:relative;border-radius:20px;background:radial-gradient(circle at 20% 20%,rgba(72,190,123,.12),transparent 30%),radial-gradient(circle at 80% 70%,rgba(72,190,123,.10),transparent 32%),#f5fcf8;border:1px solid #e1f0e7;overflow:hidden;touch-action:none}
+#threeCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.visual-hint{position:absolute;top:15px;left:18px;z-index:8;padding:8px 11px;border-radius:10px;background:rgba(255,255,255,.92);color:#708078;font-size:12px;box-shadow:0 5px 15px rgba(30,100,60,.06);pointer-events:none}
+.legend{position:absolute;right:15px;top:15px;z-index:8;background:rgba(255,255,255,.92);border:1px solid #e1eee6;border-radius:12px;padding:10px 12px;font-size:11px;color:#61736a;line-height:1.55;pointer-events:none}
+.legend b{color:#168a4d}
+.controls{margin-top:25px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.control-card{border:1px solid #e2eee7;border-radius:17px;padding:18px;background:#fbfefc}
+.control-card h3{margin:0 0 13px;font-size:15px}.control-row{display:flex;gap:9px;flex-wrap:wrap}
+input{flex:1;min-width:110px;border:1px solid #d5e7dc;border-radius:10px;padding:11px 12px;outline:none;font-size:14px}
+input:focus{border-color:#4fc27e;box-shadow:0 0 0 3px rgba(79,194,126,.12)}
+button.action{border:0;border-radius:10px;background:#51bf7c;color:#fff;padding:11px 15px;font-weight:700;cursor:pointer}
+button.action:hover{background:#3faf6b}
+.message{margin-top:20px;min-height:24px;color:#5f7168;font-size:14px;text-align:center}
+.info{margin-top:24px;padding:17px;border-radius:15px;background:#edf9f2;color:#456256;line-height:1.6;font-size:14px}
+.operation-title{color:#168a4d;font-weight:800;margin-bottom:5px}.operation-note{font-size:12px;color:#7b8982;margin-top:5px}
+.node-tip{position:absolute;z-index:30;display:none;min-width:205px;padding:11px 13px;border-radius:12px;background:#173b29;color:#fff;font-size:12px;line-height:1.55;box-shadow:0 12px 30px rgba(0,0,0,.18);pointer-events:none}
+#trainStage{position:absolute;inset:0;overflow:hidden}
+.train-car{position:absolute;width:170px;height:140px;z-index:5;cursor:grab;user-select:none;touch-action:none;transition:filter .18s,transform .18s}
+.train-car:active{cursor:grabbing}.train-car.selected{filter:drop-shadow(0 0 10px rgba(45,180,105,.6))}
+.train-head{position:absolute;left:8px;top:-35px;background:#168a4d;color:#fff;font-size:11px;font-weight:800;border-radius:9px;padding:7px 10px;z-index:8;white-space:nowrap}
+.car-body{position:absolute;left:4px;top:28px;width:162px;height:72px;background:#fff;border:3px solid #3fbb78;border-radius:12px;box-shadow:0 10px 18px rgba(40,130,78,.18);display:flex;overflow:hidden;z-index:4}
+.roof{position:absolute;left:12px;top:17px;width:146px;height:17px;background:#35ae6d;border-radius:12px 12px 4px 4px;z-index:5}
+.windows{position:absolute;left:23px;top:38px;display:flex;gap:11px;z-index:7}
+.windows i{display:block;width:25px;height:15px;background:#8bd6b0;border:2px solid #287e57;border-radius:4px}
+.data-box,.next-box{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.data-box{width:67px;background:#d9f5e4;border-right:2px solid #8bcdaa}.next-box{width:95px;background:#f0faf4}
+.data-box b,.next-box b{font-size:8px;color:#24704b;letter-spacing:.4px}.data-box strong{font-size:20px;color:#145b37}.next-box strong{font-size:10px;color:#17663d;margin-top:4px;word-break:break-all}
+.address{position:absolute;left:10px;top:104px;font-size:9px;color:#52675c;background:#fff;padding:4px 7px;border-radius:7px;border:1px solid #d5e9dd;z-index:8;white-space:nowrap}
+.prev{position:absolute;left:10px;top:122px;font-size:8px;color:#557366;background:#edf9f2;padding:3px 6px;border-radius:6px;z-index:8}
+.wheel{position:absolute;top:91px;width:25px;height:25px;border-radius:50%;background:#26352e;border:5px solid #78988a;box-shadow:inset 0 0 0 4px #334d40;z-index:3}
+.w1{left:16px}.w2{left:49px}.w3{left:103px}.w4{left:136px}
+.coupler{position:absolute;right:-17px;top:64px;width:24px;height:12px;background:#26352e;border-radius:4px;z-index:2}
+.chimney{position:absolute;left:17px;top:-2px;width:17px;height:29px;background:#26352e;border-radius:5px 5px 2px 2px;z-index:6}
+.chimney:before{content:"";position:absolute;left:-5px;top:-6px;width:27px;height:8px;background:#26352e;border-radius:5px}
+.lamp{position:absolute;left:-3px;top:53px;width:15px;height:15px;border-radius:50%;background:#ffd35a;border:3px solid #b67b20;box-shadow:0 0 12px rgba(255,196,45,.85);z-index:9}
+.cowcatcher{position:absolute;left:-17px;top:75px;width:35px;height:20px;border-left:5px solid #4b8669;border-bottom:5px solid #4b8669;transform:skewX(-25deg);z-index:2}
+.pointer-engine{position:absolute;z-index:15;font-size:34px;color:#168a4d;text-shadow:0 2px 8px rgba(20,110,65,.35);pointer-events:none;transform:translateY(-50%);transition:left .05s linear,top .05s linear}
+@media(max-width:900px){.page{display:block}.sidebar{width:100%;min-width:0;height:auto;position:relative;max-height:360px}.main{padding:24px}}
+@media(max-width:600px){.main{padding:15px}.workspace{padding:17px}.topline,.simulation-header{flex-direction:column}.controls{grid-template-columns:1fr}.visual{height:420px}.legend{display:none}}
+</style>
+</head>
+<body>
+<div class="page">
+<aside class="sidebar">
+<div class="brand"><small>NEXORA SIMULATION</small><h2>Data Structures</h2></div>
+<div class="topic"><div class="topic-title">1. Singly Linked List</div>
+<button class="subtopic active" data-id="sll-intro">1. Introduction to Linked List in C</button>
+<button class="subtopic" data-id="sll-begin">2. Insertion at the Beginning in Singly Linked List</button>
+<button class="subtopic" data-id="sll-position">3. Insertion at a Position in Singly Linked List</button>
+<button class="subtopic" data-id="sll-end">4. Insertion at the End in Singly Linked List</button>
+<button class="subtopic" data-id="sll-traverse">5. Traversal of a Linked List in Singly Linked List</button>
+<button class="subtopic" data-id="sll-del-begin">6. Deletion at the Beginning in Singly Linked List</button>
+<button class="subtopic" data-id="sll-del-position">7. Deletion at a Position in Singly Linked List</button>
+<button class="subtopic" data-id="sll-del-end">8. Deletion at the End in Singly Linked List</button></div>
+<div class="topic"><div class="topic-title">2. Doubly Linked List</div>
+<button class="subtopic" data-id="dll-begin">1. Insertion at the Beginning in Doubly Linked List</button>
+<button class="subtopic" data-id="dll-position">2. Insertion at a Position in Doubly Linked List</button>
+<button class="subtopic" data-id="dll-end">3. Insertion at the End in Doubly Linked List</button>
+<button class="subtopic" data-id="dll-del-begin">4. Deletion at the Beginning in Doubly Linked List</button></div>
+<div class="topic"><div class="topic-title">3. Circular Linked List</div>
+<button class="subtopic" data-id="cll-del-end">1. Deletion at the End in Circular Linked List</button>
+<button class="subtopic" data-id="cll-insert-end">2. Insertion at the End in Circular Linked List</button></div>
+</aside>
+<main class="main">
+<div class="topline"><div><div class="eyebrow">NEXORA INTERACTIVE LAB</div><h1>Data Structures Simulation</h1><p class="description">Touch a node to activate the complete pointer path. Drag the 3D train-node anywhere without changing its size.</p></div><a href="/simulation" class="back-btn">← Back to Simulation</a></div>
+<section class="workspace">
+<div class="simulation-header"><div><h2 id="simulationTitle">Introduction to Linked List in C</h2><p id="simulationDescription">Touch a node to reveal the complete connection path and inspect its DATA and NEXT ADDRESS.</p></div><span class="badge" id="typeBadge">SINGLY LINKED LIST</span></div>
+<div class="visual" id="visualArea">
+<div class="visual-hint">🚂 3D TRAIN LINKED LIST • Touch a node to start the pointer train</div>
+<div class="legend"><b>DATA</b> = stored value<br><b>NEXT</b> = address of next node<br><b>HEAD</b> = first node</div>
+<div class="node-tip" id="nodeTip"></div>
+</div>
+<div class="controls" id="controlsArea"></div>
+<div class="message" id="message">Touch any node — the complete pointer direction will move through all nodes.</div>
+<div class="info" id="infoArea">Each 3D node has a unique address, DATA compartment, and NEXT ADDRESS compartment. The last node points to NULL.</div>
+</section>
+</main>
+</div>
+
+<script>
+const simulationTitle=document.getElementById('simulationTitle');
+const simulationDescription=document.getElementById('simulationDescription');
+const typeBadge=document.getElementById('typeBadge');
+const visualArea=document.getElementById('visualArea');
+const controlsArea=document.getElementById('controlsArea');
+const message=document.getElementById('message');
+const infoArea=document.getElementById('infoArea');
+const nodeTip=document.getElementById('nodeTip');
+
+let list=[10,20,30], positions=[], currentType='singly', selectedIndex=null;
+let draggingIndex=null, dragOffsetX=0, dragOffsetY=0, dragMoved=false;
+
+const simulations={
+'sll-intro':{title:'Introduction to Linked List in C',description:'Touch any train node to activate the complete pointer direction through all nodes.',badge:'SINGLY LINKED LIST',info:'Every train node has a unique address, DATA, and NEXT ADDRESS. The final node points to NULL.',type:'singly',controls:introControls},
+'sll-begin':{title:'Insertion at the Beginning in Singly Linked List',description:'Insert a new train node before HEAD and inspect the updated pointer path.',badge:'INSERTION',info:'The new node gets a unique address and its NEXT ADDRESS becomes the old HEAD address.',type:'singly',controls:insertBeginningControls},
+'sll-position':{title:'Insertion at a Position in Singly Linked List',description:'Insert a train node at a selected position and inspect the updated chain.',badge:'INSERTION',info:'The new node gets a unique address and is connected between its neighboring nodes.',type:'singly',controls:insertPositionControls},
+'sll-end':{title:'Insertion at the End in Singly Linked List',description:'Append a train node and watch the previous tail point to it.',badge:'INSERTION',info:'The new tail has a unique address and NEXT ADDRESS = NULL.',type:'singly',controls:insertEndControls},
+'sll-traverse':{title:'Traversal of a Linked List in Singly Linked List',description:'Start traversal and watch the green pointer train travel from HEAD to NULL.',badge:'TRAVERSAL',info:'Traversal starts from HEAD and follows NEXT until NULL.',type:'singly',controls:traversalControls},
+'sll-del-begin':{title:'Deletion at the Beginning in Singly Linked List',description:'Remove HEAD and repair the chain.',badge:'DELETION',info:'The old HEAD is removed and HEAD moves to the next node.',type:'singly',controls:deleteBeginningControls},
+'sll-del-position':{title:'Deletion at a Position in Singly Linked List',description:'Remove a selected train node while preserving the remaining chain.',badge:'DELETION',info:'The previous node bypasses the deleted node by changing NEXT ADDRESS.',type:'singly',controls:deletePositionControls},
+'sll-del-end':{title:'Deletion at the End in Singly Linked List',description:'Remove the final train node and set the new tail NEXT to NULL.',badge:'DELETION',info:'The second-last node becomes the new tail.',type:'singly',controls:deleteEndControls},
+'dll-begin':{title:'Insertion at the Beginning in Doubly Linked List',description:'Inspect PREV and NEXT directions between train nodes.',badge:'DOUBLY LINKED LIST',info:'Each node has PREV ADDRESS and NEXT ADDRESS.',type:'doubly',controls:dllBeginControls},
+'dll-position':{title:'Insertion at a Position in Doubly Linked List',description:'Insert a train node and repair both directions.',badge:'DOUBLY LINKED LIST',info:'Both neighboring nodes are updated in both directions.',type:'doubly',controls:dllPositionControls},
+'dll-end':{title:'Insertion at the End in Doubly Linked List',description:'Add a train node after the tail and inspect both directions.',badge:'DOUBLY LINKED LIST',info:'The old tail points forward and the new node points backward.',type:'doubly',controls:dllEndControls},
+'dll-del-begin':{title:'Deletion at the Beginning in Doubly Linked List',description:'Remove HEAD and repair the new HEAD PREV ADDRESS.',badge:'DOUBLY LINKED LIST',info:'The new HEAD has PREV ADDRESS = NULL.',type:'doubly',controls:dllDeleteBeginControls},
+'cll-del-end':{title:'Deletion at the End in Circular Linked List',description:'Remove the final train node while keeping the pointer returning to HEAD.',badge:'CIRCULAR LINKED LIST',info:'The last node continues pointing back to HEAD; it does not point to NULL.',type:'circular',controls:circularDeleteControls},
+'cll-insert-end':{title:'Insertion at the End in Circular Linked List',description:'Add a train node and connect the last node back to HEAD.',badge:'CIRCULAR LINKED LIST',info:'The last node points to HEAD, keeping the list circular.',type:'circular',controls:circularInsertControls}
+};
+
+function nodeAddress(i){return '0x'+(1000+i*0x1A3).toString(16).toUpperCase().padStart(4,'0')}
+function nextAddress(i){
+ if(currentType==='circular') return nodeAddress((i+1)%list.length);
+ return i<list.length-1?nodeAddress(i+1):'NULL';
+}
+function prevAddress(i){return currentType==='doubly'?(i?nodeAddress(i-1):'NULL'):''}
+
+function defaultPositions(){
+ const w=visualArea.clientWidth,h=visualArea.clientHeight;
+ const n=Math.max(1,list.length);
+ const gap=Math.min(205,Math.max(125,(w-120)/n));
+ const total=gap*(n-1);
+ const start=Math.max(55,(w-total)/2-82);
+ return list.map((_,i)=>({x:start+i*gap,y:h/2-70}));
+}
+function ensurePositions(){
+ if(positions.length!==list.length){
+  const old=positions.slice();positions=defaultPositions();
+  old.forEach((p,i)=>{if(positions[i])positions[i]=p});
+ }
+}
+
+function makeVisual(){
+ visualArea.innerHTML=`
+   <div class="visual-hint">🚂 TOUCH A TRAIN NODE • DRAG TO MOVE</div>
+   <div class="legend"><b>DATA</b> = stored value<br><b>NEXT</b> = next address<br><b>HEAD</b> = first node</div>
+   <div id="trainStage"></div>
+   <div class="node-tip" id="nodeTip"></div>`;
+}
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function render(){
+ makeVisual();ensurePositions();
+ const stage=document.getElementById('trainStage');
+ stage.style.position='absolute';stage.style.inset='0';
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('width','100%');svg.setAttribute('height','100%');svg.style.position='absolute';svg.style.inset='0';svg.style.zIndex='1';svg.style.pointerEvents='none';
+ stage.appendChild(svg);
+
+ // Rails
+ const railY=visualArea.clientHeight/2+74;
+ svg.innerHTML=`<line x1="25" y1="${railY}" x2="${visualArea.clientWidth-25}" y2="${railY}" stroke="#a9cdb9" stroke-width="7" stroke-linecap="round"/>
+ <line x1="25" y1="${railY+12}" x2="${visualArea.clientWidth-25}" y2="${railY+12}" stroke="#d0e7da" stroke-width="4"/>`;
+
+ if(selectedIndex!==null) drawAllDirections(svg);
+
+ list.forEach((value,i)=>createTrainCar(stage,i,value));
+ if(selectedIndex!==null) animatePointerTrain();
+}
+
+function drawAllDirections(svg){
+ const count=list.length;
+ for(let i=0;i<count;i++){
+  let j=currentType==='circular'?(i+1)%count:(i+1<count?i+1:null);
+  if(j===null) continue;
+  const a=positions[i],b=positions[j];
+  const x1=a.x+164,y1=a.y+62,x2=b.x-4,y2=b.y+62;
+  const mid=(x1+x2)/2;
+  let d;
+  if(currentType==='circular'&&j===0)
+    d=`M ${x1} ${y1} C ${mid} ${y1-115}, ${mid} ${y1-115}, ${x2} ${y2}`;
+  else
+    d=`M ${x1} ${y1} L ${x2} ${y2}`;
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d',d);path.setAttribute('fill','none');path.setAttribute('stroke','#39ad6c');path.setAttribute('stroke-width','6');path.setAttribute('stroke-linecap','round');path.setAttribute('marker-end','url(#arrow)');
+  svg.appendChild(path);
+ }
+ const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+ defs.innerHTML=`<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#20995b"/></marker>`;
+ svg.prepend(defs);
+}
+
+function createTrainCar(stage,i,value){
+ const car=document.createElement('div');
+ car.className='train-car'+(selectedIndex===i?' selected':'');
+ car.dataset.index=i;
+ car.style.left=positions[i].x+'px';car.style.top=positions[i].y+'px';
+ car.innerHTML=`
+   <div class="train-head">${i===0?'🚂 HEAD':'🚃 NODE '+(i+1)}</div>
+   <div class="roof"></div>
+   <div class="windows"><i></i><i></i><i></i></div>
+   <div class="car-body">
+     <div class="data-box"><b>DATA</b><strong>${esc(value)}</strong></div>
+     <div class="next-box"><b>NEXT ADDRESS</b><strong>${esc(nextAddress(i))}</strong></div>
+   </div>
+   <div class="address">ADDRESS: <b>${nodeAddress(i)}</b></div>
+   ${currentType==='doubly'?`<div class="prev">PREV: <b>${prevAddress(i)}</b></div>`:''}
+   <div class="wheel w1"></div><div class="wheel w2"></div><div class="wheel w3"></div><div class="wheel w4"></div>
+   ${i<list.length-1||currentType==='circular'?'<div class="coupler"></div>':''}
+   ${i===0?'<div class="chimney"></div><div class="lamp"></div><div class="cowcatcher"></div>':''}`;
+ stage.appendChild(car);
+
+ car.addEventListener('pointerdown',e=>{
+  e.preventDefault();draggingIndex=i;dragMoved=false;
+  const r=visualArea.getBoundingClientRect();
+  dragOffsetX=e.clientX-r.left-positions[i].x;dragOffsetY=e.clientY-r.top-positions[i].y;
+  car.setPointerCapture(e.pointerId);
+  const move=ev=>{
+   if(draggingIndex!==i)return;
+   if(Math.hypot(ev.clientX-e.clientX,ev.clientY-e.clientY)>4)dragMoved=true;
+   const rr=visualArea.getBoundingClientRect();
+   positions[i].x=Math.max(5,Math.min(visualArea.clientWidth-180,ev.clientX-rr.left-dragOffsetX));
+   positions[i].y=Math.max(50,Math.min(visualArea.clientHeight-125,ev.clientY-rr.top-dragOffsetY));
+   car.style.left=positions[i].x+'px';car.style.top=positions[i].y+'px';
+   renderConnectionsOnly();
+  };
+  const up=ev=>{
+   car.removeEventListener('pointermove',move);car.removeEventListener('pointerup',up);car.removeEventListener('pointercancel',up);
+   if(!dragMoved) activate(i);
+   draggingIndex=null;
+  };
+  car.addEventListener('pointermove',move);car.addEventListener('pointerup',up);car.addEventListener('pointercancel',up);
+ });
+ car.addEventListener('mouseenter',e=>showTip(i,e));
+ car.addEventListener('mouseleave',()=>{nodeTip.style.display='none'});
+}
+function renderConnectionsOnly(){
+ const old=document.querySelector('#trainStage svg');if(!old)return;
+ old.remove();
+ const stage=document.getElementById('trainStage');
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('width','100%');svg.setAttribute('height','100%');svg.style.position='absolute';svg.style.inset='0';svg.style.zIndex='1';svg.style.pointerEvents='none';
+ stage.prepend(svg);drawAllDirections(svg);
+}
+function activate(i){
+ selectedIndex=(selectedIndex===i?null:i);
+ message.textContent=selectedIndex===null?'Pointer directions hidden. Touch a train node to activate them.':
+   currentType==='circular'?`Node ${list[i]} selected — the pointer train travels through every node and returns to HEAD.`:
+   `Node ${list[i]} selected — the pointer train travels through every node toward NULL.`;
+ render();
+}
+function showTip(i,e){
+ const tip=document.getElementById('nodeTip');if(!tip)return;
+ tip.style.display='block';
+ tip.innerHTML=`<b>${i===0?'HEAD':'NODE '+(i+1)}</b><br>ADDRESS: ${nodeAddress(i)}<br>DATA: ${list[i]}<br>NEXT ADDRESS: ${nextAddress(i)}${currentType==='doubly'?'<br>PREV ADDRESS: '+prevAddress(i):''}`;
+ const r=visualArea.getBoundingClientRect();
+ tip.style.left=Math.min(visualArea.clientWidth-225,Math.max(10,e.clientX-r.left+12))+'px';
+ tip.style.top=Math.min(visualArea.clientHeight-115,Math.max(60,e.clientY-r.top+12))+'px';
+}
+function animatePointerTrain(){
+ const stage=document.getElementById('trainStage');
+ let old=stage.querySelector('.pointer-engine');if(old)old.remove();
+ const p=document.createElement('div');p.className='pointer-engine';p.textContent='➤';stage.appendChild(p);
+ let start=performance.now(),duration=Math.max(2200,list.length*750);
+ function frame(now){
+  if(selectedIndex===null||!document.body.contains(p))return;
+  const t=((now-start)%duration)/duration;
+  const route=list.length-1;
+  let from,to,phase;
+  if(currentType==='circular'){
+   const pos=t*list.length;from=Math.floor(pos)%list.length;to=(from+1)%list.length;phase=pos-Math.floor(pos);
+  }else{
+   const pos=t*Math.max(1,route);from=Math.min(Math.floor(pos),Math.max(0,route-1));to=Math.min(from+1,route);phase=pos-Math.floor(pos);
+  }
+  const a=positions[from],b=positions[to];
+  const x=a.x+165+(b.x-a.x-169)*phase;
+  const y=a.y+62+(b.y-a.y)*phase-17;
+  p.style.left=x+'px';p.style.top=y+'px';
+  requestAnimationFrame(frame);
+ }
+ requestAnimationFrame(frame);
+}
+
+function inputControl(label,placeholder,text,action){return `<div class="control-card"><h3>${label}</h3><div class="control-row"><input id="valueInput" type="number" placeholder="${placeholder}"><button class="action" onclick="${action}">${text}</button></div></div>`}
+function introControls(){return `<div class="control-card"><h3>Interactive List</h3><div class="control-row"><button class="action" onclick="addIntroNode()">+ Add Node</button><button class="action" onclick="resetList()">Reset</button></div><div class="operation-note">Touch one train node to activate directions through all nodes. Drag to reposition.</div></div><div class="control-card"><div class="operation-title">Train Pointer Learning</div><div class="operation-note">Each node is a train carriage with DATA, NEXT ADDRESS and a unique memory address.</div></div>`}
+function insertBeginningControls(){return inputControl('New Node','Enter value','Insert at Beginning','insertBeginning()')}
+function insertPositionControls(){return `<div class="control-card"><h3>Insert at Position</h3><div class="control-row"><input id="valueInput" type="number" placeholder="Value"><input id="positionInput" type="number" min="1" placeholder="Position"><button class="action" onclick="insertPosition()">Insert</button></div></div>`}
+function insertEndControls(){return inputControl('New Node','Enter value','Insert at End','insertEnd()')}
+function traversalControls(){return `<div class="control-card"><h3>Pointer Control</h3><div class="control-row"><button class="action" onclick="runTraversal()">▶ Start Traversal</button><button class="action" onclick="resetList()">Reset</button></div></div>`}
+function deleteBeginningControls(){return `<div class="control-card"><h3>Delete Head</h3><div class="control-row"><button class="action" onclick="deleteBeginning()">Delete First Node</button><button class="action" onclick="resetList()">Reset</button></div></div>`}
+function deletePositionControls(){return `<div class="control-card"><h3>Delete at Position</h3><div class="control-row"><input id="positionInput" type="number" min="1" placeholder="Position"><button class="action" onclick="deletePosition()">Delete</button></div></div>`}
+function deleteEndControls(){return `<div class="control-card"><h3>Delete Tail</h3><div class="control-row"><button class="action" onclick="deleteEnd()">Delete Last Node</button><button class="action" onclick="resetList()">Reset</button></div></div>`}
+function dllBeginControls(){return inputControl('New Node','Enter value','Insert at Beginning','insertBeginning()')}
+function dllPositionControls(){return insertPositionControls()}
+function dllEndControls(){return inputControl('New Node','Enter value','Insert at End','insertEnd()')}
+function dllDeleteBeginControls(){return deleteBeginningControls()}
+function circularDeleteControls(){return deleteEndControls()}
+function circularInsertControls(){return inputControl('New Node','Enter value','Insert at End','insertEnd()')}
+
+function refresh(){
+ selectedIndex=null;const active=document.querySelector('.subtopic.active');const id=active?active.dataset.id:'sll-intro';const sim=simulations[id];
+ currentType=sim.type;simulationTitle.textContent=sim.title;simulationDescription.textContent=sim.description;typeBadge.textContent=sim.badge;infoArea.textContent=sim.info;controlsArea.innerHTML=sim.controls();positions=[];render();
+ message.textContent='Touch any train node — the complete pointer direction will move through all nodes.';
+}
+document.querySelectorAll('.subtopic').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.subtopic').forEach(item=>item.classList.remove('active'));button.classList.add('active');refresh()}));
+function getValue(){const x=document.getElementById('valueInput');return x?Number(x.value):NaN}
+function insertBeginning(){const v=getValue();if(Number.isNaN(v)){message.textContent='Enter a value first.';return}list.unshift(v);positions=[];refresh();message.textContent=`${v} was inserted at the beginning.`}
+function insertEnd(){const v=getValue();if(Number.isNaN(v)){message.textContent='Enter a value first.';return}list.push(v);positions=[];refresh();message.textContent=`${v} was inserted at the end.`}
+function insertPosition(){const v=getValue(),pos=Number(document.getElementById('positionInput').value);if(Number.isNaN(v)||Number.isNaN(pos)){message.textContent='Enter both value and position.';return}list.splice(Math.max(0,Math.min(pos-1,list.length)),0,v);positions=[];refresh();message.textContent=`${v} was inserted at position ${pos}.`}
+function deleteBeginning(){if(!list.length){message.textContent='The list is empty.';return}const v=list.shift();positions=[];refresh();message.textContent=`${v} was deleted from the beginning.`}
+function deletePosition(){const pos=Number(document.getElementById('positionInput').value);if(Number.isNaN(pos)||pos<1||pos>list.length){message.textContent='Enter a valid position.';return}const v=list.splice(pos-1,1)[0];positions=[];refresh();message.textContent=`${v} was deleted from position ${pos}.`}
+function deleteEnd(){if(!list.length){message.textContent='The list is empty.';return}const v=list.pop();positions=[];refresh();message.textContent=`${v} was deleted from the end.`}
+function addIntroNode(){list.push(list.length*10+10);positions=[];refresh();message.textContent='A new train node was added with a unique address.'}
+function resetList(){list=[10,20,30];positions=[];refresh();message.textContent='List reset.'}
+function runTraversal(){
+ if(!list.length)return;selectedIndex=0;render();let i=0;
+ const timer=setInterval(()=>{if(i>=list.length){clearInterval(timer);message.textContent='Traversal reached the end of the list.';return}
+ selectedIndex=i;render();message.textContent=`Traversal is visiting node ${list[i]} at ${nodeAddress(i)}.`;i++},850);
+}
+window.addEventListener('resize',()=>{if(document.querySelector('.train-car')){positions=[];render()}});
+refresh();
+</script></body>
+</html>
