@@ -2273,6 +2273,9 @@ def data_structures():
 @app.route("/linked-list-simulation")
 def linked_list_simulation():
     return render_template("linklist.html")
+@app.route("/computer-architecture-simulation")
+def computer_architecture_simulation():
+    return render_template("ca_sim.html")
 
 
 @app.route("/computer-architecture")
