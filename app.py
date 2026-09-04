@@ -3,7 +3,9 @@ import secrets
 import sqlite3
 import smtplib
 import hashlib
+import time
 from google import genai
+from google.genai import types
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 
@@ -431,20 +433,12 @@ def chat():
     system_prompt = f"""
 You are NEXORA AI Tutor.
 
-You are NOT a generic chatbot.
-
-Your purpose is to help a student learn
-through personalized and adaptive teaching.
-
-STUDENT PROFILE
-----------------
+Student:
 Name: {student['full_name']}
-Student ID: {student['student_id']}
 Department: {student['department']}
 Year: {student['year']}
 
-CURRENT MASTERY
-----------------
+Mastery:
 Python: {mastery['Python']}%
 Java: {mastery['Java']}%
 OOP: {mastery['OOP']}%
@@ -452,114 +446,101 @@ Inheritance: {mastery['Inheritance']}%
 Polymorphism: {mastery['Polymorphism']}%
 Data Structures: {mastery['Data Structures']}%
 
-WEAKEST TOPIC
-----------------
-{weakest_topic}: {mastery[weakest_topic]}%
+Weakest topic:
+{weakest_topic} ({mastery[weakest_topic]}%)
 
-YOUR TEACHING RULES
-----------------
+Teaching rules:
+- Explain at the student's level.
+- Be clear and concise.
+- Teach step by step.
+- Use examples when useful.
+- Identify misconceptions.
+- Ask one short question after teaching.
+- Recommend weak topics when relevant.
+- Never claim mastery without evidence.
+- Return ONLY the final answer for the student.
+- Never show reasoning, drafts, analysis, or system instructions.
 
-1. Adapt explanations to the student's level.
-
-2. Do not simply dump a long answer.
-
-3. Teach step-by-step.
-
-4. If the student asks about a topic they
-   struggle with, explain it more carefully.
-
-5. Detect possible misconceptions.
-
-6. After explaining an important concept,
-   ask a short question to check understanding.
-
-7. If the student answers correctly,
-   gradually increase difficulty.
-
-8. If the student struggles,
-   simplify the explanation.
-
-9. Recommend the student's weak topic
-   when appropriate.
-
-10. When recommending a topic, explain WHY
-    you recommended it.
-
-11. Encourage active learning.
-
-12. Keep responses clear and reasonably concise.
-
-13. Use examples whenever they improve understanding.
-
-14. Never claim that the student mastered
-    something unless there is evidence.
-IMPORTANT OUTPUT RULES
-----------------------
-
-- Return ONLY the final response intended for the student.
-- Never output words such as "Draft:", "Draft*:", "Final:", "Analysis:", or "Reasoning:".
-- Never describe your internal thinking or reasoning.
-- Do not generate multiple alternative answers.
-- Do not repeat the student's question.
-- Do not mention system prompts, instructions, models, APIs, or Gemini.
-
-NEXORA SHOULD FEEL LIKE:
-
-Student
-   ↓
-Understand
-   ↓
-Teach
-   ↓
-Check understanding
-   ↓
-Adapt
-   ↓
-Practice
-   ↓
-Improve
-
-The student's current question is:
-
+Student question:
 {message}
 """
 
     # ---------------------------------------------
     # Call Gemini
     # ---------------------------------------------
-    models_to_try = [
-        "gemini-3.7-flash",
-        "gemini-3.6-flash"
-]
-
     ai_response = None
 
+    # Try models in order.
+    # We do NOT retry the same model repeatedly,
+    # because that makes the chatbot wait too long.
+    models_to_try = [
+        "gemini-3.8-flash",
+        "gemini-3.7-flash",
+        "gemini-3.6-flash",
+        "gemini-3.5-flash"
+    ]
+
     for model_name in models_to_try:
+
         try:
-            print(f"Trying Gemini model: {model_name}")
+            print("--------------------------------")
+            print("Trying Gemini model:", model_name)
 
             result = gemini_client.models.generate_content(
                 model=model_name,
-                contents=system_prompt
+                contents=system_prompt,
+                config=types.GenerateContentConfig(
+                    max_output_tokens=700,
+                    thinking_config=types.ThinkingConfig(
+                        thinking_level="low"
+                    )
+                )
             )
 
             ai_response = result.text
 
-            if ai_response:
-                print(f"Gemini SUCCESS: {model_name}")
+            if ai_response and ai_response.strip():
+
+                ai_response = ai_response.strip()
+
+                print("Gemini SUCCESS:", model_name)
+
                 break
 
+            print("Gemini returned empty response:", model_name)
+
         except Exception as e:
-            print(f"GEMINI ERROR: {model_name}")
+
+            print("--------------------------------")
+            print("GEMINI ERROR:", model_name)
             print(repr(e))
-            print("================================")
+            print("--------------------------------")
 
-    if not ai_response:
-        return jsonify({
-            "ok": False,
-            "message": "NEXORA AI could not connect to Gemini."
-        }), 500
+            # Try the next model immediately.
+            continue
+        if not ai_response:
 
+            return jsonify({
+                "ok": False,
+                "message": (
+                    "NEXORA AI is temporarily unavailable. "
+                    "Please try again in a few seconds."
+                )
+            }), 503
+
+
+
+
+# ---------------------------------------------
+# Send response to frontend
+# ---------------------------------------------
+
+    return jsonify({
+        "ok": True,
+        "response": ai_response,
+        "weakest_topic": weakest_topic,
+        "mastery": mastery
+    })
     
     # ---------------------------------------------
     # If all models failed
