@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXORA | Computer Architecture</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          keyframes: {
+            floatIn: {
+              '0%': { opacity: '0', transform: 'translateY(24px) scale(.97)' },
+              '100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
+            },
+            slideIn: {
+              '0%': { opacity: '0', transform: 'translateX(-28px)' },
+              '100%': { opacity: '1', transform: 'translateX(0)' }
+            },
+            glowPulse: {
+              '0%,100%': { transform: 'scale(1)', opacity: '.35' },
+              '50%': { transform: 'scale(1.18)', opacity: '.6' }
+            },
+            drawLine: {
+              '0%': { strokeDashoffset: '900' },
+              '100%': { strokeDashoffset: '0' }
+            },
+            pop: {
+              '0%': { opacity: '0', transform: 'scale(.75) rotate(-2deg)' },
+              '70%': { transform: 'scale(1.04)' },
+              '100%': { opacity: '1', transform: 'scale(1) rotate(0)' }
+            }
+          },
+          animation: {
+            floatIn: 'floatIn .55s cubic-bezier(.2,.8,.2,1) both',
+            slideIn: 'slideIn .5s ease both',
+            glowPulse: 'glowPulse 4s ease-in-out infinite',
+            pop: 'pop .45s cubic-bezier(.2,.8,.2,1) both'
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .glass { background: rgba(255,255,255,.84); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .topic-card { transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease; }
+    .topic-card:hover { transform: translateY(-6px); box-shadow: 0 20px 45px rgba(20,83,45,.12); border-color: #86efac; }
+    .subtopic-card { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+    .subtopic-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 16px 35px rgba(20,83,45,.12); border-color: #4ade80; }
+    .diagram-svg { width: 100%; height: 190px; }
+    .diagram-svg .box { fill: #fff; stroke: #4ade80; stroke-width: 2; }
+    .diagram-svg .active { fill: #dcfce7; stroke: #22c55e; stroke-width: 2; }
+    .diagram-svg .line { stroke: #22a85a; stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-dasharray: 900; stroke-dashoffset: 900; animation: drawLine 1.5s ease forwards; }
+    .diagram-svg text { fill: #245638; font-size: 12px; font-weight: 600; }
+    .diagram-svg .small { font-size: 10px; font-weight: 500; }
+    .reader-open { animation: floatIn .45s cubic-bezier(.2,.8,.2,1) both; }
+    .reader-bg { animation: glowPulse 6s ease-in-out infinite; }
+    @media (max-width: 640px) { .diagram-svg { height: 155px; } }
+  </style>
+</head>
+
+<body class="min-h-screen overflow-x-hidden bg-[#f7fcf8] text-[#173a25]">
+  <!-- Decorative animated background -->
+  <div class="pointer-events-none fixed -right-32 -top-32 z-0 h-96 w-96 rounded-full bg-green-200/40 blur-3xl reader-bg"></div>
+  <div class="pointer-events-none fixed -bottom-40 -left-40 z-0 h-[30rem] w-[30rem] rounded-full bg-emerald-100/60 blur-3xl reader-bg" style="animation-delay:1.5s"></div>
+
+  <main class="relative z-10 mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10">
+    <header class="animate-slideIn">
+      <button id="backToCourses" type="button" class="mb-7 inline-flex items-center gap-2 rounded-lg border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-green-700 shadow-sm transition hover:-translate-x-1 hover:bg-green-600 hover:text-white">
+        ← Back to Courses
+      </button>
+
+      <div class="max-w-4xl">
+        <p class="mb-2 text-xs font-bold uppercase tracking-[.22em] text-green-600">NEXORA LEARNING LIBRARY</p>
+        <h1 class="text-4xl font-extrabold tracking-tight text-green-900 sm:text-5xl">Computer Architecture</h1>
+        <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+          Learn computer organization, processor design, memory, instruction sets, I/O and parallel processing step by step.
+        </p>
+
+        <div class="mt-6 max-w-3xl">
+          <div class="mb-2 flex justify-between text-xs text-slate-500">
+            <span id="progressText">0 / 0 subtopics viewed</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="h-2 overflow-hidden rounded-full bg-green-100">
+            <div id="progressBar" class="h-full w-0 rounded-full bg-green-500 transition-all duration-700"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Topic list. Clicking a subtopic opens ONLY that subtopic. -->
+    <div id="topicContainer" class="mt-10 space-y-9"></div>
+  </main>
+
+  <!-- Single-subtopic reader -->
+  <section id="reader" class="fixed inset-0 z-50 hidden overflow-y-auto bg-[#f7fcf8]/95 backdrop-blur-md">
+    <div class="mx-auto min-h-full w-full max-w-5xl px-5 py-6 sm:px-8 sm:py-9">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <button id="backToTopics" type="button" class="inline-flex items-center gap-2 rounded-lg border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-green-700 shadow-sm transition hover:-translate-x-1 hover:bg-green-600 hover:text-white">
+          ← Back to Topics
+        </button>
+        <button id="closeReader" type="button" class="rounded-lg border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-600 hover:text-white">
+          Close
+        </button>
+      </div>
+
+      <article id="readerCard" class="reader-open glass rounded-2xl border border-green-100 p-5 shadow-[0_25px_80px_rgba(20,83,45,.12)] sm:p-8">
+        <div class="mb-5">
+          <p id="readerTopic" class="text-xs font-bold uppercase tracking-[.18em] text-green-600"></p>
+          <h2 id="readerTitle" class="mt-2 text-3xl font-extrabold tracking-tight text-green-900 sm:text-4xl"></h2>
+          <p id="readerDescription" class="mt-3 max-w-3xl text-sm leading-7 text-slate-600"></p>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+          <div class="rounded-2xl border border-green-100 bg-white p-5 shadow-sm">
+            <p class="mb-3 text-xs font-bold uppercase tracking-[.16em] text-green-600">Concept</p>
+            <div id="readerContent" class="text-sm leading-7 text-slate-600"></div>
+          </div>
+
+          <div class="rounded-2xl border border-green-100 bg-[#f7fcf8] p-4 shadow-sm sm:p-5">
+            <div class="mb-3 flex items-center justify-between">
+              <p class="text-xs font-bold uppercase tracking-[.16em] text-green-600">Visual Diagram</p>
+              <span class="rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-bold text-green-700">NEXORA VISUAL</span>
+            </div>
+            <div id="readerDiagram" class="overflow-hidden rounded-xl border border-green-100 bg-white p-2"></div>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-xl border-l-4 border-green-500 bg-green-50 px-4 py-3 text-sm leading-6 text-green-800">
+          💡 <strong>Study tip:</strong> focus on this subtopic first. The other subtopics stay hidden until you select them.
+        </div>
+      </article>
+    </div>
+  </section>
+
+<script>
+const topics = [
+  { title: "Computer Organization & Basic Structure", desc: "The basic functional organization of a computer and how its major units communicate.", items: [
+    ["Functional units of a computer", "Input, processing, storage and output units work together to execute programs.", "computer"],
+    ["CPU, ALU, Control Unit, Registers", "The CPU contains the ALU for operations, the control unit for coordination and registers for fast temporary storage.", "cpu"],
+    ["Memory hierarchy", "Storage is arranged from fast, small storage to slower, larger storage levels.", "hierarchy"],
+    ["Input/Output system", "I/O connects external devices to the processor and memory through interfaces and controllers.", "io"],
+    ["System bus and its types", "The bus system carries data, addresses and control signals between major computer units.", "bus"]
+  ]},
+  { title: "Number Systems & Data Representation", desc: "How computers represent numbers, fractions and characters using binary patterns.", items: [
+    ["Binary, Decimal, Octal, Hexadecimal", "Binary uses base 2, decimal base 10, octal base 8 and hexadecimal base 16.", "bases"],
+    ["Number-system conversions", "Values can be converted between bases using positional expansion, division and grouping methods.", "convert"],
+    ["1's and 2's complement", "Complements provide convenient representations for negative binary values and subtraction.", "complement"],
+    ["Signed and unsigned numbers", "Unsigned values represent non-negative numbers while signed formats represent positive and negative values.", "signed"],
+    ["Fixed-point & floating-point representation", "Fixed point keeps the radix position fixed while floating point stores a significand and exponent.", "float"],
+    ["IEEE 754 floating-point representation", "IEEE 754 represents floating-point values using sign, exponent and fraction fields.", "ieee"],
+    ["Character representation: ASCII, Unicode", "Character codes map symbols to numerical values; Unicode supports a very large set of scripts.", "chars"]
+  ]},
+  { title: "Computer Arithmetic", desc: "Core arithmetic operations and fast hardware techniques used by processors.", items: [
+    ["Binary addition/subtraction", "Binary arithmetic uses carry and borrow rules to compute sums and differences.", "add"],
+    ["Signed arithmetic", "Signed operations must preserve the chosen representation and correctly handle carries and sign bits.", "signedarith"],
+    ["Booth's multiplication algorithm", "Booth encoding reduces repeated addition by examining adjacent multiplier bits.", "booth"],
+    ["Restoring & non-restoring division", "Division hardware iteratively shifts, compares and updates quotient and partial remainder.", "division"],
+    ["Floating-point arithmetic", "Floating-point operations align exponents, operate on significands and normalize the result.", "fparith"],
+    ["Overflow detection", "Overflow occurs when a result cannot be represented in the available number of bits.", "overflow"],
+    ["Fast adders", "Fast adder designs reduce carry propagation delay compared with simple ripple-carry addition.", "fastadder"],
+    ["Carry Look-Ahead Adder", "Generate and propagate signals calculate carries in parallel to speed up addition.", "cla"],
+    ["Carry Save Adder", "Multiple operands can be reduced into sum and carry vectors without immediately propagating carries.", "csa"]
+  ]},
+  { title: "CPU & Processor Organization", desc: "How the processor fetches, decodes and executes instructions using datapath and control.", items: [
+    ["Instruction cycle", "A processor repeatedly fetches an instruction, decodes it, executes it and updates state.", "cycle"],
+    ["Fetch → Decode → Execute", "The three major phases move an instruction from memory to execution.", "fde"],
+    ["CPU registers", "Registers hold operands, addresses, instructions and status information close to the ALU.", "registers"],
+    ["ALU", "The arithmetic logic unit performs arithmetic, logical and comparison operations.", "alu"],
+    ["Control Unit", "The control unit generates signals that coordinate datapath operations.", "control"],
+    ["Hardwired vs Microprogrammed Control", "Hardwired control uses fixed logic; microprogrammed control uses control words stored in control memory.", "controlcompare"],
+    ["Datapath and control path", "The datapath carries and transforms data while the control path directs when each operation occurs.", "datapath"]
+  ]},
+  { title: "Instruction Set Architecture (ISA)", desc: "The programmer-visible interface defining instructions, operands, formats and addressing methods.", items: [
+    ["Instruction formats", "An instruction format defines fields such as opcode, register fields and addressing information.", "format"],
+    ["Opcode & operands", "The opcode identifies the operation and operands identify the data or locations involved.", "opcode"],
+    ["Types of instructions", "Instruction sets commonly include data transfer, arithmetic, logical, control and system instructions.", "types"],
+    ["RISC vs CISC", "RISC emphasizes simpler regular instructions; CISC provides a richer and often more complex instruction set.", "risc"],
+    ["Addressing modes", "Addressing modes specify how an instruction locates its operand.", "addressing"],
+    ["Immediate", "The operand value is stored directly inside the instruction.", "immediate"],
+    ["Direct", "The instruction contains the memory address of the operand.", "direct"],
+    ["Indirect", "The instruction refers to a location that contains the operand address.", "indirect"],
+    ["Register", "The operand is held in a CPU register.", "registermode"],
+    ["Register indirect", "A register contains the memory address of the operand.", "regindirect"],
+    ["Indexed", "An index value is combined with a base address to locate data.", "indexed"],
+    ["Relative", "The target address is formed relative to the current instruction location.", "relative"]
+  ]},
+  { title: "Subroutines & Instruction Execution", desc: "Control-flow mechanisms used for branches, procedures, stacks, returns and interrupts.", items: [
+    ["Branch instructions", "Conditional branches change the next instruction when a condition is satisfied.", "branch"],
+    ["Jump instructions", "A jump directly changes the program counter to a target instruction.", "jump"],
+    ["Procedure/subroutine calls", "A call transfers control to reusable code and preserves a return location.", "call"],
+    ["Stack", "A stack follows last-in-first-out behavior and stores temporary execution information.", "stack"],
+    ["Return address", "The return address identifies where execution should continue after a subroutine finishes.", "return"],
+    ["Interrupt handling", "An interrupt temporarily transfers control to a handler and later restores the interrupted program.", "interrupt"]
+  ]},
+  { title: "Pipelining", desc: "Instruction pipelining overlaps stages of multiple instructions to improve throughput.", items: [
+    ["Instruction pipelining", "Different instructions occupy different pipeline stages simultaneously.", "pipeline"],
+    ["Pipeline stages", "Typical stages include instruction fetch, decode, execute, memory access and write-back.", "stages"],
+    ["Speedup", "Pipeline speedup compares overlapped execution with sequential execution.", "speedup"],
+    ["Structural hazard", "A resource conflict occurs when two stages need the same hardware resource at the same time.", "structural"],
+    ["Data hazard", "An instruction depends on a value that a previous instruction has not completed producing.", "datahazard"],
+    ["Control hazard", "Branches and jumps can change the instruction stream before the next instruction is known.", "controlhazard"],
+    ["Hazard handling", "Hardware and compiler techniques reduce the effect of pipeline hazards.", "hazard"],
+    ["Forwarding", "A newly computed value is routed directly to a dependent stage without waiting for register write-back.", "forward"],
+    ["Stalling", "A pipeline inserts a bubble so a dependent instruction waits for required data or resources.", "stall"],
+    ["Branch prediction", "The processor predicts a branch direction or target to keep the pipeline busy.", "predict"]
+  ]},
+  { title: "Memory Organization", desc: "Organization of storage and cache mechanisms that balance speed, capacity and cost.", items: [
+    ["Memory hierarchy", "Registers, cache, main memory and secondary storage form levels with different speed and capacity.", "hierarchy"],
+    ["Registers", "The fastest small storage locations hold values needed immediately by the CPU.", "registers"],
+    ["Cache", "Cache stores frequently used data closer to the CPU to reduce average access time.", "cache"],
+    ["Main memory", "Main memory holds active programs and data and is typically implemented using RAM.", "ram"],
+    ["Secondary storage", "Persistent storage provides much larger capacity than main memory but is slower.", "storage"],
+    ["SRAM vs DRAM", "SRAM uses stable cell circuitry and is fast; DRAM stores charge and requires refresh.", "sramdram"],
+    ["ROM", "Read-only memory stores non-volatile information such as firmware.", "rom"],
+    ["Direct mapping", "Each memory block maps to exactly one cache line determined by its index.", "directmap"],
+    ["Associative mapping", "A memory block may be placed in any cache line and tags are searched in parallel.", "assocmap"],
+    ["Set-associative mapping", "The cache is divided into sets and a block may occupy any line within its selected set.", "setassoc"],
+    ["Cache hit & miss", "A hit finds requested data in cache; a miss requires fetching it from a lower memory level.", "hitmiss"],
+    ["Hit ratio", "Hit ratio is the fraction of memory accesses satisfied by the cache.", "hitrate"],
+    ["Memory access time", "Average access time combines fast cache accesses with the extra cost of misses.", "amat"]
+  ]},
+  { title: "Virtual Memory", desc: "Techniques that give programs a large logical address space while physical memory is limited.", items: [
+    ["Virtual address vs physical address", "A virtual address is generated by the CPU; translation maps it to a physical memory location.", "address"],
+    ["Paging", "Virtual memory is divided into pages and physical memory into frames of matching size.", "paging"],
+    ["Page tables", "A page table records mappings from virtual pages to physical frames.", "pagetable"],
+    ["TLB", "A translation lookaside buffer caches recent page-table translations.", "tlb"],
+    ["Page faults", "A page fault occurs when a referenced page is not currently in physical memory.", "fault"],
+    ["Address translation", "The virtual page number is translated while the page offset is preserved.", "translation"]
+  ]},
+  { title: "Input/Output Organization", desc: "Methods used by processors and devices to exchange data efficiently.", items: [
+    ["I/O interface", "An interface provides registers, status/control signals and logic between the CPU bus and a device.", "iointerface"],
+    ["Programmed I/O", "The CPU repeatedly checks device status and transfers data itself.", "programmed"],
+    ["Interrupt-driven I/O", "A device signals the CPU when service is needed instead of continuous polling.", "interruptio"],
+    ["DMA (Direct Memory Access)", "DMA transfers blocks between an I/O device and memory with minimal CPU involvement.", "dma"],
+    ["I/O processors", "A dedicated processor or controller can manage I/O operations independently of the main CPU.", "iop"]
+  ]},
+  { title: "Parallel Processing", desc: "Ways of executing multiple operations or instruction streams concurrently.", items: [
+    ["Multiprocessors", "A multiprocessor system contains multiple processing units working on tasks concurrently.", "multiprocessor"],
+    ["Multicore processors", "Multiple CPU cores are integrated on one processor chip.", "multicore"],
+    ["SIMD", "Single Instruction, Multiple Data applies one instruction to multiple data elements in parallel.", "simd"],
+    ["MIMD", "Multiple Instruction, Multiple Data allows processors to execute different instruction streams on different data.", "mimd"],
+    ["Flynn's classification", "Flynn's taxonomy classifies architectures using instruction-stream and data-stream counts.", "flynn"],
+    ["Shared vs distributed memory", "Shared-memory systems use a common address space; distributed-memory systems use separate local memories connected by communication links.", "memoryparallel"]
+  ]}
+];
+
+const examples = {
+  "0-0": "A laptop receives a keyboard input, processes it in the CPU, stores working data in memory, and displays the result on the screen.",
+  "0-1": "To calculate 25 + 17, the control unit coordinates the operation, registers hold 25 and 17, and the ALU produces 42.",
+  "0-2": "A CPU may check a register first, then L1/L2 cache, then RAM, and finally storage when the requested data is not found at faster levels.",
+  "0-3": "When you press a key, the keyboard sends the character through its I/O interface to the computer, where software receives it.",
+  "0-4": "During a memory read, the address bus selects a location, the data bus carries the value, and the control bus carries the read signal.",
+  "1-0": "The decimal value 26 is 11010 in binary, 32 in octal, and 1A in hexadecimal.",
+  "1-1": "To convert binary 101101 to decimal, calculate 1×32 + 0×16 + 1×8 + 1×4 + 0×2 + 1×1 = 45.",
+  "1-2": "For 8-bit 5 (00000101), the 1's complement is 11111010 and the 2's complement is 11111011, which represents −5 in two's-complement form.",
+  "1-3": "In 8 bits, unsigned values range from 0 to 255, while two's-complement signed values range from −128 to 127.",
+  "1-4": "A fixed-point value such as 12.50 keeps a predetermined fractional position, while a floating-point value can move the radix position using an exponent.",
+  "1-5": "The decimal number 5.5 is stored as a sign bit, a biased exponent, and a fraction in IEEE 754 single precision.",
+  "1-6": "The character 'A' has ASCII code 65, while Unicode can represent characters such as 'A', '₹', and '中' in the same character system.",
+  "2-0": "Adding 1011₂ (11) and 0101₂ (5) gives 10000₂ (16); binary subtraction follows borrow rules when a bit is too small.",
+  "2-1": "Using 8-bit two's complement, 7 + (−3) is 00000111 + 11111101 = 00000100, giving 4.",
+  "2-2": "For multiplying a signed number such as 7 by −3, Booth's algorithm examines adjacent multiplier bits to decide whether to add, subtract, or shift.",
+  "2-3": "For 13 ÷ 3, binary division repeatedly shifts the partial remainder and compares it with the divisor to build the quotient.",
+  "2-4": "To add 6.5 and 2.25, the processor aligns their exponents, adds the significands, then normalizes the result to obtain 8.75.",
+  "2-5": "In 4-bit signed arithmetic, 7 + 3 produces a bit pattern outside the range −8 to 7, so signed overflow is detected.",
+  "2-6": "A ripple-carry adder may wait for each carry to travel through every bit, while a fast adder computes carry information earlier to reduce delay.",
+  "2-7": "For adding 1011 and 0110, generate and propagate signals can determine several carries in parallel instead of waiting for each carry sequentially.",
+  "2-8": "When adding three binary numbers at once, a carry-save adder produces a sum vector and carry vector first, then a final adder combines them.",
+  "3-0": "For an ADD instruction, the CPU fetches the instruction, decodes it, reads operands, performs the ALU operation, and stores the result.",
+  "3-1": "For an instruction such as ADD R1,R2, the CPU fetches it from memory, decodes the opcode and registers, then executes the addition.",
+  "3-2": "Before an arithmetic operation, the CPU may place operand values in general-purpose registers so the ALU can access them quickly.",
+  "3-3": "When a program compares two numbers using <, the ALU performs a comparison operation and updates status information used by later instructions.",
+  "3-4": "For a LOAD instruction, the control unit activates signals that move the address to the memory interface and route the returned data into a register.",
+  "3-5": "A simple RISC processor may use hardwired control for speed, while a complex instruction set can use microprogrammed control to sequence many control signals.",
+  "3-6": "For an ADD instruction, registers and the ALU form part of the datapath, while control signals decide when registers read and write data.",
+  "4-0": "A three-operand instruction such as ADD R1,R2,R3 can contain an opcode field plus fields identifying the destination and two source registers.",
+  "4-1": "In ADD R1,R2, ADD is the opcode and R1 and R2 identify the operands involved in the operation.",
+  "4-2": "A small program might use LOAD to read data, ADD to calculate, STORE to save it, and a branch instruction to repeat a loop.",
+  "4-3": "Adding two memory values may require several simple RISC instructions, while a CISC architecture may provide a single richer instruction for a more complex operation.",
+  "4-4": "An instruction can obtain its operand from the instruction itself, a register, or memory; the selected addressing mode tells the CPU how to find it.",
+  "4-5": "In ADD R1,#10, the value 10 is part of the instruction, so no separate memory lookup is needed for that operand.",
+  "4-6": "If an instruction contains address 5000, the CPU can directly access memory location 5000 to obtain the operand.",
+  "4-7": "If memory location 5000 contains the value 8000, an indirect instruction can use 5000 to find the address 8000 and then access the operand there.",
+  "4-8": "In ADD R1,R2, the operand is already in CPU register R2, so the processor does not need a memory access for that operand.",
+  "4-9": "If R3 contains address 4000, an instruction using register-indirect addressing reads its operand from memory location 4000.",
+  "4-10": "To access array element A[5], the processor can combine a base address of the array with an index representing the element offset.",
+  "4-11": "A branch instruction can use an offset such as +20, so the target is calculated relative to the current program counter instead of storing a full absolute address.",
+  "5-0": "In a loop, a branch such as 'branch if zero' can send execution back to the loop condition when a counter reaches zero.",
+  "5-1": "A jump instruction can transfer execution from address 1200 directly to address 5000 without testing a condition.",
+  "5-2": "A program can call a reusable function such as calculateTotal(), execute its instructions, and then return to the caller.",
+  "5-3": "When a function is called, its local variables and saved registers can be pushed onto the stack and later removed with POP operations.",
+  "5-4": "If a CALL instruction occurs at address 1000 and the next instruction is at 1004, the processor saves the return location so the subroutine can continue at 1004.",
+  "5-5": "When a network card receives data, it can interrupt the CPU; the CPU saves its current state, runs the interrupt service routine, and then resumes the program.",
+  "6-0": "While instruction I1 is executing, instruction I2 can be decoding and instruction I3 can be fetched, allowing several instructions to be in progress together.",
+  "6-1": "A five-stage pipeline can process instructions through IF, ID, EX, MEM, and WB stages, with different instructions occupying different stages simultaneously.",
+  "6-2": "If sequential execution takes 20 cycles for several instructions but a pipeline completes the same workload in 8 cycles, the pipeline provides a substantial speed improvement.",
+  "6-3": "If one hardware memory port is needed by both instruction fetch and data access in the same cycle, the two pipeline operations compete for one resource.",
+  "6-4": "If I1 calculates R1 and immediately following I2 needs R1, I2 may have to wait until the new R1 value is available.",
+  "6-5": "After a conditional branch, the processor may not yet know whether the next instruction comes from the sequential path or the branch target.",
+  "6-6": "A processor can resolve a pipeline hazard using techniques such as forwarding, stalling, resource duplication, or branch prediction.",
+  "6-7": "If an ADD instruction produces R1 and the next instruction immediately needs R1, the result can be forwarded directly from the ALU pipeline stage to the next ALU input.",
+  "6-8": "If a required value is not yet available, the processor can insert a bubble so the dependent instruction waits for the correct data.",
+  "6-9": "When a loop branch is usually taken, the processor can predict that it will be taken and begin fetching instructions from the predicted target.",
+  "7-0": "A three-level view shows registers and cache closest to the CPU, RAM next, and SSD/HDD farthest away; the faster levels are smaller and more expensive per byte.",
+  "7-1": "During a calculation such as X + Y, the CPU can keep X and Y in registers so the ALU can use them with very low access latency.",
+  "7-2": "If a loop repeatedly accesses the same array elements, the cache can keep recently used data close to the CPU and reduce repeated RAM accesses.",
+  "7-3": "When you open a running application, its active instructions and data are loaded into RAM so the CPU can access them while the program executes.",
+  "7-4": "A saved document remains on an SSD after the computer is powered off, unlike data that existed only in volatile RAM.",
+  "7-5": "A CPU cache commonly uses SRAM for speed, while main memory commonly uses DRAM because it provides higher density at lower cost.",
+  "7-6": "A device can store startup firmware in ROM or ROM-like non-volatile memory so the firmware remains available after power is removed.",
+  "7-7": "If a cache has 8 lines, a memory block whose block number is 18 maps to line 18 mod 8 = 2.",
+  "7-8": "A requested memory block can be placed in any cache line, and the cache compares its tag against multiple stored tags to find a match.",
+  "7-9": "In a 2-way set-associative cache, a block first selects its set and can then occupy either of the two lines in that set.",
+  "7-10": "If the CPU requests address 100 and its data is already in cache, it is a hit; if not, the data must be fetched from a lower memory level, causing a miss.",
+  "7-11": "If 90 out of 100 memory requests are served by the cache, the cache hit ratio is 90%.",
+  "7-12": "If a cache access takes 2 ns and a miss requires much longer RAM access, the average access time depends strongly on the cache hit rate.",
+  "8-0": "A program may generate virtual address 0x1234, while the memory-management hardware translates it to a different physical address in RAM.",
+  "8-1": "A 16 KB program can be divided into 4 KB pages, allowing its four pages to be placed in any available physical frames.",
+  "8-2": "If virtual page 3 maps to physical frame 9, the page table stores that mapping so the processor can locate the requested data.",
+  "8-3": "If the translation for virtual page 7 is already in the TLB, the CPU can obtain the corresponding frame quickly without reading the page table from memory.",
+  "8-4": "If a program accesses page 12 and that page is not in RAM, the operating system handles a page fault and loads the page from secondary storage.",
+  "8-5": "For a paged address, the virtual page number is translated through the page table while the page offset remains unchanged.",
+  "9-0": "A USB controller acts as an interface that handles communication between the system bus and an attached USB device.",
+  "9-1": "A CPU reading a simple sensor can repeatedly check a status register until the sensor reports that new data is ready.",
+  "9-2": "Instead of checking a keyboard continuously, the CPU can continue other work until the keyboard generates an interrupt when a key is pressed.",
+  "9-3": "When a disk transfers a large block into RAM, a DMA controller can perform the transfer while the CPU continues other processing.",
+  "9-4": "A dedicated I/O processor can manage several device transfers, reducing the amount of device-management work performed by the main CPU.",
+  "10-0": "A server with four processors can divide independent workloads among the processors so several tasks execute at the same time.",
+  "10-1": "A quad-core processor can run four instruction streams concurrently on four cores within the same physical chip.",
+  "10-2": "A graphics or image-processing operation can add the brightness values of four pixels at once using one SIMD instruction.",
+  "10-3": "Four processor cores can run different instructions on different data, such as one core handling networking while another processes a database request.",
+  "10-4": "A SIMD vector processor has one instruction stream operating on many data values, while an MIMD system has multiple instruction streams and multiple data streams.",
+  "10-5": "In a shared-memory multiprocessor, cores access a common memory space; in a distributed-memory system, each processor has local memory and communicates with others through a network."
+};
+
+const viewed = new Set();
+const totalSubtopics = topics.reduce((sum, topic) => sum + topic.items.length, 0);
+
+function esc(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function box(x, y, w, h, label, cls = 'box') {
+  return `<rect class="${cls}" x="${x}" y="${y}" width="${w}" height="${h}" rx="9"/><text x="${x + w/2}" y="${y + h/2 + 4}" text-anchor="middle">${esc(label)}</text>`;
+}
+function line(x1, y1, x2, y2) {
+  return `<path class="line" d="M${x1} ${y1} L${x2} ${y2}" marker-end="url(#arrow)"/>`;
+}
+function svg(body) {
+  return `<svg class="diagram-svg" viewBox="0 0 620 180" preserveAspectRatio="xMidYMid meet">
+    <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#22a85a"/></marker></defs>${body}
+  </svg>`;
+}
+
+function diagram(type) {
+  const B = box, A = line;
+  let b = '';
+  if (type === 'computer') b=B(15,65,100,45,'Input')+B(175,55,120,65,'CPU','active')+B(355,55,120,65,'Memory')+B(505,65,100,45,'Output')+A(115,87,175,87)+A(295,87,355,87)+A(475,87,505,87);
+  else if (type === 'cpu') b=B(15,65,105,50,'Registers')+B(170,50,135,80,'Control Unit','active')+B(355,50,105,80,'ALU','active')+B(505,65,95,50,'Bus')+A(120,90,170,90)+A(305,90,355,90)+A(460,90,505,90);
+  else if (type === 'hierarchy') b=B(30,25,120,30,'Registers','active')+B(30,65,120,30,'Cache')+B(30,105,120,30,'RAM')+B(210,25,130,30,'SSD / HDD')+B(210,65,130,30,'More capacity')+B(210,105,130,30,'Lower speed')+A(150,40,210,40)+A(150,80,210,80)+A(150,120,210,120)+B(400,55,170,55,'Fast  ←  Slow','active');
+  else if (type === 'io') b=B(20,65,95,50,'CPU')+B(170,55,135,70,'I/O Interface','active')+B(355,65,105,50,'Controller')+B(510,65,95,50,'Device')+A(115,90,170,90)+A(305,90,355,90)+A(460,90,510,90);
+  else if (type === 'bus') b=B(20,55,100,70,'CPU')+B(475,55,125,70,'Memory / I/O')+B(160,25,270,25,'Data Bus','active')+B(160,70,270,25,'Address Bus')+B(160,115,270,25,'Control Bus')+A(120,90,160,37)+A(430,37,475,90);
+  else if (type === 'bases') b=B(20,70,120,45,'Decimal 10')+B(180,70,120,45,'Binary 2','active')+B(340,70,120,45,'Octal 8')+B(500,70,100,45,'Hex 16')+A(140,92,180,92)+A(300,92,340,92)+A(460,92,500,92);
+  else if (type === 'convert') b=B(25,70,130,45,'Base 10')+B(245,70,130,45,'Base 2','active')+B(465,70,130,45,'Base 16')+A(155,92,245,92)+A(375,92,465,92);
+  else if (type === 'complement') b=B(20,70,150,45,'Original bits')+B(235,70,150,45,"1's: invert",'active')+B(450,70,150,45,"2's: +1",'active')+A(170,92,235,92)+A(385,92,450,92);
+  else if (type === 'signed'||type === 'signedarith') b=B(20,70,150,45,'Sign bit')+B(235,70,150,45,'Magnitude','active')+B(450,70,150,45,'Range')+A(170,92,235,92)+A(385,92,450,92);
+  else if (type === 'float') b=B(20,70,160,45,'Fixed point')+B(230,70,160,45,'Significand','active')+B(450,70,150,45,'Exponent')+A(180,92,230,92)+A(390,92,450,92);
+  else if (type === 'ieee') b=B(20,70,95,45,'Sign')+B(135,70,210,45,'Exponent','active')+B(365,70,235,45,'Fraction')+A(115,92,135,92)+A(345,92,365,92);
+  else if (type === 'chars') b=B(20,70,120,45,'Character')+B(220,70,130,45,'Code point','active')+B(430,70,150,45,'Binary storage')+A(140,92,220,92)+A(350,92,430,92);
+  else if (['add','fastadder','cla'].includes(type)) b=B(20,70,120,45,'A + B')+B(205,70,135,45,'Carry logic','active')+B(390,70,120,45,'Sum')+B(535,70,70,45,'Cout')+A(140,92,205,92)+A(340,92,390,92)+A(510,92,535,92);
+  else if (type === 'booth') b=B(15,70,125,45,'Multiplier')+B(185,70,125,45,'Booth recode','active')+B(355,70,105,45,'Add / Shift')+B(500,70,105,45,'Product')+A(140,92,185,92)+A(310,92,355,92)+A(460,92,500,92);
+  else if (type === 'division') b=B(20,70,110,45,'Dividend')+B(165,70,110,45,'Shift')+B(310,70,110,45,'Compare')+B(455,70,110,45,'Quotient','active')+A(130,92,165,92)+A(275,92,310,92)+A(420,92,455,92);
+  else if (type === 'fparith') b=B(20,70,100,45,'Align')+B(160,70,110,45,'Operate','active')+B(300,70,120,45,'Normalize')+B(460,70,120,45,'Round')+A(120,92,160,92)+A(270,92,300,92)+A(420,92,460,92);
+  else if (type === 'overflow') b=B(20,70,145,45,'Representable')+B(235,70,145,45,'Operation','active')+B(450,70,145,45,'Overflow?')+A(165,92,235,92)+A(380,92,450,92);
+  else if (type === 'csa') b=B(20,55,80,45,'A')+B(125,55,80,45,'B')+B(230,55,80,45,'C')+B(355,45,105,65,'CSA','active')+B(500,55,105,45,'S + C')+A(100,77,355,77)+A(205,77,355,77)+A(310,77,355,77)+A(460,77,500,77);
+  else if (type === 'cycle'||type === 'fde') b=B(20,70,100,45,'Fetch')+B(180,70,100,45,'Decode')+B(340,70,100,45,'Execute','active')+B(500,70,100,45,'Next')+A(120,92,180,92)+A(280,92,340,92)+A(440,92,500,92);
+  else if (type === 'registers') b=B(20,45,100,35,'PC')+B(20,95,100,35,'IR')+B(170,45,100,35,'ACC')+B(170,95,100,35,'MAR')+B(320,45,100,35,'MDR')+B(320,95,100,35,'Flags')+B(475,70,120,45,'ALU','active');
+  else if (type === 'alu') b=B(20,70,110,45,'Operands')+B(190,55,145,75,'ALU','active')+B(410,70,100,45,'Result')+B(530,70,70,45,'Flags')+A(130,92,190,92)+A(335,92,410,92)+A(510,92,530,92);
+  else if (type === 'control') b=B(20,70,125,45,'Instruction')+B(205,60,150,65,'Control Unit','active')+B(415,70,95,45,'Signals')+B(535,70,70,45,'Datapath')+A(145,92,205,92)+A(355,92,415,92)+A(510,92,535,92);
+  else if (type === 'controlcompare') b=B(20,70,145,45,'Hardwired','active')+B(235,70,145,45,'Microprogrammed','active')+B(450,70,145,45,'Control signals')+A(165,92,235,92)+A(380,92,450,92);
+  else if (type === 'datapath') b=B(20,70,105,45,'Registers')+B(190,70,110,45,'ALU','active')+B(370,70,110,45,'Memory')+B(535,70,65,45,'I/O')+A(125,92,190,92)+A(300,92,370,92)+A(480,92,535,92);
+  else if (type === 'format'||type === 'opcode') b=B(20,70,90,45,'Opcode','active')+B(125,70,105,45,'Operand 1')+B(245,70,105,45,'Operand 2')+B(365,70,100,45,'Mode')+B(485,70,115,45,'Instruction');
+  else if (type === 'types') b=B(20,70,110,45,'Data transfer')+B(150,70,100,45,'Arithmetic')+B(270,70,100,45,'Logic')+B(390,70,100,45,'Control')+B(510,70,95,45,'System','active');
+  else if (type === 'risc') b=B(20,65,170,55,'RISC: simple','active')+B(230,65,160,55,'CISC: rich','active')+B(430,65,165,55,'ISA choice');
+  else if (type === 'addressing') b=B(20,70,135,45,'Addressing mode')+B(225,70,135,45,'Effective address','active')+B(430,70,165,45,'Operand')+A(155,92,225,92)+A(360,92,430,92);
+  else if (type === 'immediate') b=B(20,70,130,45,'Instruction')+B(200,70,140,45,'Value = operand','active')+B(390,70,120,45,'ALU')+A(150,92,200,92)+A(340,92,390,92);
+  else if (type === 'direct'||type === 'indirect'||type === 'regindirect') b=B(20,70,120,45,'Instruction')+B(190,70,130,45,type==='direct'?'Memory address':'Address pointer','active')+B(380,70,120,45,'Data')+A(140,92,190,92)+A(320,92,380,92);
+  else if (type === 'registermode') b=B(20,70,125,45,'Instruction')+B(205,70,125,45,'Register R1','active')+B(390,70,120,45,'Operand')+A(145,92,205,92)+A(330,92,390,92);
+  else if (type === 'indexed') b=B(20,70,120,45,'Base')+B(190,70,120,45,'Index')+B(360,70,130,45,'EA = B + I','active')+B(530,70,70,45,'Data')+A(140,92,190,92)+A(310,92,360,92)+A(490,92,530,92);
+  else if (type === 'relative') b=B(20,70,120,45,'PC')+B(190,70,120,45,'Offset')+B(360,70,140,45,'Target = PC + off','active')+A(140,92,190,92)+A(310,92,360,92);
+  else if (type === 'branch'||type === 'jump') b=B(20,70,120,45,'PC')+B(200,70,130,45,'Condition / target','active')+B(400,70,120,45,'New PC')+A(140,92,200,92)+A(330,92,400,92);
+  else if (type === 'call') b=B(15,70,120,45,'Caller')+B(185,70,120,45,'Call')+B(355,70,105,45,'Stack','active')+B(500,70,105,45,'Callee')+A(135,92,185,92)+A(305,92,355,92)+A(460,92,500,92);
+  else if (type === 'stack') b=B(30,35,125,30,'Top')+B(30,75,125,30,'Item 2')+B(30,115,125,30,'Item 1')+B(225,70,120,45,'PUSH','active')+B(420,70,120,45,'POP')+A(155,92,225,92)+A(345,92,420,92);
+  else if (type === 'return') b=B(20,70,125,45,'Call')+B(205,70,130,45,'Save return PC','active')+B(390,70,120,45,'Return')+A(145,92,205,92)+A(335,92,390,92);
+  else if (type === 'interrupt'||type === 'interruptio') b=B(20,70,115,45,'Main program')+B(200,70,115,45,'Interrupt')+B(380,70,115,45,'ISR / handler','active')+B(530,70,70,45,'Return')+A(135,92,200,92)+A(315,92,380,92)+A(495,92,530,92);
+  else if (type === 'pipeline'||type === 'stages') b=B(10,45,105,35,'IF')+B(125,45,105,35,'ID')+B(240,45,105,35,'EX','active')+B(355,45,105,35,'MEM')+B(470,45,105,35,'WB')+B(10,100,105,35,'I2')+B(125,100,105,35,'I2')+B(240,100,105,35,'I2')+B(355,100,105,35,'I2')+B(470,100,105,35,'I2');
+  else if (type === 'speedup') b=B(20,65,145,55,'Sequential')+B(235,65,145,55,'Pipeline overlap','active')+B(450,65,145,55,'Higher throughput')+A(165,92,235,92)+A(380,92,450,92);
+  else if (type === 'structural'||type === 'hazard') b=B(20,70,145,45,'Stage A')+B(235,70,145,45,'Shared resource','active')+B(450,70,145,45,'Stage B')+A(165,92,235,92)+A(380,92,450,92);
+  else if (type === 'datahazard') b=B(20,70,145,45,'I1: produce')+B(235,70,145,45,'Dependency','active')+B(450,70,145,45,'I2: consume')+A(165,92,235,92)+A(380,92,450,92);
+  else if (type === 'controlhazard'||type === 'predict') b=B(20,70,145,45,'Branch')+B(235,70,145,45,'Predict','active')+B(450,70,145,45,'Target path')+A(165,92,235,92)+A(380,92,450,92);
+  else if (type === 'forward') b=B(20,70,120,45,'EX result')+B(230,70,140,45,'Forwarding path','active')+B(460,70,130,45,'Next EX')+A(140,92,230,92)+A(370,92,460,92);
+  else if (type === 'stall') b=B(20,70,90,45,'I1')+B(145,70,90,45,'I2')+B(270,70,90,45,'Bubble','active')+B(395,70,90,45,'I3')+B(520,70,80,45,'I4');
+  else if (['cache','hitmiss','hitrate','amat'].includes(type)) b=B(20,70,100,45,'CPU')+B(180,70,125,45,'Cache','active')+B(355,70,125,45,'Main memory')+B(535,70,65,45,'Disk')+A(120,92,180,92)+A(305,92,355,92)+A(480,92,535,92);
+  else if (type === 'ram') b=B(20,70,110,45,'CPU')+B(200,70,150,45,'Main memory','active')+B(410,70,150,45,'Active data')+A(130,92,200,92)+A(350,92,410,92);
+  else if (type === 'storage') b=B(20,70,130,45,'RAM')+B(245,70,130,45,'SSD / HDD','active')+B(470,70,130,45,'Persistent')+A(150,92,245,92)+A(375,92,470,92);
+  else if (type === 'sramdram') b=B(20,65,170,55,'SRAM: no refresh','active')+B(225,65,170,55,'DRAM: refresh','active')+B(430,65,170,55,'Speed / density');
+  else if (type === 'rom') b=B(20,70,130,45,'Firmware','active')+B(230,70,130,45,'ROM')+B(440,70,140,45,'Non-volatile')+A(150,92,230,92)+A(360,92,440,92);
+  else if (['directmap','assocmap','setassoc'].includes(type)) b=B(20,70,125,45,'Memory block')+B(205,70,125,45,'Mapping rule','active')+B(385,70,105,45,'Cache')+B(525,70,75,45,'Hit?')+A(145,92,205,92)+A(330,92,385,92)+A(490,92,525,92);
+  else if (type === 'address'||type === 'translation') b=B(20,70,145,45,'Virtual address')+B(235,70,145,45,'Translate','active')+B(450,70,145,45,'Physical address')+A(165,92,235,92)+A(380,92,450,92);
+  else if (type === 'paging'||type === 'pagetable') b=B(20,70,115,45,'Page')+B(190,70,145,45,'Page table','active')+B(385,70,115,45,'Frame')+B(530,70,70,45,'RAM')+A(135,92,190,92)+A(335,92,385,92)+A(500,92,530,92);
+  else if (type === 'tlb') b=B(20,70,120,45,'VA')+B(205,70,125,45,'TLB','active')+B(390,70,120,45,'Frame')+B(540,70,60,45,'RAM')+A(140,92,205,92)+A(330,92,390,92)+A(510,92,540,92);
+  else if (type === 'fault') b=B(20,70,120,45,'Page request')+B(200,70,125,45,'Page fault','active')+B(390,70,100,45,'Disk')+B(535,70,65,45,'RAM')+A(140,92,200,92)+A(325,92,390,92)+A(490,92,535,92);
+  else if (type === 'iointerface') b=B(20,70,110,45,'CPU bus')+B(185,70,140,45,'I/O interface','active')+B(390,70,90,45,'Device')+B(525,70,75,45,'Status')+A(130,92,185,92)+A(325,92,390,92);
+  else if (type === 'programmed') b=B(20,70,115,45,'CPU')+B(200,70,115,45,'Poll?','active')+B(380,70,115,45,'Device')+A(135,92,200,92)+A(315,92,380,92);
+  else if (type === 'dma') b=B(20,70,100,45,'Device')+B(175,70,110,45,'DMA','active')+B(360,70,115,45,'Memory')+B(525,70,75,45,'CPU')+A(120,92,175,92)+A(285,92,360,92);
+  else if (type === 'iop') b=B(20,70,110,45,'CPU')+B(200,65,130,55,'I/O processor','active')+B(410,70,100,45,'Devices')+B(540,70,60,45,'Memory')+A(130,92,200,92)+A(330,92,410,92)+A(510,92,540,92);
+  else if (type === 'multiprocessor'||type === 'multicore') b=B(20,70,110,45,'Core 1','active')+B(170,70,110,45,'Core 2','active')+B(320,70,110,45,'Core 3','active')+B(470,70,110,45,'Shared work')+A(130,92,470,92)+A(280,92,470,92)+A(430,92,470,92);
+  else if (type === 'simd') b=B(20,70,125,45,'One instruction','active')+B(215,45,80,25,'D1')+B(215,78,80,25,'D2')+B(215,111,80,25,'D3')+B(380,45,80,25,'R1')+B(380,78,80,25,'R2')+B(380,111,80,25,'R3')+A(145,92,215,57)+A(295,57,380,57)+A(295,90,380,90)+A(295,123,380,123);
+  else if (type === 'mimd') b=B(20,50,110,30,'Instr A')+B(20,105,110,30,'Instr B')+B(200,50,110,30,'Core 1','active')+B(200,105,110,30,'Core 2','active')+B(380,50,110,30,'Data A')+B(380,105,110,30,'Data B')+A(130,65,200,65)+A(130,120,200,120)+A(310,65,380,65)+A(310,120,380,120);
+  else if (type === 'flynn') b=B(20,45,125,30,'Single instr')+B(20,105,125,30,'Multiple instr')+B(240,45,125,30,'Single data')+B(240,105,125,30,'Multiple data')+B(440,75,140,45,'Architecture class','active')+A(145,60,240,60)+A(145,120,240,120)+A(365,60,440,87)+A(365,120,440,108);
+  else if (type === 'memoryparallel') b=B(20,70,160,45,'Shared memory','active')+B(235,70,145,45,'Interconnect')+B(435,70,160,45,'Distributed memory','active')+A(180,92,235,92)+A(380,92,435,92);
+  else b=B(20,70,150,45,'Concept')+B(235,70,150,45,'Process','active')+B(450,70,150,45,'Result')+A(170,92,235,92)+A(385,92,450,92);
+  return svg(b);
+}
+
+function renderTopics() {
+  const container = document.getElementById('topicContainer');
+  container.innerHTML = topics.map((topic, i) => `
+    <section class="animate-floatIn" style="animation-delay:${i * 45}ms">
+      <div class="mb-3 flex items-center gap-2">
+        <span class="h-6 w-1 rounded-full bg-green-500"></span>
+        <h2 class="text-lg font-bold text-green-800 sm:text-xl">${i + 1}. ${esc(topic.title)}</h2>
+      </div>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        ${topic.items.map((item, j) => `
+          <button type="button" class="subtopic-card group relative overflow-hidden rounded-xl border border-green-100 bg-white p-4 text-left shadow-sm" data-topic="${i}" data-subtopic="${j}">
+            <span class="absolute -right-7 -top-7 h-20 w-20 rounded-full bg-green-50 transition duration-500 group-hover:scale-150"></span>
+            <div class="relative">
+              <div class="mb-2 text-[10px] font-bold uppercase tracking-wider text-green-600">${i + 1}.${j + 1} Subtopic</div>
+              <div class="text-sm font-bold leading-5 text-green-900">${esc(item[0])}</div>
+              <div class="mt-3 text-xs font-semibold text-green-600 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100">Open concept →</div>
+            </div>
+          </button>
+        `).join('')}
+      </div>
+    </section>
+  `).join('');
+
+  container.querySelectorAll('[data-topic][data-subtopic]').forEach(button => {
+    button.addEventListener('click', () => openSubtopic(Number(button.dataset.topic), Number(button.dataset.subtopic)));
+  });
+}
+
+function openSubtopic(topicIndex, subtopicIndex) {
+  const topic = topics[topicIndex];
+  const item = topic.items[subtopicIndex];
+
+  viewed.add(`${topicIndex}-${subtopicIndex}`);
+  updateProgress();
+
+  document.getElementById('readerTopic').textContent = `Topic ${topicIndex + 1} • ${topic.title}`;
+  document.getElementById('readerTitle').textContent = `${topicIndex + 1}.${subtopicIndex + 1} ${item[0]}`;
+  document.getElementById('readerDescription').textContent = topic.desc;
+  document.getElementById('readerContent').innerHTML = `
+    <p>${esc(item[1])}</p>
+    <div class="mt-6 rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-white p-4 shadow-sm animate-pop">
+      <div class="mb-2 flex items-center gap-2">
+        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-green-500 text-white text-xs">✓</span>
+        <h3 class="text-sm font-extrabold uppercase tracking-[.14em] text-green-700">Unique Example</h3>
+      </div>
+      <p class="text-sm leading-7 text-slate-700">${esc(examples[`${topicIndex}-${subtopicIndex}`])}</p>
+    </div>`;
+  document.getElementById('readerDiagram').innerHTML = diagram(item[2]);
+
+  const reader = document.getElementById('reader');
+  reader.classList.remove('hidden');
+  reader.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const card = document.getElementById('readerCard');
+  card.classList.remove('reader-open');
+  void card.offsetWidth;
+  card.classList.add('reader-open');
+}
+
+function closeReader() {
+  const reader = document.getElementById('reader');
+  reader.classList.add('hidden');
+  reader.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+function updateProgress() {
+  const count = viewed.size;
+  const percent = Math.round((count / totalSubtopics) * 100);
+  document.getElementById('progressText').textContent = `${count} / ${totalSubtopics} subtopics viewed`;
+  document.getElementById('progressPercent').textContent = `${percent}%`;
+  document.getElementById('progressBar').style.width = `${percent}%`;
+}
+
+function goBackToCourses() {
+  if (document.referrer) history.back();
+  else window.location.href = '/courses';
+}
+
+document.getElementById('backToTopics').addEventListener('click', closeReader);
+document.getElementById('closeReader').addEventListener('click', closeReader);
+document.getElementById('backToCourses').addEventListener('click', goBackToCourses);
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeReader();
+});
+
+document.getElementById('reader').addEventListener('click', event => {
+  if (event.target.id === 'reader') closeReader();
+});
+
+renderTopics();
+updateProgress();
+</script>
+</body>
+</html>

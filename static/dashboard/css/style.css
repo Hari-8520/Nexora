@@ -1231,6 +1231,9 @@ img {
 /* =========================
    21. PROFILE PAGE
    ========================= */
+/* =========================
+   ANIMATED NEXORA PROFILE COVER
+   ========================= */
 
 .profile-cover {
     height: 180px;
@@ -1242,36 +1245,190 @@ img {
 
     background:
         radial-gradient(
-            circle at 20% 50%,
-            rgba(255, 255, 255, .20),
-            transparent 35%
+            circle at 15% 30%,
+            rgba(255, 255, 255, .25) 0 2px,
+            transparent 3px
+        ),
+        radial-gradient(
+            circle at 75% 20%,
+            rgba(255, 255, 255, .18) 0 2px,
+            transparent 3px
+        ),
+        radial-gradient(
+            circle at 55% 75%,
+            rgba(255, 255, 255, .20) 0 2px,
+            transparent 3px
         ),
         linear-gradient(
             120deg,
-            #59c27d,
-            #82d39b
+            #45b978,
+            #72d39a,
+            #4fbd7d
         );
 
+    background-size:
+        90px 90px,
+        120px 120px,
+        150px 150px,
+        200% 200%;
+
+    animation: nexoraGradient 12s ease-in-out infinite;
+
     border: none;
+
+    box-shadow:
+        0 12px 35px rgba(50, 160, 90, .14);
 }
+
+
+/* Moving technology pattern */
 
 .profile-pattern {
     width: 100%;
     height: 100%;
 
-    opacity: .28;
+    position: absolute;
+    inset: 0;
+
+    opacity: .35;
 
     background-image:
         linear-gradient(
-            30deg,
-            #ffffff22 12%,
-            transparent 12.5%,
-            transparent 87%,
-            #ffffff22 87.5%,
-            #ffffff22
+            135deg,
+            transparent 45%,
+            rgba(255,255,255,.18) 46%,
+            transparent 47%
+        ),
+        linear-gradient(
+            45deg,
+            transparent 55%,
+            rgba(255,255,255,.12) 56%,
+            transparent 57%
         );
 
-    background-size: 40px 40px;
+    background-size: 90px 90px;
+
+    animation: nexoraPattern 14s linear infinite;
+
+    pointer-events: none;
+}
+
+
+/* Soft moving glow */
+
+.profile-cover::before {
+    content: "";
+
+    position: absolute;
+
+    width: 260px;
+    height: 260px;
+
+    left: -80px;
+    top: -120px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.12);
+
+    filter: blur(5px);
+
+    animation: nexoraGlow 8s ease-in-out infinite;
+
+    pointer-events: none;
+}
+
+
+/* Second floating glow */
+
+.profile-cover::after {
+    content: "";
+
+    position: absolute;
+
+    width: 220px;
+    height: 220px;
+
+    right: -70px;
+    bottom: -150px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.10);
+
+    filter: blur(8px);
+
+    animation: nexoraGlow2 10s ease-in-out infinite;
+
+    pointer-events: none;
+}
+
+
+/* =========================
+   ANIMATIONS
+   ========================= */
+
+@keyframes nexoraGradient {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+
+}
+
+
+@keyframes nexoraPattern {
+
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 180px 180px;
+    }
+
+}
+
+
+@keyframes nexoraGlow {
+
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(80px, 35px) scale(1.15);
+    }
+
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+}
+
+
+@keyframes nexoraGlow2 {
+
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(-70px, -40px) scale(1.12);
+    }
+
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
 }
 
 .profile-main {
@@ -2671,4 +2828,18 @@ img {
     flex: 0 0 auto !important;
     margin: 0 !important;
     white-space: nowrap !important;
+}
+/* Align course buttons at the same position */
+.course-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.course-card > p {
+    min-height: 72px;
+}
+
+.course-card .course-btn {
+    margin-top: 0;
+    align-self: center;
 }
