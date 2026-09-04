@@ -22,7 +22,7 @@
           rel="stylesheet">
 </head>
 
-<body>
+<body data-quiz-course="{{ quiz_course|default('') }}">
 
 <div class="app">
 
@@ -158,6 +158,12 @@
                class="{% if page == 'certificate' %}active{% endif %}">
                 <span>◇</span>
                 <span>Certificates</span>
+            </a>
+
+            <a href="/quiz"
+               class="{% if page == 'quiz' %}active{% endif %}">
+                <span>✓</span>
+                <span>Quiz</span>
             </a>
 
         </nav>
@@ -1517,7 +1523,14 @@
 
                 {% for course in courses %}
 
-                <article class="course-card">
+                <article
+                    class="course-card"
+                    {% if course.title == 'Data Structures' %}
+                    data-quiz-course="data-structures"
+                    {% elif course.title == 'Computer Architecture' %}
+                    data-quiz-course="computer-architecture"
+                    {% endif %}
+                >
 
                     <div class="course-icon">
                         ✦
@@ -1747,9 +1760,70 @@
         {% endif %}
 
 
+
         <!-- =========================
              SOURCES
         ========================== -->
+
+        {% if page == "sources" %}
+
+        <section class="page-content">
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="eyebrow">
+                        LEARNING SOURCES
+                    </span>
+
+                    <h1>
+                        Sources
+                    </h1>
+
+                    <p>
+                        Explore the resources used to support your learning.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="source-grid">
+
+                {% for source in sources %}
+
+                <article class="source-card">
+
+                    <div class="source-icon">
+                        ◈
+                    </div>
+
+                    <span>
+                        {{ source.type }}
+                    </span>
+
+                    <h2>
+                        {{ source.title }}
+                    </h2>
+
+                    <strong>
+                        {{ source.topic }}
+                    </strong>
+
+                    <p>
+                        {{ source.description }}
+                    </p>
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+        {% endif %}
 
         <!-- =========================
      SIMULATION
@@ -1866,6 +1940,240 @@
 </section>
 
 {% endif %}
+
+        <!-- =========================
+             QUIZ
+        ========================== -->
+
+        {% if page == "quiz" %}
+
+        <section class="page-content quiz-page">
+
+            <div class="page-heading">
+                <div>
+                    <span class="eyebrow">
+                        NEXORA ASSESSMENT
+                    </span>
+
+                    <h1>
+                        Course Quiz
+                    </h1>
+
+                    <p>
+                        Complete all 15 questions to unlock the course.
+                    </p>
+                </div>
+            </div>
+
+            {% if not quiz_course %}
+
+            <!-- QUIZ COURSE SELECTION -->
+            <div class="quiz-course-grid">
+
+                <article class="quiz-course-card">
+                    <div class="course-icon">✦</div>
+
+                    <span class="course-category">
+                        COMPUTER SCIENCE
+                    </span>
+
+                    <h2>
+                        Data Structures
+                    </h2>
+
+                    <p>
+                        Test your knowledge of linked lists, data structures and core operations.
+                    </p>
+
+                    <a
+                        href="{{ url_for('quiz_page', course='data-structures') }}"
+                        class="course-btn quiz-continue-btn">
+                        Continue Quiz →
+                    </a>
+                </article>
+
+                <article class="quiz-course-card">
+                    <div class="course-icon">✦</div>
+
+                    <span class="course-category">
+                        COMPUTER SCIENCE
+                    </span>
+
+                    <h2>
+                        Computer Architecture
+                    </h2>
+
+                    <p>
+                        Test your knowledge of computer organization, CPU, memory and architecture.
+                    </p>
+
+                    <a
+                        href="{{ url_for('quiz_page', course='computer-architecture') }}"
+                        class="course-btn quiz-continue-btn">
+                        Continue Quiz →
+                    </a>
+                </article>
+
+            </div>
+
+            {% else %}
+
+            <!-- ACTIVE 15-QUESTION QUIZ -->
+            <div
+                class="quiz-shell"
+                id="quizContainer"
+                data-course="{{ quiz_course }}"
+            >
+
+                <div class="quiz-card">
+
+                    <div class="quiz-top">
+
+                        <div>
+                            <span class="quiz-course-label">
+                                {{ quiz_course|replace('-', ' ')|title }}
+                            </span>
+
+                            <h2 class="quiz-title">
+                                Knowledge Check
+                            </h2>
+
+                            <p class="quiz-subtitle">
+                                Answer each question carefully. Your result is saved automatically.
+                            </p>
+                        </div>
+
+                        <div class="quiz-progress-wrap">
+
+                            <span
+                                class="quiz-progress-text"
+                                id="quizProgressText">
+                                1 / 15
+                            </span>
+
+                            <div class="quiz-progress">
+                                <i
+                                    id="quizProgress"
+                                    style="width: 7%; --progress: 7%;">
+                                </i>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <form id="quizForm" novalidate>
+
+                        <div class="quiz-question">
+
+                            <span
+                                class="quiz-question-number"
+                                id="quizQuestionNumber">
+                                Question 1 of 15
+                            </span>
+
+                            <h2 id="quizQuestion">
+                                Loading question...
+                            </h2>
+
+                            <div
+                                class="quiz-options"
+                                id="quizOptions">
+                            </div>
+
+                        </div>
+
+                        <p
+                            class="quiz-error"
+                            id="quizError"
+                            role="alert"
+                            style="display: none;">
+                        </p>
+
+                        <div class="quiz-actions">
+
+                            <button
+                                class="quiz-nav-btn quiz-previous-btn"
+                                id="quizPrevious"
+                                type="button"
+                                style="display: none;">
+                                ← Previous
+                            </button>
+
+                            <button
+                                class="quiz-nav-btn quiz-next"
+                                id="quizNext"
+                                type="button">
+                                Next →
+                            </button>
+
+                            <button
+                                class="quiz-nav-btn quiz-submit"
+                                id="quizSubmit"
+                                type="submit"
+                                style="display: none;">
+                                Submit Answer ✓
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                    <div
+                        class="quiz-result"
+                        id="quizResult"
+                        style="display: none;">
+
+                        <div class="quiz-result-icon">
+                            ✓
+                        </div>
+
+                        <h2>
+                            Quiz Completed
+                        </h2>
+
+                        <p id="quizResultMessage">
+                            Your quiz has been submitted successfully.
+                        </p>
+
+                        <div
+                            class="quiz-score"
+                            id="quizScore">
+                            0 / 15
+                        </div>
+
+                        <button
+                            class="primary-btn quiz-check-answer"
+                            id="quizCheckAnswer"
+                            type="button"
+                            style="display: none;">
+                            Check Answers ✓
+                        </button>
+
+                        <div
+                            class="quiz-answer-review"
+                            id="quizAnswerReview"
+                            style="display: none;">
+                        </div>
+
+                        <a
+                            class="primary-btn"
+                            href="{{ url_for('course_page') }}">
+                            Back to Courses →
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+        </section>
+
+        {% endif %}
+
         <!-- =========================
              CERTIFICATES
         ========================== -->
@@ -1963,7 +2271,6 @@
 
 <script src="{{ url_for('static', filename='dashboard/js/app.js') }}"></script>
 
-<script src="{{ url_for('static', filename='login/js/script.js') }}"></script>
 
 </body>
 </html>

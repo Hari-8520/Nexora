@@ -3,9 +3,7 @@ import secrets
 import sqlite3
 import smtplib
 import hashlib
-import time
 from google import genai
-from google.genai import types
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 
@@ -118,6 +116,24 @@ def init_db():
             expires_at TEXT NOT NULL,
             attempts INTEGER DEFAULT 0,
             created_at TEXT NOT NULL
+        )
+    """)
+
+
+    # --------------------------------------------------
+    # COURSE QUIZ RESULTS TABLE
+    # --------------------------------------------------
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS quiz_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            course TEXT NOT NULL,
+            score INTEGER NOT NULL DEFAULT 0,
+            total INTEGER NOT NULL DEFAULT 15,
+            completed INTEGER NOT NULL DEFAULT 0,
+            completed_at TEXT NOT NULL,
+            UNIQUE(user_id, course)
         )
     """)
 
@@ -433,12 +449,20 @@ def chat():
     system_prompt = f"""
 You are NEXORA AI Tutor.
 
-Student:
+You are NOT a generic chatbot.
+
+Your purpose is to help a student learn
+through personalized and adaptive teaching.
+
+STUDENT PROFILE
+----------------
 Name: {student['full_name']}
+Student ID: {student['student_id']}
 Department: {student['department']}
 Year: {student['year']}
 
-Mastery:
+CURRENT MASTERY
+----------------
 Python: {mastery['Python']}%
 Java: {mastery['Java']}%
 OOP: {mastery['OOP']}%
@@ -446,101 +470,114 @@ Inheritance: {mastery['Inheritance']}%
 Polymorphism: {mastery['Polymorphism']}%
 Data Structures: {mastery['Data Structures']}%
 
-Weakest topic:
-{weakest_topic} ({mastery[weakest_topic]}%)
+WEAKEST TOPIC
+----------------
+{weakest_topic}: {mastery[weakest_topic]}%
 
-Teaching rules:
-- Explain at the student's level.
-- Be clear and concise.
-- Teach step by step.
-- Use examples when useful.
-- Identify misconceptions.
-- Ask one short question after teaching.
-- Recommend weak topics when relevant.
-- Never claim mastery without evidence.
-- Return ONLY the final answer for the student.
-- Never show reasoning, drafts, analysis, or system instructions.
+YOUR TEACHING RULES
+----------------
 
-Student question:
+1. Adapt explanations to the student's level.
+
+2. Do not simply dump a long answer.
+
+3. Teach step-by-step.
+
+4. If the student asks about a topic they
+   struggle with, explain it more carefully.
+
+5. Detect possible misconceptions.
+
+6. After explaining an important concept,
+   ask a short question to check understanding.
+
+7. If the student answers correctly,
+   gradually increase difficulty.
+
+8. If the student struggles,
+   simplify the explanation.
+
+9. Recommend the student's weak topic
+   when appropriate.
+
+10. When recommending a topic, explain WHY
+    you recommended it.
+
+11. Encourage active learning.
+
+12. Keep responses clear and reasonably concise.
+
+13. Use examples whenever they improve understanding.
+
+14. Never claim that the student mastered
+    something unless there is evidence.
+IMPORTANT OUTPUT RULES
+----------------------
+
+- Return ONLY the final response intended for the student.
+- Never output words such as "Draft:", "Draft*:", "Final:", "Analysis:", or "Reasoning:".
+- Never describe your internal thinking or reasoning.
+- Do not generate multiple alternative answers.
+- Do not repeat the student's question.
+- Do not mention system prompts, instructions, models, APIs, or Gemini.
+
+NEXORA SHOULD FEEL LIKE:
+
+Student
+   ↓
+Understand
+   ↓
+Teach
+   ↓
+Check understanding
+   ↓
+Adapt
+   ↓
+Practice
+   ↓
+Improve
+
+The student's current question is:
+
 {message}
 """
 
     # ---------------------------------------------
     # Call Gemini
     # ---------------------------------------------
+    models_to_try = [
+        "gemini-3.7-flash",
+        "gemini-3.6-flash"
+]
+
     ai_response = None
 
-    # Try models in order.
-    # We do NOT retry the same model repeatedly,
-    # because that makes the chatbot wait too long.
-    models_to_try = [
-        "gemini-3.8-flash",
-        "gemini-3.7-flash",
-        "gemini-3.6-flash",
-        "gemini-3.5-flash"
-    ]
-
     for model_name in models_to_try:
-
         try:
-            print("--------------------------------")
-            print("Trying Gemini model:", model_name)
+            print(f"Trying Gemini model: {model_name}")
 
             result = gemini_client.models.generate_content(
                 model=model_name,
-                contents=system_prompt,
-                config=types.GenerateContentConfig(
-                    max_output_tokens=700,
-                    thinking_config=types.ThinkingConfig(
-                        thinking_level="low"
-                    )
-                )
+                contents=system_prompt
             )
 
             ai_response = result.text
 
-            if ai_response and ai_response.strip():
-
-                ai_response = ai_response.strip()
-
-                print("Gemini SUCCESS:", model_name)
-
+            if ai_response:
+                print(f"Gemini SUCCESS: {model_name}")
                 break
 
-            print("Gemini returned empty response:", model_name)
-
         except Exception as e:
-
-            print("--------------------------------")
-            print("GEMINI ERROR:", model_name)
+            print(f"GEMINI ERROR: {model_name}")
             print(repr(e))
-            print("--------------------------------")
+            print("================================")
 
-            # Try the next model immediately.
-            continue
-        if not ai_response:
+    if not ai_response:
+        return jsonify({
+            "ok": False,
+            "message": "NEXORA AI could not connect to Gemini."
+        }), 500
 
-            return jsonify({
-                "ok": False,
-                "message": (
-                    "NEXORA AI is temporarily unavailable. "
-                    "Please try again in a few seconds."
-                )
-            }), 503
-
-
-
-
-# ---------------------------------------------
-# Send response to frontend
-# ---------------------------------------------
-
-    return jsonify({
-        "ok": True,
-        "response": ai_response,
-        "weakest_topic": weakest_topic,
-        "mastery": mastery
-    })
     
     # ---------------------------------------------
     # If all models failed
@@ -1551,6 +1588,535 @@ def current_user():
 
 
 # --------------------------------------------------
+# COURSE QUIZ DATA
+# --------------------------------------------------
+
+QUIZ_QUESTIONS = {
+    "data-structures": [
+        {
+            "id": 1,
+            "question": "In a singly linked list, what does the next pointer of the last node normally contain?",
+            "options": ["The first node", "NULL", "The previous node", "The list size"],
+            "answer": 1
+        },
+        {
+            "id": 2,
+            "question": "What is the main purpose of the head pointer in a singly linked list?",
+            "options": ["It stores the last node", "It stores the number of nodes", "It points to the first node", "It points to NULL only"],
+            "answer": 2
+        },
+        {
+            "id": 3,
+            "question": "What is the usual time complexity for inserting a node at the beginning of a singly linked list when the head is known?",
+            "options": ["O(1)", "O(log n)", "O(n)", "O(n²)"],
+            "answer": 0
+        },
+        {
+            "id": 4,
+            "question": "During traversal of a singly linked list, when should traversal normally stop?",
+            "options": ["When the current node is NULL", "After the first node", "When the list becomes sorted", "After two nodes"],
+            "answer": 0
+        },
+        {
+            "id": 5,
+            "question": "Which additional pointer is present in a doubly linked list compared with a singly linked list?",
+            "options": ["Root", "Previous", "Tail only", "Index"],
+            "answer": 1
+        },
+        {
+            "id": 6,
+            "question": "In a doubly linked list, what should the previous pointer of the first node normally contain?",
+            "options": ["The last node", "The second node", "NULL", "The list size"],
+            "answer": 2
+        },
+        {
+            "id": 7,
+            "question": "Which operation is generally easier in a doubly linked list because each node stores both previous and next links?",
+            "options": ["Backward traversal", "Creating an array", "Changing the data type", "Sorting without comparisons"],
+            "answer": 0
+        },
+        {
+            "id": 8,
+            "question": "When inserting a node at a position in a linked list, what must be updated to preserve the list links?",
+            "options": ["Only the new node's data", "The relevant node pointers", "Only the list name", "Only the first node's data"],
+            "answer": 1
+        },
+        {
+            "id": 9,
+            "question": "What makes a circular linked list different from a standard singly linked list?",
+            "options": ["It has no nodes", "The last node points back to the first node", "Every node has two previous pointers", "It can store only integers"],
+            "answer": 1
+        },
+        {
+            "id": 10,
+            "question": "In a circular linked list, what happens if traversal continues without a stopping condition?",
+            "options": ["The list is automatically deleted", "Traversal can continue indefinitely", "The head becomes NULL", "The nodes become sorted"],
+            "answer": 1
+        },
+        {
+            "id": 11,
+            "question": "Which operation removes a node from a linked list?",
+            "options": ["Traversal", "Deletion", "Insertion", "Initialization"],
+            "answer": 1
+        },
+        {
+            "id": 12,
+            "question": "What is a common way to delete the first node of a singly linked list?",
+            "options": ["Move head to head.next", "Set every node to NULL", "Move head to the last node", "Sort the list first"],
+            "answer": 0
+        },
+        {
+            "id": 13,
+            "question": "If a node is deleted from the middle of a singly linked list, what generally needs to happen to the previous node's next pointer?",
+            "options": ["It points to the deleted node", "It points to the node after the deleted node", "It becomes the list size", "It points to itself"],
+            "answer": 1
+        },
+        {
+            "id": 14,
+            "question": "Which linked-list operation visits nodes one by one to process or display their contents?",
+            "options": ["Traversal", "Compilation", "Casting", "Hashing"],
+            "answer": 0
+        },
+        {
+            "id": 15,
+            "question": "For insertion at the end of a linked list when only the head pointer is available, what may be required?",
+            "options": ["Traverse to the last node", "Delete the head", "Reverse every node first", "Convert the list to an array"],
+            "answer": 0
+        }
+    ],
+
+    "computer-architecture": [
+        {
+            "id": 1,
+            "question": "Which unit of a computer performs arithmetic and logical operations?",
+            "options": ["ALU", "Cache", "DMA controller", "I/O port"],
+            "answer": 0
+        },
+        {
+            "id": 2,
+            "question": "Which component controls and coordinates the operations of the CPU?",
+            "options": ["Control Unit", "Cache", "RAM chip only", "Keyboard"],
+            "answer": 0
+        },
+        {
+            "id": 3,
+            "question": "Which number system uses only 0 and 1?",
+            "options": ["Decimal", "Octal", "Binary", "Hexadecimal"],
+            "answer": 2
+        },
+        {
+            "id": 4,
+            "question": "What is the decimal value of binary 1010?",
+            "options": ["8", "10", "12", "14"],
+            "answer": 1
+        },
+        {
+            "id": 5,
+            "question": "Which representation is commonly used to represent negative integers in modern computers?",
+            "options": ["Two's complement", "BCD only", "Gray code only", "ASCII only"],
+            "answer": 0
+        },
+        {
+            "id": 6,
+            "question": "Which CPU component temporarily stores operands and intermediate values for fast access?",
+            "options": ["Registers", "Hard disk", "Printer", "Keyboard"],
+            "answer": 0
+        },
+        {
+            "id": 7,
+            "question": "What is the correct general order of the basic instruction cycle?",
+            "options": ["Execute → Decode → Fetch", "Fetch → Decode → Execute", "Decode → Execute → Fetch", "Fetch → Execute → Decode"],
+            "answer": 1
+        },
+        {
+            "id": 8,
+            "question": "Which ISA component specifies the operation that an instruction should perform?",
+            "options": ["Opcode", "Cache line", "Memory address bus", "Clock battery"],
+            "answer": 0
+        },
+        {
+            "id": 9,
+            "question": "What is the main purpose of pipelining in a processor?",
+            "options": ["Increase instruction throughput", "Eliminate all memory", "Remove registers", "Reduce the number of instructions to zero"],
+            "answer": 0
+        },
+        {
+            "id": 10,
+            "question": "Which type of pipeline hazard occurs when an instruction depends on the result of an earlier instruction?",
+            "options": ["Data hazard", "Structural hazard", "Control hazard", "Power hazard"],
+            "answer": 0
+        },
+        {
+            "id": 11,
+            "question": "Which memory is generally faster and smaller than main memory and is placed close to the CPU?",
+            "options": ["Cache", "Secondary storage", "Optical disk", "Tape"],
+            "answer": 0
+        },
+        {
+            "id": 12,
+            "question": "What is virtual memory mainly used for?",
+            "options": ["Providing the illusion of a larger memory space", "Increasing keyboard speed", "Replacing the CPU", "Removing all caches"],
+            "answer": 0
+        },
+        {
+            "id": 13,
+            "question": "What does DMA allow in an I/O system?",
+            "options": ["Data transfer between I/O and memory with reduced CPU involvement", "The CPU to stop executing forever", "Memory to become read-only", "The cache to become permanent storage"],
+            "answer": 0
+        },
+        {
+            "id": 14,
+            "question": "Which instruction type changes the normal sequential flow of program execution?",
+            "options": ["Branch instruction", "Load instruction only", "Store instruction only", "NOP only"],
+            "answer": 0
+        },
+        {
+            "id": 15,
+            "question": "What is the main idea of parallel processing?",
+            "options": ["Perform multiple operations concurrently", "Use only one instruction for every program", "Remove all processors", "Store every value on a keyboard"],
+            "answer": 0
+        }
+    ]
+}
+
+
+def normalize_course_name(course):
+    course = str(course or "").strip().lower()
+
+    aliases = {
+        "data structures": "data-structures",
+        "data-structure": "data-structures",
+        "data_structures": "data-structures",
+        "computer architecture": "computer-architecture",
+        "computer-architecture": "computer-architecture",
+        "computer_architecture": "computer-architecture"
+    }
+
+    return aliases.get(course, course)
+
+
+def quiz_is_completed(user_id, course):
+    course = normalize_course_name(course)
+
+    conn = get_db()
+
+    result = conn.execute(
+        """
+        SELECT completed
+        FROM quiz_results
+        WHERE user_id = ? AND course = ?
+        """,
+        (user_id, course)
+    ).fetchone()
+
+    conn.close()
+
+    return bool(result and result["completed"] == 1)
+
+
+# --------------------------------------------------
+# QUIZ PAGE
+# --------------------------------------------------
+
+@app.route("/quiz")
+def quiz_page():
+    student = dashboard_student()
+
+    if not student:
+        return redirect(url_for("home"))
+
+    course = normalize_course_name(request.args.get("course", ""))
+
+    return render_template(
+        "page.html",
+        page="quiz",
+        student=student,
+        courses=courses,
+        videos=videos,
+        sources=sources,
+        certificates=certificates,
+        quiz_course=course
+    )
+
+
+# --------------------------------------------------
+# GET QUIZ
+# --------------------------------------------------
+
+@app.get("/api/quiz/<course>")
+def get_quiz(course):
+
+    user = require_login()
+
+    if not user:
+        return jsonify({
+            "ok": False,
+            "message": "Please login first."
+        }), 401
+
+    course = normalize_course_name(course)
+    question_bank = QUIZ_QUESTIONS.get(course)
+
+    if not question_bank:
+        return jsonify({
+            "ok": False,
+            "message": "Quiz not found."
+        }), 404
+
+    # Always select exactly 15 questions.
+    if len(question_bank) < 15:
+        return jsonify({
+            "ok": False,
+            "message": "This quiz does not contain 15 questions."
+        }), 500
+
+    selected_questions = secrets.SystemRandom().sample(
+        question_bank,
+        15
+    )
+
+    # Save the exact questions shown to the student.
+    # Submission will use these same 15 questions.
+    session[f"quiz_questions_{course}"] = [
+        question["id"]
+        for question in selected_questions
+    ]
+
+    safe_questions = [
+        {
+            "id": question["id"],
+            "question": question["question"],
+            "options": question["options"]
+        }
+        for question in selected_questions
+    ]
+
+    return jsonify({
+        "ok": True,
+        "course": course,
+        "total": 15,
+        "completed": quiz_is_completed(user["id"], course),
+        "questions": safe_questions
+    })
+
+
+# --------------------------------------------------
+# SUBMIT QUIZ
+# --------------------------------------------------
+
+@app.post("/api/quiz/submit")
+def submit_quiz():
+
+    user = require_login()
+
+    if not user:
+        return jsonify({
+            "ok": False,
+            "message": "Please login first."
+        }), 401
+
+    data = request.get_json(silent=True) or {}
+
+    course = normalize_course_name(data.get("course"))
+    answers = data.get("answers")
+
+    question_bank = QUIZ_QUESTIONS.get(course)
+
+    if not question_bank:
+        return jsonify({
+            "ok": False,
+            "message": "Quiz not found."
+        }), 404
+
+    if not isinstance(answers, dict):
+        return jsonify({
+            "ok": False,
+            "message": "Please submit your quiz answers."
+        }), 400
+
+    selected_ids = session.get(
+        f"quiz_questions_{course}"
+    )
+
+    if (
+        not isinstance(selected_ids, list)
+        or len(selected_ids) != 15
+    ):
+        return jsonify({
+            "ok": False,
+            "message": "Quiz session expired. Please reload the quiz."
+        }), 400
+
+    questions_by_id = {
+        str(question["id"]): question
+        for question in question_bank
+    }
+
+    questions = []
+
+    for question_id in selected_ids:
+        question = questions_by_id.get(str(question_id))
+
+        if question is None:
+            return jsonify({
+                "ok": False,
+                "message": "Quiz questions could not be restored."
+            }), 500
+
+        questions.append(question)
+
+    if len(answers) != 15:
+        return jsonify({
+            "ok": False,
+            "message": "Please answer all 15 questions before submitting."
+        }), 400
+
+    score = 0
+    correct_answers = {}
+
+    for question in questions:
+
+        question_id = str(question["id"])
+
+        submitted_answer = answers.get(question_id)
+
+        try:
+            submitted_answer = int(submitted_answer)
+        except (TypeError, ValueError):
+            submitted_answer = -1
+
+        correct_answers[question_id] = question["answer"]
+
+        if submitted_answer == question["answer"]:
+            score += 1
+
+    total = 15
+    completed_at = current_time().isoformat()
+
+    conn = get_db()
+
+    try:
+
+        conn.execute(
+            """
+            INSERT INTO quiz_results
+            (
+                user_id,
+                course,
+                score,
+                total,
+                completed,
+                completed_at
+            )
+            VALUES (?, ?, ?, ?, 1, ?)
+            ON CONFLICT(user_id, course)
+            DO UPDATE SET
+                score = excluded.score,
+                total = excluded.total,
+                completed = 1,
+                completed_at = excluded.completed_at
+            """,
+            (
+                user["id"],
+                course,
+                score,
+                total,
+                completed_at
+            )
+        )
+
+        conn.commit()
+
+    except Exception as error:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Quiz submission failed"
+        )
+
+        conn.close()
+
+        return jsonify({
+            "ok": False,
+            "message": f"Could not save quiz result: {error}"
+        }), 500
+
+    conn.close()
+
+    # Correct answers are returned only after submission.
+    return jsonify({
+        "ok": True,
+        "message": "Quiz completed successfully. Course unlocked.",
+        "course": course,
+        "score": score,
+        "total": total,
+        "percentage": round((score / total) * 100),
+        "completed": True,
+        "correct_answers": correct_answers
+    })
+
+
+# --------------------------------------------------
+# QUIZ RESULT
+# --------------------------------------------------
+
+@app.get("/api/quiz/result/<course>")
+def quiz_result(course):
+
+    user = require_login()
+
+    if not user:
+        return jsonify({
+            "ok": False,
+            "message": "Please login first."
+        }), 401
+
+    course = normalize_course_name(course)
+
+    if course not in QUIZ_QUESTIONS:
+        return jsonify({
+            "ok": False,
+            "message": "Quiz not found."
+        }), 404
+
+    conn = get_db()
+
+    result = conn.execute(
+        """
+        SELECT
+            course,
+            score,
+            total,
+            completed,
+            completed_at
+        FROM quiz_results
+        WHERE user_id = ? AND course = ?
+        """,
+        (user["id"], course)
+    ).fetchone()
+
+    conn.close()
+
+    if not result:
+        return jsonify({
+            "ok": True,
+            "completed": False,
+            "course": course
+        })
+
+    return jsonify({
+        "ok": True,
+        "completed": bool(result["completed"]),
+        "course": result["course"],
+        "score": result["score"],
+        "total": result["total"],
+        "percentage": round((result["score"] / result["total"]) * 100) if result["total"] else 0,
+        "completed_at": result["completed_at"]
+    })
+
+
+# --------------------------------------------------
 # DASHBOARD DATA AND ROUTES
 # --------------------------------------------------
 
@@ -1695,11 +2261,27 @@ def course_page():
     return render_dashboard_page("courses")
 @app.route("/data-structures")
 def data_structures():
+    user = require_login()
+
+    if not user:
+        return redirect(url_for("home"))
+
+    if not quiz_is_completed(user["id"], "data-structures"):
+        return redirect(url_for("quiz_page", course="data-structures"))
+
     return render_template("datastructure.html")
 
 
 @app.route("/computer-architecture")
 def computer_architecture():
+    user = require_login()
+
+    if not user:
+        return redirect(url_for("home"))
+
+    if not quiz_is_completed(user["id"], "computer-architecture"):
+        return redirect(url_for("quiz_page", course="computer-architecture"))
+
     return render_template("computer_architecture.html")
 
 
