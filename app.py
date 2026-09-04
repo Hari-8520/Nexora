@@ -1625,7 +1625,20 @@ videos = [
 ]
 sources = [{'title': 'Python Documentation', 'type': 'Documentation', 'topic': 'Python', 'description': 'Official Python language documentation and reference.'}, {'title': 'Java OOP Guide', 'type': 'Article', 'topic': 'Java', 'description': 'Learn classes, objects, inheritance and polymorphism.'}, {'title': 'Data Structures Notes', 'type': 'PDF Notes', 'topic': 'DSA', 'description': 'Quick revision notes for common data structures.'}, {'title': 'SQL Practice Problems', 'type': 'Practice', 'topic': 'Database', 'description': 'Practice SQL queries and database concepts.'}]
 
-certificates = [{'title': 'Python Programming Fundamentals', 'topic': 'Python', 'status': 'Earned', 'date': '20 Aug 2026'}, {'title': 'Object Oriented Programming', 'topic': 'Java', 'status': 'In Progress', 'date': '-'}, {'title': 'Data Structures Mastery', 'topic': 'DSA', 'status': 'Locked', 'date': '-'}]
+certificates = [
+    {
+        'title': 'Data Structures',
+        'topic': 'Data Structures',
+        'status': 'Earned',
+        'date': '-'
+    },
+    {
+        'title': 'Computer Architecture',
+        'topic': 'Computer Architecture',
+        'status': 'Earned',
+        'date': '-'
+    }
+]
 def require_login():
 
     user_id = session.get("user_id")

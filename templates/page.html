@@ -1076,119 +1076,124 @@
 
             <div class="profile-tabs">
 
-                <button class="tab active-tab">
+                <button class="tab active-tab" type="button" data-tab="overview">
                     Overview
                 </button>
 
-                <button class="tab">
+                <button class="tab" type="button" data-tab="personal">
                     Personal Information
                 </button>
 
-                <button class="tab">
+                <button class="tab" type="button" data-tab="academic">
                     Academic Information
                 </button>
 
-                <button class="tab">
+                <button class="tab" type="button" data-tab="analytics">
                     Learning Analytics
                 </button>
 
-                <button class="tab">
+                <button class="tab" type="button" data-tab="achievements">
                     Achievements
                 </button>
 
             </div>
 
 
-            <div class="profile-grid">
+            <!-- OVERVIEW -->
+            <div class="profile-tab-content" id="tab-overview">
 
-                <div class="glass-card">
+                <div class="profile-grid">
 
-                    <span class="eyebrow">
-                        PERSONAL INFORMATION
-                    </span>
+                    <div class="glass-card">
 
-                    <h3>
-                        {{ student.name }}
-                    </h3>
-
-
-                    <div class="detail-row">
-
-                        <span>Email</span>
-
-                        <strong>
-                            {{ student.email }}
-                        </strong>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span>Student ID</span>
-
-                        <strong>
-                            {{ student.student_id }}
-                        </strong>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span>Learning Level</span>
-
-                        <strong>
-                            {{ student.learning_level }}
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <div class="glass-card">
-
-                    <span class="eyebrow">
-                        LEARNING STATISTICS
-                    </span>
-
-
-                    <div class="big-stat">
-
-                        <strong>
-                            {{ student.mastery }}%
-                        </strong>
-
-                        <span>
-                            Overall Mastery
+                        <span class="eyebrow">
+                            PERSONAL INFORMATION
                         </span>
 
+                        <h3>
+                            {{ student.name }}
+                        </h3>
+
+
+                        <div class="detail-row">
+
+                            <span>Email</span>
+
+                            <strong>
+                                {{ student.email }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Student ID</span>
+
+                            <strong>
+                                {{ student.student_id }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Learning Level</span>
+
+                            <strong>
+                                {{ student.learning_level }}
+                            </strong>
+
+                        </div>
+
                     </div>
 
 
-                    <div class="big-stat">
+                    <div class="glass-card">
 
-                        <strong>
-                            {{ student.quiz_accuracy }}%
-                        </strong>
-
-                        <span>
-                            Quiz Accuracy
+                        <span class="eyebrow">
+                            LEARNING STATISTICS
                         </span>
 
-                    </div>
+
+                        <div class="big-stat">
+
+                            <strong>
+                                {{ student.mastery }}%
+                            </strong>
+
+                            <span>
+                                Overall Mastery
+                            </span>
+
+                        </div>
 
 
-                    <div class="big-stat">
+                        <div class="big-stat">
 
-                        <strong>
-                            {{ student.completed_topics }}
-                        </strong>
+                            <strong>
+                                {{ student.quiz_accuracy }}%
+                            </strong>
 
-                        <span>
-                            Topics Completed
-                        </span>
+                            <span>
+                                Quiz Accuracy
+                            </span>
+
+                        </div>
+
+
+                        <div class="big-stat">
+
+                            <strong>
+                                {{ student.completed_topics }}
+                            </strong>
+
+                            <span>
+                                Topics Completed
+                            </span>
+
+                        </div>
 
                     </div>
 
@@ -1196,7 +1201,277 @@
 
             </div>
 
-        </section>
+
+            <!-- PERSONAL INFORMATION -->
+            <div class="profile-tab-content" id="tab-personal" style="display: none;">
+
+                <div class="profile-grid">
+
+                    <div class="glass-card">
+
+                        <span class="eyebrow">
+                            PERSONAL INFORMATION
+                        </span>
+
+                        <h3>
+                            {{ student.name }}
+                        </h3>
+
+
+                        <div class="detail-row">
+
+                            <span>Full Name</span>
+
+                            <strong>
+                                {{ student.name }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Email</span>
+
+                            <strong>
+                                {{ student.email }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Student ID</span>
+
+                            <strong>
+                                {{ student.student_id }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACADEMIC INFORMATION -->
+            <div class="profile-tab-content" id="tab-academic" style="display: none;">
+
+                <div class="profile-grid">
+
+                    <div class="glass-card">
+
+                        <span class="eyebrow">
+                            ACADEMIC INFORMATION
+                        </span>
+
+                        <h3>
+                            Academic Details
+                        </h3>
+
+
+                        <div class="detail-row">
+
+                            <span>Department</span>
+
+                            <strong>
+                                {{ student.department }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Year</span>
+
+                            <strong>
+                                {{ student.year }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Batch</span>
+
+                            <strong>
+                                {{ student.batch }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Learning Level</span>
+
+                            <strong>
+                                {{ student.learning_level }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- LEARNING ANALYTICS -->
+            <div class="profile-tab-content" id="tab-analytics" style="display: none;">
+
+                <div class="profile-grid">
+
+                    <div class="glass-card">
+
+                        <span class="eyebrow">
+                            LEARNING ANALYTICS
+                        </span>
+
+                        <h3>
+                            Learning Performance
+                        </h3>
+
+
+                        <div class="detail-row">
+
+                            <span>Overall Mastery</span>
+
+                            <strong>
+                                {{ student.mastery }}%
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Quiz Accuracy</span>
+
+                            <strong>
+                                {{ student.quiz_accuracy }}%
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Active Days</span>
+
+                            <strong>
+                                {{ student.active_days }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Learning Streak</span>
+
+                            <strong>
+                                {{ student.streak }} days
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>Topics Completed</span>
+
+                            <strong>
+                                {{ student.completed_topics }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACHIEVEMENTS -->
+            <div class="profile-tab-content" id="tab-achievements" style="display: none;">
+
+                <div class="profile-grid">
+
+                    <div class="glass-card">
+
+                        <span class="eyebrow">
+                            ACHIEVEMENTS
+                        </span>
+
+                        <h3>
+                            Your Certificates
+                        </h3>
+
+                        {% for cert in certificates %}
+
+                        <div class="detail-row">
+
+                            <span>
+                                {{ cert.title }}
+                            </span>
+
+                            <strong>
+                                {{ cert.status }}
+                            </strong>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+
+                    const tabs = document.querySelectorAll(".profile-tabs .tab");
+                    const panels = document.querySelectorAll(".profile-tab-content");
+
+                    tabs.forEach(function (tab) {
+
+                        tab.addEventListener("click", function () {
+
+                            const target = tab.getAttribute("data-tab");
+
+                            tabs.forEach(function (item) {
+                                item.classList.remove("active-tab");
+                            });
+
+                            panels.forEach(function (panel) {
+                                panel.style.display = "none";
+                            });
+
+                            tab.classList.add("active-tab");
+
+                            const selectedPanel = document.getElementById("tab-" + target);
+
+                            if (selectedPanel) {
+                                selectedPanel.style.display = "block";
+                            }
+
+                        });
+
+                    });
+
+                });
+            </script>
 
         {% endif %}
 
@@ -1259,47 +1534,6 @@
                     <p>
                         {{ course.description }}
                     </p>
-
-
-                    <div class="course-progress">
-
-                        <div class="course-progress-head">
-
-                            <span>
-                                Progress
-                            </span>
-
-                            <strong>
-                                {{ course.progress }}%
-                            </strong>
-
-                        </div>
-
-
-                        <div class="progress-track">
-
-                            <i style="--progress: {{ course.progress }}%;"></i>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="course-meta">
-
-                        <span>
-                            {{ course.lessons }} Lessons
-                        </span>
-
-                        <span>
-                            {{ course.assessments }} Tests
-                        </span>
-
-                        <span>
-                            {{ course.duration }}
-                        </span>
-
-                    </div>
 
 
                     <a
@@ -1552,40 +1786,7 @@
     <!-- SIMULATION CARDS -->
     <div class="video-grid">
 
-        <!-- CODING SIMULATION -->
-        <article class="video-card">
 
-            <div class="video-thumb">
-                <span>◇</span>
-                <small>20 min</small>
-            </div>
-
-            <div class="video-content">
-
-                <span>
-                    PROGRAMMING
-                </span>
-
-                <h2>
-                    Coding Simulation
-                </h2>
-
-                <p>
-                    Java · Beginner
-                </p>
-
-                <button
-                    class="course-btn"
-                    type="button"
-                    onclick="startSimulation('coding')">
-
-                    Start Simulation →
-
-                </button>
-
-            </div>
-
-        </article>
 
 
         <!-- DATA STRUCTURES SIMULATION -->
@@ -1593,7 +1794,7 @@
 
             <div class="video-thumb">
                 <span>◇</span>
-                <small>25 min</small>
+                <small></small>
             </div>
 
             <div class="video-content">
@@ -1623,33 +1824,32 @@
 
         </article>
 
-
-        <!-- AI LEARNING SIMULATION -->
+        <!-- COMPUTER ARCHITECTURE SIMULATION -->
         <article class="video-card">
 
             <div class="video-thumb">
-                <span>✦</span>
-                <small>15 min</small>
+                <span>◇</span>
+                <small></small>
             </div>
 
             <div class="video-content">
 
                 <span>
-                    AI LEARNING
+                    COMPUTER ARCHITECTURE
                 </span>
 
                 <h2>
-                    AI Learning Simulation
+                    Computer Architecture Simulation
                 </h2>
 
                 <p>
-                    AI Adaptive · Beginner
+                    Computer Architecture · Intermediate
                 </p>
 
                 <button
                     class="course-btn"
                     type="button"
-                    onclick="startSimulation('ai-learning')">
+                    onclick="startSimulation('computer-architecture')">
 
                     Start Simulation →
 
@@ -1658,6 +1858,8 @@
             </div>
 
         </article>
+
+
 
     </div>
 
