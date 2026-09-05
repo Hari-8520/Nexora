@@ -2364,9 +2364,7 @@ def simulation():
     return render_dashboard_page("simulation")
 
 
-@app.route("/linked-list-simulation")
-def linked_list_simulation():
-    return render_template("linklist.html")
+
 
 @app.route("/certificate")
 def certificate_page():
