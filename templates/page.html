@@ -1629,16 +1629,13 @@
                         </p>
 
 
-                        <button
+                        <a
                             class="course-btn"
-                            type="button"
-                            data-video-title="{{ video.title }}"
-                            data-video-topic="{{ video.topic }}">
-
+                            href="{% if video.slug == 'data-structures' %}{{ url_for('data_structures_videos') }}{% else %}{{ url_for('video_learning', video_slug=video.slug) }}{% endif %}">
 
                             Watch Video →
 
-                        </button>
+                        </a>
 
                     </div>
 
@@ -1652,6 +1649,145 @@
 
         {% endif %}
 
+
+
+        <!-- =========================
+             VIDEO TOPIC LEARNING
+        ========================== -->
+
+        {% if page == "video-learning" %}
+
+        <section class="video-learning-page">
+
+            <div class="video-learning-layout">
+
+                <!-- LEFT TOPIC SIDEBAR -->
+                <aside class="video-topic-sidebar">
+
+                    <div class="video-topic-header">
+
+                        <span class="eyebrow">
+                            NEXORA VIDEO LEARNING
+                        </span>
+
+                        <h2>
+                            {{ video.title }}
+                        </h2>
+
+                    </div>
+
+                    <div class="video-topic-list">
+
+                        {% for topic in video.subtopics %}
+
+                        <button
+                            type="button"
+                            class="video-topic-item"
+                            data-video-url="{{ topic.videoUrl }}"
+                            onclick="openTopicVideo(this)">
+
+                            <span class="topic-number">
+                                {{ loop.index }}
+                            </span>
+
+                            <span class="topic-title">
+                                {{ topic.title }}
+                            </span>
+
+                        </button>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <a
+                        href="{{ url_for('video_page') }}"
+                        class="video-back-button">
+
+                        ← Back to Videos
+
+                    </a>
+
+                </aside>
+
+
+                <!-- RIGHT VIDEO CONTENT -->
+                <main class="video-learning-content">
+
+                    <div class="video-learning-heading">
+
+                        <span class="eyebrow">
+                            NEXORA VIDEO LEARNING
+                        </span>
+
+                        <h1>
+                            {{ video.title }}
+                        </h1>
+
+                        <p>
+                            Select a topic from the left to watch the video.
+                        </p>
+
+                    </div>
+
+
+                    <div class="video-player-card">
+
+                        <div
+                            class="video-player-placeholder"
+                            id="videoPlayerPlaceholder">
+
+                            <div class="video-player-icon">
+                                ▶
+                            </div>
+
+                            <h2>
+                                Select a Topic
+                            </h2>
+
+                            <p>
+                                Choose a topic from the left to start learning.
+                            </p>
+
+                        </div>
+
+
+                        <iframe
+                            id="videoPlayer"
+                            class="video-player"
+                            style="display: none;"
+                            title="NEXORA Learning Video"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen>
+                        </iframe>
+
+                    </div>
+
+
+                    <div class="video-learning-info">
+
+                        <span class="eyebrow">
+                            COURSE TOPICS
+                        </span>
+
+                        <h3>
+                            {{ video.subtopics|length }} Learning Topics
+                        </h3>
+
+                        <p>
+                            Select any topic from the sidebar to open its video.
+                            Video links can be added later in <strong>app.py</strong>.
+                        </p>
+
+                    </div>
+
+                </main>
+
+            </div>
+
+        </section>
+
+        {% endif %}
 
         <!-- =========================
              CHATBOT
@@ -1884,13 +2020,14 @@
                 <p>
                     DSA · Intermediate
                 </p>
-<a
-    href="{{ url_for('linked_list_simulation') }}"
-    class="course-btn">
 
-    Start Simulation →
+                <a
+                    class="course-btn"
+                    href="{{ url_for('linked_list_simulation') }}">
 
-</a>
+                    Start Simulation →
+
+                </a>
 
             </div>
 

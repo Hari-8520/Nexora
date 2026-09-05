@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXORA | Computer Architecture Videos</title>
+
+<style>
+*{box-sizing:border-box}
+:root{
+    --green:#58c481;
+    --green-dark:#269c5d;
+    --green-deep:#145b37;
+    --green-light:#e2f7eb;
+    --page:#eef9f2;
+    --white:#fff;
+    --text:#17221c;
+    --muted:#68766f;
+    --border:#dceee3;
+}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--page);
+    color:var(--text);
+}
+.page{min-height:100vh;display:flex}
+.sidebar{
+    width:255px;
+    min-width:255px;
+    min-height:100vh;
+    background:var(--green);
+    color:#fff;
+    padding:28px 18px;
+    position:sticky;
+    top:0;
+    height:100vh;
+}
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:8px 10px 30px;
+}
+.brand-mark{
+    width:70px;
+    height:70px;
+    border-radius:16px;
+    background:#fff;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+}
+.nexora-logo{width:56px;height:64px;display:block}
+.brand-name{font-size:25px;font-weight:800}
+.sidebar-nav{display:flex;flex-direction:column;gap:7px}
+.sidebar-nav a{
+    color:#fff;
+    text-decoration:none;
+    padding:13px 12px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-weight:700;
+}
+.sidebar-nav a:hover{background:rgba(255,255,255,.15)}
+.sidebar-nav a.active{background:#fff;color:var(--green)}
+.sidebar-bottom{
+    position:absolute;
+    left:18px;
+    right:18px;
+    bottom:22px;
+    border-top:1px solid rgba(255,255,255,.25);
+    padding-top:18px;
+}
+.sidebar-bottom a{
+    color:#fff;
+    text-decoration:none;
+    padding:13px 12px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-weight:700;
+}
+.sidebar-bottom a:hover{
+    background:rgba(255,255,255,.15);
+}
+
+.main{flex:1;min-width:0;padding:34px 42px}
+.heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    margin-bottom:25px;
+}
+.eyebrow{
+    color:#22a35c;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:2px;
+    margin-bottom:8px;
+}
+h1{margin:0;font-size:42px;letter-spacing:-1px}
+.description{margin:9px 0 0;color:var(--muted);font-size:16px}
+.back{
+    text-decoration:none;
+    background:#fff;
+    color:var(--green-dark);
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:11px 16px;
+    font-weight:700;
+}
+.layout{
+    display:grid;
+    grid-template-columns:355px minmax(0,1fr);
+    gap:24px;
+    align-items:start;
+}
+.topics,.content{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:22px;
+    box-shadow:0 16px 45px rgba(32,111,68,.07);
+}
+.topics{padding:22px 18px}
+.topic-label{
+    color:var(--green-dark);
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:1.5px;
+    margin:2px 10px 18px;
+}
+.group{margin-bottom:19px}
+.group:last-child{margin-bottom:0}
+.group-title{
+    color:var(--green-deep);
+    font-size:17px;
+    font-weight:800;
+    padding:8px 10px;
+    margin-bottom:6px;
+}
+.topic{
+    width:100%;
+    border:0;
+    background:transparent;
+    color:#65736c;
+    text-align:left;
+    padding:11px 12px 11px 25px;
+    border-radius:11px;
+    margin:3px 0;
+    cursor:pointer;
+    font-size:14px;
+    line-height:1.4;
+}
+.topic:hover{background:#edf9f2;color:var(--green-dark)}
+.topic.active{
+    background:var(--green-light);
+    color:var(--green-dark);
+    font-weight:700;
+    box-shadow:inset 3px 0 var(--green);
+}
+.content{padding:25px;min-height:690px}
+.content-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    margin-bottom:20px;
+}
+.content-head h2{margin:0;font-size:25px}
+.content-head p{margin:8px 0 0;color:var(--muted);line-height:1.5}
+.badge{
+    background:#e8f8ee;
+    color:#20955a;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:11px;
+    font-weight:800;
+    white-space:nowrap;
+}
+.video-box{
+    min-height:440px;
+    border-radius:19px;
+    border:1px solid var(--border);
+    background:
+        radial-gradient(circle at 25% 20%,rgba(72,190,123,.13),transparent 30%),
+        radial-gradient(circle at 80% 75%,rgba(72,190,123,.10),transparent 34%),
+        #f5fcf8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+}
+.placeholder{text-align:center;padding:30px}
+.play{
+    width:78px;height:78px;border-radius:50%;
+    background:var(--green);color:#fff;
+    display:grid;place-items:center;
+    margin:0 auto 20px;
+    font-size:28px;
+    box-shadow:0 12px 30px rgba(53,174,109,.25);
+}
+.placeholder h3{margin:0 0 9px;font-size:22px}
+.placeholder p{margin:0 auto;max-width:500px;color:var(--muted);line-height:1.6}
+.frame{display:none;width:100%;height:440px;border:0;background:#000}
+.actions{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:15px;margin-top:20px;padding-top:18px;border-top:1px solid #e3eee7
+}
+.current{color:var(--muted);font-size:13px}
+.current strong{display:block;color:var(--text);font-size:15px;margin-top:3px}
+.open{
+    display:none;text-decoration:none;background:var(--green);
+    color:#fff;padding:11px 16px;border-radius:10px;font-weight:700
+}
+@media(max-width:1050px){
+    .sidebar{width:220px;min-width:220px}
+    .main{padding:28px}
+    .layout{grid-template-columns:310px minmax(0,1fr)}
+}
+@media(max-width:900px){
+    .page{display:block}
+    .sidebar{width:100%;min-width:0;height:auto;min-height:0;position:relative;padding:15px}
+    .brand{padding-bottom:18px}
+    .sidebar-nav{flex-direction:row;flex-wrap:wrap}
+    .sidebar-nav a{flex:1 1 130px}
+    .sidebar-bottom{display:none}
+    .layout{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+    .main{padding:18px 14px}
+    .heading{flex-direction:column}
+    .content{padding:16px}
+    .content-head{flex-direction:column}
+    .video-box,.frame{min-height:300px;height:300px}
+    .actions{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-mark" aria-label="NEXORA logo">
+            <svg class="nexora-logo" viewBox="0 0 220 250" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="nexora-gradient" x1="45" y1="15" x2="175" y2="235" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#78D69A"/>
+                        <stop offset="45%" stop-color="#4FC27E"/>
+                        <stop offset="100%" stop-color="#269C5D"/>
+                    </linearGradient>
+                </defs>
+                <path fill="url(#nexora-gradient)" d="M42 18 C34 12 24 16 24 27 V183 C24 192 28 198 35 203 L70 229 V82 C70 76 77 72 82 76 L166 138 C178 147 193 142 197 130 C201 118 197 108 188 101 L57 7 C51 3 45 8 42 18 Z"/>
+                <path fill="url(#nexora-gradient)" d="M126 151 L181 191 C192 199 194 211 187 221 C180 231 167 233 157 226 L113 194 L91 178 Z"/>
+                <path fill="url(#nexora-gradient)" d="M91 145 C96 132 101 127 114 122 C101 117 96 112 91 99 C86 112 81 117 68 122 C81 127 86 132 91 145 Z"/>
+            </svg>
+        </div>
+        <div class="brand-name">NEXORA</div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="/">▦ <span>Dashboard</span></a>
+        <a href="/courses">▤ <span>Courses</span></a>
+        <a href="/videos" class="active">▶ <span>Videos</span></a>
+        <a href="/chatbot">✦ <span>AI Chatbot</span></a>
+        <a href="/sources">⌁ <span>Sources</span></a>
+        <a href="/simulation">◇ <span>Simulation</span></a>
+        <a href="/certificate">◇ <span>Certificates</span></a>
+        <a href="/quiz">✓ <span>Quiz</span></a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <a href="/profile">⚙ &nbsp; Settings</a>
+    </div>
+</aside>
+
+<main class="main">
+    <div class="heading">
+        <div>
+            <div class="eyebrow">NEXORA VIDEO LEARNING</div>
+            <h1>Computer Architecture</h1>
+            <p class="description">Learn computer architecture concepts visually, one topic at a time.</p>
+        </div>
+        <a href="/videos" class="back">← Back to Videos</a>
+    </div>
+
+    <div class="layout">
+
+        <aside class="topics">
+            <div class="topic-label">COURSE TOPICS</div>
+
+            <div class="group">
+                <div class="group-title">1. COMPUTER ORGANIZATION &amp; BASIC STRUCTURE</div>
+                <button class="topic active" data-topic="ca-organization-functional">1. Functional units of a computer</button>
+                <button class="topic" data-topic="ca-organization-cpu">2. CPU, ALU, Control Unit, Registers</button>
+                <button class="topic" data-topic="ca-organization-memory">3. Memory hierarchy</button>
+                <button class="topic" data-topic="ca-organization-io">4. Input/Output system</button>
+                <button class="topic" data-topic="ca-organization-bus">5. System bus and its types</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">2. NUMBER SYSTEMS &amp; DATA REPRESENTATION</div>
+                <button class="topic" data-topic="ca-number-binary">1. Binary, Decimal, Octal, Hexadecimal</button>
+                <button class="topic" data-topic="ca-number-conversions">2. Number-system conversions</button>
+                <button class="topic" data-topic="ca-number-complements">3. 1's and 2's complement</button>
+                <button class="topic" data-topic="ca-number-signed">4. Signed and unsigned numbers</button>
+                <button class="topic" data-topic="ca-number-fixed">5. Fixed-point &amp; floating-point representation</button>
+                <button class="topic" data-topic="ca-number-ieee">6. IEEE 754 floating-point representation</button>
+                <button class="topic" data-topic="ca-number-character">7. Character representation: ASCII, Unicode</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">3. COMPUTER ARITHMETIC</div>
+                <button class="topic" data-topic="ca-arithmetic-addsub">1. Binary addition/subtraction</button>
+                <button class="topic" data-topic="ca-arithmetic-signed">2. Signed arithmetic</button>
+                <button class="topic" data-topic="ca-arithmetic-booth">3. Booth's multiplication algorithm</button>
+                <button class="topic" data-topic="ca-arithmetic-division">4. Restoring &amp; non-restoring division</button>
+                <button class="topic" data-topic="ca-arithmetic-floating">5. Floating-point arithmetic</button>
+                <button class="topic" data-topic="ca-arithmetic-overflow">6. Overflow detection</button>
+                <button class="topic" data-topic="ca-arithmetic-fast">7. Fast adders</button>
+                <button class="topic" data-topic="ca-arithmetic-cla">8. Carry Look-Ahead Adder</button>
+                <button class="topic" data-topic="ca-arithmetic-csa">9. Carry Save Adder</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">4. CPU &amp; PROCESSOR ORGANIZATION</div>
+                <button class="topic" data-topic="ca-cpu-cycle">1. Instruction cycle</button>
+                <button class="topic" data-topic="ca-cpu-fetch">2. Fetch → Decode → Execute</button>
+                <button class="topic" data-topic="ca-cpu-registers">3. CPU registers</button>
+                <button class="topic" data-topic="ca-cpu-alu">4. ALU</button>
+                <button class="topic" data-topic="ca-cpu-control">5. Control Unit</button>
+                <button class="topic" data-topic="ca-cpu-hardwired">6. Hardwired vs Microprogrammed Control</button>
+                <button class="topic" data-topic="ca-cpu-datapath">7. Datapath and control path</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">5. INSTRUCTION SET ARCHITECTURE (ISA)</div>
+                <button class="topic" data-topic="ca-isa-format">1. Instruction formats</button>
+                <button class="topic" data-topic="ca-isa-opcode">2. Opcode &amp; operands</button>
+                <button class="topic" data-topic="ca-isa-types">3. Types of instructions</button>
+                <button class="topic" data-topic="ca-isa-risc">4. RISC vs CISC</button>
+                <button class="topic" data-topic="ca-isa-addressing">5. Addressing modes</button>
+                <button class="topic" data-topic="ca-isa-immediate">6. Immediate Addressing modes</button>
+                <button class="topic" data-topic="ca-isa-direct">7. Direct Addressing modes</button>
+                <button class="topic" data-topic="ca-isa-indirect">8. Indirect Addressing modes</button>
+                <button class="topic" data-topic="ca-isa-register">9. Register Addressing modes</button>
+                <button class="topic" data-topic="ca-isa-register-indirect">10. Register indirect Addressing modes</button>
+                <button class="topic" data-topic="ca-isa-indexed">11. Indexed Addressing modes</button>
+                <button class="topic" data-topic="ca-isa-relative">12. Relative Addressing modes</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">6. SUBROUTINES &amp; INSTRUCTION EXECUTION</div>
+                <button class="topic" data-topic="ca-subroutine-branch">1. Branch instructions</button>
+                <button class="topic" data-topic="ca-subroutine-jump">2. Jump instructions</button>
+                <button class="topic" data-topic="ca-subroutine-procedure">3. Procedure/subroutine calls</button>
+                <button class="topic" data-topic="ca-subroutine-stack">4. Stack</button>
+                <button class="topic" data-topic="ca-subroutine-return">5. Return address</button>
+                <button class="topic" data-topic="ca-subroutine-interrupt">6. Interrupt handling</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">7. PIPELINING</div>
+                <button class="topic" data-topic="ca-pipeline-intro">1. Instruction pipelining</button>
+                <button class="topic" data-topic="ca-pipeline-stages">2. Pipeline stages</button>
+                <button class="topic" data-topic="ca-pipeline-speedup">3. Speedup</button>
+                <button class="topic" data-topic="ca-pipeline-structural">4. Structural hazard</button>
+                <button class="topic" data-topic="ca-pipeline-data">5. Data hazard</button>
+                <button class="topic" data-topic="ca-pipeline-control">6. Control hazard</button>
+                <button class="topic" data-topic="ca-pipeline-handling">7. Hazard handling</button>
+                <button class="topic" data-topic="ca-pipeline-forwarding">8. Forwarding</button>
+                <button class="topic" data-topic="ca-pipeline-stalling">9. Stalling</button>
+                <button class="topic" data-topic="ca-pipeline-branch">10. Branch prediction</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">8. MEMORY ORGANIZATION</div>
+                <button class="topic" data-topic="ca-memory-hierarchy">1. Memory hierarchy</button>
+                <button class="topic" data-topic="ca-memory-registers">2. Registers</button>
+                <button class="topic" data-topic="ca-memory-cache">3. Cache</button>
+                <button class="topic" data-topic="ca-memory-main">4. Main memory</button>
+                <button class="topic" data-topic="ca-memory-secondary">5. Secondary storage</button>
+                <button class="topic" data-topic="ca-memory-sram-dram">6. SRAM vs DRAM</button>
+                <button class="topic" data-topic="ca-memory-rom">7. ROM</button>
+                <button class="topic" data-topic="ca-memory-direct">8. Direct mapping</button>
+                <button class="topic" data-topic="ca-memory-associative">9. Associative mapping</button>
+                <button class="topic" data-topic="ca-memory-set-associative">10. Set-associative mapping</button>
+                <button class="topic" data-topic="ca-memory-hit-miss">11. Cache hit &amp; miss</button>
+                <button class="topic" data-topic="ca-memory-hit-ratio">12. Hit ratio</button>
+                <button class="topic" data-topic="ca-memory-access-time">13. Memory access time</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">9. VIRTUAL MEMORY</div>
+                <button class="topic" data-topic="ca-virtual-address">1. Virtual address vs physical address</button>
+                <button class="topic" data-topic="ca-virtual-paging">2. Paging</button>
+                <button class="topic" data-topic="ca-virtual-page-tables">3. Page tables</button>
+                <button class="topic" data-topic="ca-virtual-tlb">4. TLB</button>
+                <button class="topic" data-topic="ca-virtual-page-faults">5. Page faults</button>
+                <button class="topic" data-topic="ca-virtual-translation">6. Address translation</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">10. INPUT/OUTPUT ORGANIZATION</div>
+                <button class="topic" data-topic="ca-io-interface">1. I/O interface</button>
+                <button class="topic" data-topic="ca-io-programmed">2. Programmed I/O</button>
+                <button class="topic" data-topic="ca-io-interrupt">3. Interrupt-driven I/O</button>
+                <button class="topic" data-topic="ca-io-dma">4. DMA (Direct Memory Access)</button>
+                <button class="topic" data-topic="ca-io-processors">5. I/O processors</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">11. PARALLEL PROCESSING</div>
+                <button class="topic" data-topic="ca-parallel-multiprocessors">1. Multiprocessors</button>
+                <button class="topic" data-topic="ca-parallel-multicore">2. Multicore processors</button>
+                <button class="topic" data-topic="ca-parallel-simd">3. SIMD</button>
+                <button class="topic" data-topic="ca-parallel-mimd">4. MIMD</button>
+                <button class="topic" data-topic="ca-parallel-flynn">5. Flynn's classification</button>
+                <button class="topic" data-topic="ca-parallel-memory">6. Shared vs distributed memory</button>
+            </div>
+        </aside>
+
+        <section class="content">
+            <div class="content-head">
+                <div>
+                    <h2 id="title">Functional units of a computer</h2>
+                    <p id="description">Learn the functional units that make up a computer and how they work together.</p>
+                </div>
+                <span class="badge" id="badge">COMPUTER ORGANIZATION</span>
+            </div>
+
+            <div class="video-box">
+                <div class="placeholder" id="placeholder">
+                    <div class="play">▶</div>
+                    <h3>Video Coming Soon</h3>
+                    <p id="placeholderText">The video for this topic will be uploaded later. Add its URL in the VIDEO_URLS section in this file.</p>
+                </div>
+                <iframe id="frame" class="frame" title="NEXORA Data Structures Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <div class="actions">
+                <div class="current">CURRENT TOPIC<strong id="current">Functional units of a computer</strong></div>
+                <a id="open" class="open" href="#" target="_blank" rel="noopener noreferrer">Open Video ↗</a>
+            </div>
+        </section>
+    </div>
+</main>
+</div>
+
+<script>
+/*
+============================================================
+VIDEO URLS
+
+Add your videos later by replacing "" with the URL.
+
+For YouTube use:
+https://www.youtube.com/embed/VIDEO_ID
+
+Example:
+"sll-intro": "https://www.youtube.com/embed/VIDEO_ID",
+
+Only change the URLs below.
+============================================================
+*/
+const VIDEO_URLS = {
+    "ca-organization-functional": "https://www.youtube.com/embed/2_tQuIgw5zc",
+    "ca-organization-cpu": "https://www.youtube.com/embed/AH2JcdoR6lQ",
+    "ca-organization-memory": "https://www.youtube.com/embed/lQcU4WwVALI",
+    "ca-organization-io": "https://www.youtube.com/embed/F18RiREDkwE",
+    "ca-organization-bus": "https://www.youtube.com/embed/IFVs-5LA13c",
+    "ca-number-binary": "https://www.youtube.com/embed/FFDMzbrEXaE",
+    "ca-number-conversions": "https://www.youtube.com/embed/E-Sg2YsvZds",
+    "ca-number-complements": "https://www.youtube.com/embed/S_fPMrrIA30",
+    "ca-number-signed": "https://www.youtube.com/embed/1k71RxUtgUY",
+    "ca-number-fixed": "https://www.youtube.com/embed/zVM8NKXsboA",
+    "ca-number-ieee": "https://www.youtube.com/embed/e_J9lXnU_vs",
+    "ca-number-character": "https://www.youtube.com/embed/DntKZ9xJ1sM",
+    "ca-arithmetic-addsub": "https://www.youtube.com/embed/AE-27BSbkJ4",
+    "ca-arithmetic-signed": "https://www.youtube.com/embed/zMX2WERv74k",
+    "ca-arithmetic-booth": "https://www.youtube.com/embed/meSn0UXmgac",
+    "ca-arithmetic-division": "https://www.youtube.com/embed/6ToR6vuRb3M",
+    "ca-arithmetic-floating": "https://www.youtube.com/embed/w7NQTb1FTDU",
+    "ca-arithmetic-overflow": "https://www.youtube.com/embed/7towQUO9aZI",
+    "ca-arithmetic-fast": "https://www.youtube.com/embed/CEeQ2xJXNuE",
+    "ca-arithmetic-cla": "https://www.youtube.com/embed/6Z1WikEWxH0",
+    "ca-arithmetic-csa": "https://www.youtube.com/embed/8vOfmNuXx1Y",
+    "ca-cpu-cycle": "https://www.youtube.com/embed/cO-H3tDqvXM",
+    "ca-cpu-fetch": "https://www.youtube.com/embed/jFDMZpkUWCw",
+    "ca-cpu-registers": "https://www.youtube.com/embed/AVq8VGSawcY",
+    "ca-cpu-alu": "https://www.youtube.com/embed/y9EA-XBbRgg",
+    "ca-cpu-control": "https://www.youtube.com/embed/-Qs5Ypwnb9c",
+    "ca-cpu-hardwired": "https://www.youtube.com/embed/l1vBkZWyELk",
+    "ca-cpu-datapath": "https://www.youtube.com/embed/cIDoJtYdDVA",
+    "ca-isa-format": "https://www.youtube.com/embed/BrBZHteA3-0",
+    "ca-isa-opcode": "https://www.youtube.com/embed/E2teRS7a2uU",
+    "ca-isa-opcode": "https://www.youtube.com/embed/E2teRS7a2uU",
+    "ca-isa-opcode": "https://www.youtube.com/embed/E2teRS7a2uU",
+    "ca-isa-types": "https://www.youtube.com/embed/fXjJjd1kXJQ",
+    "ca-isa-risc": "https://www.youtube.com/embed/iGVCcfUE2j8",
+    "ca-isa-addressing": "https://www.youtube.com/embed/bM2PyN-EIS0",
+    "ca-isa-immediate": "https://www.youtube.com/embed/DyPMXAQCYqA",
+    "ca-isa-direct": "https://www.youtube.com/embed/M2JPEq_-Zk4",
+    "ca-isa-indirect": "https://www.youtube.com/embed/bk2irUT9AXg",
+    "ca-isa-register": "https://www.youtube.com/embed/10fGuoKgPPQ",
+    "ca-isa-register-indirect": "https://www.youtube.com/embed/PTt40pvsbkA",
+    "ca-isa-indexed": "https://www.youtube.com/embed/hajioR112DQ",
+    "ca-isa-relative": "https://www.youtube.com/embed/nhbk6h56Omk",
+    "ca-subroutine-branch": "https://www.youtube.com/embed/JgLDBhyDqms",
+    "ca-subroutine-jump": "https://www.youtube.com/embed/2h7n0f0Xr38",
+    "ca-subroutine-procedure": "https://www.youtube.com/embed/t-hYA1zvcbE",
+    "ca-subroutine-stack": "https://www.youtube.com/embed/C-3ocd1MkUE",
+    "ca-subroutine-return": "https://www.youtube.com/embed/EV0rFOJ5EGs",
+    "ca-subroutine-interrupt": "https://www.youtube.com/embed/UnLww6bH6C4",
+    "ca-pipeline-intro": "https://www.youtube.com/embed/YhGv5AOcz1s",
+    "ca-pipeline-stages": "https://www.youtube.com/embed/cxK0pssoM58",
+    "ca-pipeline-speedup": "https://www.youtube.com/embed/PBadU2XBGU0",
+    "ca-pipeline-structural": "https://www.youtube.com/embed/zb0rXrXaqEQ",
+    "ca-pipeline-data": "https://www.youtube.com/embed/0MB4B4zqAGw",
+    "ca-pipeline-control": "https://www.youtube.com/embed/NqdbTXCZcPM",
+    "ca-pipeline-handling": "https://www.youtube.com/embed/uk4uQ-CSrg4",
+    "ca-pipeline-forwarding": "https://www.youtube.com/embed/4LS81fh-awY",
+    "ca-pipeline-stalling": "https://www.youtube.com/embed/A-tPcXACJRI",
+    "ca-pipeline-branch": "https://www.youtube.com/embed/-QQE2CO_jHU",
+    "ca-memory-hierarchy": "https://www.youtube.com/embed/HgGlsXU3Oxo",
+    "ca-memory-registers": "https://www.youtube.com/embed/g854EMx9kTA",
+    "ca-memory-cache": "https://www.youtube.com/embed/CxXwHpPOT0o",
+    "ca-memory-main": "https://www.youtube.com/embed/mME-q1B2AXc",
+    "ca-memory-secondary": "https://www.youtube.com/embed/I1Gz2jlBg-s",
+    "ca-memory-sram-dram": "https://www.youtube.com/embed/r787m_IaR1I",
+    "ca-memory-rom": "https://www.youtube.com/embed/1GREaNW21XM",
+    "ca-memory-direct": "https://www.youtube.com/embed/_2AZ8ZLLxlE",
+    "ca-memory-associative": "https://www.youtube.com/embed/uwnsMaH-iV0",
+    "ca-memory-set-associative": "https://www.youtube.com/embed/KhAh6thw_TI",
+    "ca-memory-hit-miss": "https://www.youtube.com/embed/bPvW4uAYj_A",
+    "ca-memory-hit-ratio": "https://www.youtube.com/embed/mrwso_Gg-tE",
+    "ca-memory-access-time": "https://www.youtube.com/embed/zEqQPfP9lto",
+    "ca-virtual-address": "https://www.youtube.com/embed/CuCBbW2FcPc",
+    "ca-virtual-paging": "https://www.youtube.com/embed/kt4LkPFt8Zg",
+    "ca-virtual-page-tables": "https://www.youtube.com/embed/exo5jbWnV7Q",
+    "ca-virtual-tlb": "https://www.youtube.com/embed/3yxVPxgHCNU",
+    "ca-virtual-page-faults": "https://www.youtube.com/embed/lgmws9oraXE",
+    "ca-virtual-translation": "https://www.youtube.com/embed/sUB84uig28A",
+    "ca-io-interface": "https://www.youtube.com/embed/3ljdEJ9by9w",
+    "ca-io-programmed": "https://www.youtube.com/embed/6mq25yWOSxI",
+    "ca-io-interrupt": "https://www.youtube.com/embed/95x-i39niP4",
+    "ca-io-dma": "https://www.youtube.com/embed/oj8Vt9RsTvc",
+    "ca-io-processors": "https://www.youtube.com/embed/WOUBrgx3gQU",
+    "ca-parallel-multiprocessors": "https://www.youtube.com/embed/Sw73rXj-qU8",
+    "ca-parallel-multiprocessors": "https://www.youtube.com/embed/Sw73rXj-qU8",
+    "ca-parallel-multicore": "https://www.youtube.com/embed/Erk0TOyMsA8",
+    "ca-parallel-simd": "https://www.youtube.com/embed/hOansyflT_Y",
+    "ca-parallel-mimd": "https://www.youtube.com/embed/X_wPVFB8ikU",
+    "ca-parallel-flynn": "https://www.youtube.com/embed/kV_cLUT1mng",
+    "ca-parallel-memory": "https://www.youtube.com/embed/EamIfcQIgJk"
+};
+
+const VIDEO_DATA = {
+    "ca-organization-functional": ["Functional units of a computer","Learn the functional units that make up a computer and how they work together.","COMPUTER ORGANIZATION & BASIC STRUCTURE"],
+    "ca-organization-cpu": ["CPU, ALU, Control Unit, Registers","Learn the main CPU components and the role of the ALU, Control Unit, and registers.","COMPUTER ORGANIZATION & BASIC STRUCTURE"],
+    "ca-organization-memory": ["Memory hierarchy","Understand the levels of memory and their relationship to speed, capacity, and cost.","COMPUTER ORGANIZATION & BASIC STRUCTURE"],
+    "ca-organization-io": ["Input/Output system","Understand how a computer communicates with external input and output devices.","COMPUTER ORGANIZATION & BASIC STRUCTURE"],
+    "ca-organization-bus": ["System bus and its types","Learn how system buses connect major computer components and the main bus types.","COMPUTER ORGANIZATION & BASIC STRUCTURE"],
+    "ca-number-binary": ["Binary, Decimal, Octal, Hexadecimal","Learn the common number systems used in computer architecture.","NUMBER SYSTEMS & DATA REPRESENTATION"],
+    "ca-number-conversions": ["Number-system conversions","Learn how to convert values between binary, decimal, octal, and hexadecimal.","NUMBER SYSTEMS & DATA REPRESENTATION"],
+    "ca-number-complements": ["1's and 2's complement","Learn 1's and 2's complement representations and their uses in binary arithmetic.","NUMBER SYSTEMS & DATA REPRESENTATION"],
+    "ca-number-signed": ["Signed and unsigned numbers","Understand how signed and unsigned binary values are represented.","NUMBER SYSTEMS & DATA REPRESENTATION"],
+    "ca-number-fixed": ["Fixed-point & floating-point representation","Compare fixed-point and floating-point number representation.","NUMBER SYSTEMS & DATA REPRESENTATION"],
+    "ca-number-ieee": ["IEEE 754 floating-point representation","Learn the IEEE 754 representation of floating-point numbers.","NUMBER SYSTEMS & DATA REPRESENTATION"],
+    "ca-number-character": ["Character representation: ASCII, Unicode","Understand how characters are represented using ASCII and Unicode.","NUMBER SYSTEMS & DATA REPRESENTATION"],
+    "ca-arithmetic-addsub": ["Binary addition/subtraction","Learn binary addition and subtraction methods used in computer arithmetic.","COMPUTER ARITHMETIC"],
+    "ca-arithmetic-signed": ["Signed arithmetic","Learn arithmetic operations involving signed binary numbers.","COMPUTER ARITHMETIC"],
+    "ca-arithmetic-booth": ["Booth's multiplication algorithm","Learn Booth's algorithm for efficient signed binary multiplication.","COMPUTER ARITHMETIC"],
+    "ca-arithmetic-division": ["Restoring & non-restoring division","Learn restoring and non-restoring binary division algorithms.","COMPUTER ARITHMETIC"],
+    "ca-arithmetic-floating": ["Floating-point arithmetic","Learn the basic operations performed on floating-point numbers.","COMPUTER ARITHMETIC"],
+    "ca-arithmetic-overflow": ["Overflow detection","Learn how overflow is detected during computer arithmetic operations.","COMPUTER ARITHMETIC"],
+    "ca-arithmetic-fast": ["Fast adders","Understand fast adder designs used to improve binary addition speed.","COMPUTER ARITHMETIC"],
+    "ca-arithmetic-cla": ["Carry Look-Ahead Adder","Learn how a Carry Look-Ahead Adder reduces carry propagation delay.","COMPUTER ARITHMETIC"],
+    "ca-arithmetic-csa": ["Carry Save Adder","Learn how Carry Save Adders speed up multi-operand addition.","COMPUTER ARITHMETIC"],
+    "ca-cpu-cycle": ["Instruction cycle","Learn the stages an instruction passes through during execution.","CPU & PROCESSOR ORGANIZATION"],
+    "ca-cpu-fetch": ["Fetch → Decode → Execute","Understand the fetch, decode, and execute sequence of instruction processing.","CPU & PROCESSOR ORGANIZATION"],
+    "ca-cpu-registers": ["CPU registers","Learn the purpose of registers used by the processor.","CPU & PROCESSOR ORGANIZATION"],
+    "ca-cpu-alu": ["ALU","Learn how the Arithmetic Logic Unit performs arithmetic and logical operations.","CPU & PROCESSOR ORGANIZATION"],
+    "ca-cpu-control": ["Control Unit","Understand how the Control Unit coordinates instruction execution.","CPU & PROCESSOR ORGANIZATION"],
+    "ca-cpu-hardwired": ["Hardwired vs Microprogrammed Control","Compare hardwired and microprogrammed control-unit designs.","CPU & PROCESSOR ORGANIZATION"],
+    "ca-cpu-datapath": ["Datapath and control path","Understand the datapath and control path within a processor.","CPU & PROCESSOR ORGANIZATION"],
+    "ca-isa-format": ["Instruction formats","Learn how instructions are structured inside an instruction set architecture.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-opcode": ["Opcode & operands","Understand opcodes and operands and their roles in instructions.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-types": ["Types of instructions","Explore common categories of processor instructions.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-risc": ["RISC vs CISC","Compare Reduced Instruction Set Computer and Complex Instruction Set Computer approaches.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-addressing": ["Addressing modes","Understand how instructions specify the location of their operands.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-immediate": ["Immediate","Learn immediate addressing, where the operand value is contained in the instruction.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-direct": ["Direct","Learn direct addressing, where the instruction contains the memory address of the operand.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-indirect": ["Indirect","Learn indirect addressing, where an address refers to the location of the operand address.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-register": ["Register","Learn register addressing, where an operand is stored in a CPU register.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-register-indirect": ["Register indirect","Learn register-indirect addressing using a register that holds a memory address.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-indexed": ["Indexed","Learn indexed addressing using an index value with an address.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-isa-relative": ["Relative","Learn relative addressing using an offset relative to a reference address.","INSTRUCTION SET ARCHITECTURE (ISA)"],
+    "ca-subroutine-branch": ["Branch instructions","Learn how branch instructions change the normal sequence of execution.","SUBROUTINES & INSTRUCTION EXECUTION"],
+    "ca-subroutine-jump": ["Jump instructions","Learn how jump instructions transfer control to another instruction address.","SUBROUTINES & INSTRUCTION EXECUTION"],
+    "ca-subroutine-procedure": ["Procedure/subroutine calls","Understand how procedure and subroutine calls are performed.","SUBROUTINES & INSTRUCTION EXECUTION"],
+    "ca-subroutine-stack": ["Stack","Learn how the stack supports calls, returns, and temporary data.","SUBROUTINES & INSTRUCTION EXECUTION"],
+    "ca-subroutine-return": ["Return address","Understand how the processor stores and uses a return address.","SUBROUTINES & INSTRUCTION EXECUTION"],
+    "ca-subroutine-interrupt": ["Interrupt handling","Learn how the processor responds to and services interrupts.","SUBROUTINES & INSTRUCTION EXECUTION"],
+    "ca-pipeline-intro": ["Instruction pipelining","Learn how instruction pipelining improves processor throughput.","PIPELINING"],
+    "ca-pipeline-stages": ["Pipeline stages","Understand the stages used to divide instruction processing.","PIPELINING"],
+    "ca-pipeline-speedup": ["Speedup","Learn how pipeline speedup is calculated and interpreted.","PIPELINING"],
+    "ca-pipeline-structural": ["Structural hazard","Understand structural hazards caused by resource conflicts in a pipeline.","PIPELINING"],
+    "ca-pipeline-data": ["Data hazard","Understand data hazards caused by dependencies between instructions.","PIPELINING"],
+    "ca-pipeline-control": ["Control hazard","Understand control hazards caused by branches and changes in instruction flow.","PIPELINING"],
+    "ca-pipeline-handling": ["Hazard handling","Learn techniques used to detect and handle pipeline hazards.","PIPELINING"],
+    "ca-pipeline-forwarding": ["Forwarding","Learn how forwarding reduces delays caused by data dependencies.","PIPELINING"],
+    "ca-pipeline-stalling": ["Stalling","Learn how stalling inserts delays to safely handle pipeline dependencies.","PIPELINING"],
+    "ca-pipeline-branch": ["Branch prediction","Learn how branch prediction reduces control-hazard penalties.","PIPELINING"],
+    "ca-memory-hierarchy": ["Memory hierarchy","Understand the levels of the memory hierarchy and their characteristics.","MEMORY ORGANIZATION"],
+    "ca-memory-registers": ["Registers","Learn the fastest storage elements directly used by the CPU.","MEMORY ORGANIZATION"],
+    "ca-memory-cache": ["Cache","Understand cache memory and its role in reducing memory access time.","MEMORY ORGANIZATION"],
+    "ca-memory-main": ["Main memory","Learn the role of main memory in storing active programs and data.","MEMORY ORGANIZATION"],
+    "ca-memory-secondary": ["Secondary storage","Understand secondary storage and its role in long-term data storage.","MEMORY ORGANIZATION"],
+    "ca-memory-sram-dram": ["SRAM vs DRAM","Compare SRAM and DRAM technologies and their typical uses.","MEMORY ORGANIZATION"],
+    "ca-memory-rom": ["ROM","Learn the purpose and characteristics of read-only memory.","MEMORY ORGANIZATION"],
+    "ca-memory-direct": ["Direct mapping","Learn direct cache mapping and how memory blocks are placed in cache.","MEMORY ORGANIZATION"],
+    "ca-memory-associative": ["Associative mapping","Learn fully associative cache mapping.","MEMORY ORGANIZATION"],
+    "ca-memory-set-associative": ["Set-associative mapping","Learn set-associative cache organization.","MEMORY ORGANIZATION"],
+    "ca-memory-hit-miss": ["Cache hit & miss","Understand cache hits, cache misses, and their effect on performance.","MEMORY ORGANIZATION"],
+    "ca-memory-hit-ratio": ["Hit ratio","Learn how cache hit ratio is calculated and interpreted.","MEMORY ORGANIZATION"],
+    "ca-memory-access-time": ["Memory access time","Understand memory access time and the factors that affect it.","MEMORY ORGANIZATION"],
+    "ca-virtual-address": ["Virtual address vs physical address","Understand the difference between virtual and physical addresses.","VIRTUAL MEMORY"],
+    "ca-virtual-paging": ["Paging","Learn how paging divides virtual memory into pages and physical memory into frames.","VIRTUAL MEMORY"],
+    "ca-virtual-page-tables": ["Page tables","Understand how page tables map virtual pages to physical frames.","VIRTUAL MEMORY"],
+    "ca-virtual-tlb": ["TLB","Learn how a Translation Lookaside Buffer speeds up address translation.","VIRTUAL MEMORY"],
+    "ca-virtual-page-faults": ["Page faults","Understand what happens when a required page is not in physical memory.","VIRTUAL MEMORY"],
+    "ca-virtual-translation": ["Address translation","Learn how virtual addresses are translated into physical addresses.","VIRTUAL MEMORY"],
+    "ca-io-interface": ["I/O interface","Understand the interface between the CPU/system and I/O devices.","INPUT/OUTPUT ORGANIZATION"],
+    "ca-io-programmed": ["Programmed I/O","Learn how the CPU controls I/O through programmed I/O.","INPUT/OUTPUT ORGANIZATION"],
+    "ca-io-interrupt": ["Interrupt-driven I/O","Learn how interrupts allow devices to request CPU attention.","INPUT/OUTPUT ORGANIZATION"],
+    "ca-io-dma": ["DMA (Direct Memory Access)","Understand how DMA transfers data between I/O devices and memory with minimal CPU involvement.","INPUT/OUTPUT ORGANIZATION"],
+    "ca-io-processors": ["I/O processors","Learn the role of dedicated I/O processors in managing input/output operations.","INPUT/OUTPUT ORGANIZATION"],
+    "ca-parallel-multiprocessors": ["Multiprocessors","Understand systems that use multiple processors to perform computation.","PARALLEL PROCESSING"],
+    "ca-parallel-multicore": ["Multicore processors","Learn how multiple processing cores are integrated into a single processor.","PARALLEL PROCESSING"],
+    "ca-parallel-simd": ["SIMD","Learn Single Instruction, Multiple Data parallel processing.","PARALLEL PROCESSING"],
+    "ca-parallel-mimd": ["MIMD","Learn Multiple Instruction, Multiple Data parallel processing.","PARALLEL PROCESSING"],
+    "ca-parallel-flynn": ["Flynn's classification","Learn Flynn's classification of computer architectures.","PARALLEL PROCESSING"],
+    "ca-parallel-memory": ["Shared vs distributed memory","Compare shared-memory and distributed-memory parallel systems.","PARALLEL PROCESSING"]
+};
+const buttons = document.querySelectorAll(".topic");
+const title = document.getElementById("title");
+const description = document.getElementById("description");
+const badge = document.getElementById("badge");
+const current = document.getElementById("current");
+const placeholder = document.getElementById("placeholder");
+const placeholderText = document.getElementById("placeholderText");
+const frame = document.getElementById("frame");
+const open = document.getElementById("open");
+
+function loadTopic(id) {
+    const data = VIDEO_DATA[id];
+    if (!data) return;
+
+    const url = (VIDEO_URLS[id] || "").trim();
+
+    title.textContent = data[0];
+    description.textContent = data[1];
+    badge.textContent = data[2];
+    current.textContent = data[0];
+
+    buttons.forEach(button => {
+        button.classList.toggle("active", button.dataset.topic === id);
+    });
+
+    if (!url) {
+        placeholder.style.display = "block";
+        frame.style.display = "none";
+        frame.src = "";
+        open.style.display = "none";
+        open.removeAttribute("href");
+        placeholderText.textContent =
+            "The video for this topic will be uploaded later. Add its URL in the VIDEO_URLS section in this file.";
+        return;
+    }
+
+    placeholder.style.display = "none";
+    frame.style.display = "block";
+    frame.src = url;
+    open.style.display = "inline-block";
+    open.href = url;
+}
+
+buttons.forEach(button => {
+    button.addEventListener("click", () => loadTopic(button.dataset.topic));
+});
+
+loadTopic("ca-organization-functional");
+</script>
+</body>
+</html>

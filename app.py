@@ -2147,29 +2147,45 @@ courses = [
 ]
 
 videos = [
-    {'title': 'Understanding Linked Lists', 'topic': 'Data Structures', 'duration': '', 'level': '', 'reference': 'nptel_linked_list', 'subtopics': [
-        {'title': 'Introduction to Linked List in C', 'videoUrl': ''},
-        {'title': 'Insertion at the Beginning in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Insertion at a Position in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Insertion at the End in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Traversal of a Linked List in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Deletion at the Beginning in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Deletion at a Position in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Deletion at the End in Singly Linked List', 'videoUrl': ''}
-    ]},
+    {
+        'slug': 'data-structures',
+        'title': 'Data Structure',
+        'topic': 'Data Structures',
+        'duration': '',
+        'level': 'Intermediate',
+        'reference': 'nptel_linked_list',
+        'subtopics': [
+            {'title': 'Introduction to Linked List in C', 'videoUrl': ''},
+            {'title': 'Insertion at the Beginning in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Insertion at a Position in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Insertion at the End in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Traversal of a Linked List in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Deletion at the Beginning in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Deletion at a Position in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Deletion at the End in Singly Linked List', 'videoUrl': ''}
+        ]
+    },
 
-    {'title': 'Understanding Doubly Linked List', 'topic': 'Data Structures', 'duration': '', 'level': '', 'reference': 'nptel_doubly_linked_list', 'subtopics': [
-        {'title': 'Insertion at the Beginning in Doubly Linked List', 'videoUrl': ''},
-        {'title': 'Insertion at a Position in Doubly Linked List', 'videoUrl': ''},
-        {'title': 'Insertion at the End in Doubly Linked List', 'videoUrl': ''},
-        {'title': 'Deletion at the Beginning in Doubly Linked List', 'videoUrl': ''}
-    ]},
-
-    {'title': 'Circular Linked List', 'topic': 'Data Structures', 'duration': '', 'level': '', 'reference': None, 'subtopics': [
-        {'title': 'Deletion at the End in Circular Linked List', 'videoUrl': ''},
-        {'title': 'Insertion at the End in Circular Linked List', 'videoUrl': ''}
-    ]}
+    {
+        'slug': 'computer-architecture',
+        'title': 'Computer Architecture',
+        'topic': 'Computer Architecture',
+        'duration': '',
+        'level': 'Intermediate',
+        'reference': 'computer_architecture',
+        'subtopics': [
+            {'title': 'Introduction to Computer Architecture', 'videoUrl': ''},
+            {'title': 'CPU and ALU', 'videoUrl': ''},
+            {'title': 'Registers and Control Unit', 'videoUrl': ''},
+            {'title': 'Instruction Cycle', 'videoUrl': ''},
+            {'title': 'Memory Organization', 'videoUrl': ''},
+            {'title': 'Cache Memory', 'videoUrl': ''},
+            {'title': 'Input and Output Organization', 'videoUrl': ''},
+            {'title': 'Pipelining', 'videoUrl': ''}
+        ]
+    }
 ]
+
 sources = [{'title': 'Python Documentation', 'type': 'Documentation', 'topic': 'Python', 'description': 'Official Python language documentation and reference.'}, {'title': 'Java OOP Guide', 'type': 'Article', 'topic': 'Java', 'description': 'Learn classes, objects, inheritance and polymorphism.'}, {'title': 'Data Structures Notes', 'type': 'PDF Notes', 'topic': 'DSA', 'description': 'Quick revision notes for common data structures.'}, {'title': 'SQL Practice Problems', 'type': 'Practice', 'topic': 'Database', 'description': 'Practice SQL queries and database concepts.'}]
 
 certificates = [
@@ -2296,6 +2312,44 @@ def video_page():
     return render_dashboard_page("videos")
 
 
+@app.route("/data-structures-videos")
+def data_structures_videos():
+    return render_template("ds video.html")
+
+
+
+@app.route("/video-learning/<video_slug>")
+def video_learning(video_slug):
+
+    student = dashboard_student()
+
+    if not student:
+        return redirect(url_for("home"))
+
+    if video_slug == "computer-architecture":
+        return render_template("CA video.html")
+
+    selected_video = None
+
+    for video in videos:
+        if video.get("slug") == video_slug:
+            selected_video = video
+            break
+
+    if not selected_video:
+        return redirect(url_for("video_page"))
+
+    return render_template(
+        "page.html",
+        page="video-learning",
+        student=student,
+        courses=courses,
+        videos=videos,
+        sources=sources,
+        certificates=certificates,
+        video=selected_video
+    )
+
 @app.route("/chatbot")
 def chatbot():
     return render_dashboard_page("chatbot")
@@ -2308,6 +2362,11 @@ def source_page():
 @app.route("/simulation")
 def simulation():
     return render_dashboard_page("simulation")
+
+
+@app.route("/linked-list-simulation")
+def linked_list_simulation():
+    return render_template("linklist.html")
 
 @app.route("/certificate")
 def certificate_page():
