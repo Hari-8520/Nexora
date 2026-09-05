@@ -22,7 +22,7 @@
           rel="stylesheet">
 </head>
 
-<body data-quiz-course="{{ quiz_course|default('') }}">
+<body data-quiz-course="{{ quiz_course|default('') }}" data-active-dates='{{ student.active_dates | default([]) | tojson }}'>
 
 <div class="app">
 
@@ -426,7 +426,7 @@
                     </strong>
 
                     <div class="mini-bar">
-                        <i style="--progress: {{ student.mastery }}%;"></i>
+                        <i data-progress="{{ student.mastery }}"></i>
                     </div>
 
                     <small>
@@ -447,7 +447,7 @@
                     </strong>
 
                     <div class="mini-bar">
-                        <i style="--progress: {{ student.quiz_accuracy }}%;"></i>
+                        <i data-progress="{{ student.quiz_accuracy }}"></i>
                     </div>
 
                     <small>
@@ -671,7 +671,7 @@
                                 <small class="road-topic">Today's topic: <strong>{{ item.topic }}</strong></small>
                                 <small class="road-reason">{{ item.reason }}</small>
                                 {% if item.score is not none %}<small class="road-score">Latest quiz: {{ item.score }}%</small>{% endif %}
-                                {% if item.progress > 0 %}<div class="road-progress"><i style="--road-progress: {{ item.progress }}%;"></i></div>{% endif %}
+                                {% if item.progress > 0 %}<div class="road-progress"><i data-road-progress="{{ item.progress }}"></i></div>{% endif %}
                             </div>
                         </div>
                         {% endfor %}
@@ -711,7 +711,7 @@
                         </div>
 
                         <div class="mastery-line">
-                            <i style="--progress:{{ course.progress }}%;"></i>
+                            <i data-progress="{{ course.progress }}"></i>
                         </div>
                         {% endfor %}
 
@@ -1398,13 +1398,20 @@
 
                 </div>
 
-                <button
-                    class="secondary-btn"
-                    type="button">
-
-                    Filter Courses
-
-                </button>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    {% if courses|selectattr('certificate_unlocked')|list|length > 0 %}
+                    <a
+                        class="primary-btn"
+                        href="{{ url_for('certificate_page') }}">
+                        Claim Certificate ✓
+                    </a>
+                    {% endif %}
+                    <button
+                        class="secondary-btn"
+                        type="button">
+                        Filter Courses
+                    </button>
+                </div>
 
             </div>
 
@@ -1438,12 +1445,35 @@
                         {{ course.description }}
                     </p>
 
+                    <div style="margin:18px 0 10px;">
+                        <div style="display:flex;justify-content:space-between;font-size:13px;color:#587062;margin-bottom:7px;">
+                            <span>Course Progress</span>
+                            <strong>{{ course.progress }}%</strong>
+                        </div>
+                        <div style="height:8px;border-radius:99px;background:#dcfce7;overflow:hidden;">
+                            <div data-progress-width="{{ course.progress }}" style="height:100%;border-radius:99px;background:#16a34a;"></div>
+                        </div>
+                        <div style="font-size:12px;color:#6b7c72;margin-top:6px;">
+                            {{ course.completed_lessons }} / {{ course.total_lessons }} topics completed
+                        </div>
+                    </div>
 
                     <a
                      href="{% if course.title == 'Data Structures' %}{{ url_for('data_structures') }}{% elif course.title == 'Computer Architecture' %}{{ url_for('computer_architecture') }}{% endif %}"
                      class="course-btn">
-                     {{ course.status }} →
+                     {% if course.certificate_unlocked %}Review Course →{% else %}{{ course.status }} →{% endif %}
                    </a>
+
+                   {% if course.certificate_unlocked %}
+                   <div style="margin-top:10px;">
+                       <a
+                           href="{{ url_for('certificate_page') }}"
+                           class="course-btn"
+                           style="display:inline-block;">
+                           Claim Certificate ✓
+                       </a>
+                   </div>
+                   {% endif %}
 
                 </article>
 
@@ -1519,16 +1549,13 @@
                         </p>
 
 
-                        <button
+                        <a
                             class="course-btn"
-                            type="button"
-                            data-video-title="{{ video.title }}"
-                            data-video-topic="{{ video.topic }}">
-
+                            href="{% if video.slug == 'data-structures' %}{{ url_for('data_structures_videos') }}{% elif video.slug == 'computer-architecture' %}{{ url_for('video_learning', video_slug='computer-architecture') }}{% else %}{{ url_for('video_page') }}{% endif %}">
 
                             Watch Video →
 
-                        </button>
+                        </a>
 
                     </div>
 
@@ -1808,14 +1835,13 @@
                     Computer Architecture · Intermediate
                 </p>
 
-                <button
-                    class="course-btn"
-                    type="button"
-                    onclick="startSimulation('computer-architecture')">
+                <a
+                    href="{{ url_for('computer_architecture_simulation') }}"
+                    class="course-btn">
 
                     Start Simulation →
 
-                </button>
+                </a>
 
             </div>
 
@@ -2071,78 +2097,40 @@
         <section class="page-content">
 
             <div class="page-heading">
-
                 <div>
-
-                    <span class="eyebrow">
-                        ACHIEVEMENT CENTER
-                    </span>
-
-                    <h1>
-                        Certificates
-                    </h1>
-
-                    <p>
-                        Track the achievements you've earned through learning.
-                    </p>
-
+                    <span class="eyebrow">ACHIEVEMENT CENTER</span>
+                    <h1>Certificates</h1>
+                    <p>Certificates unlock automatically when a course reaches 100% progress.</p>
                 </div>
-
             </div>
-
 
             <div class="certificate-grid">
 
                 {% for cert in certificates %}
 
-                <article class="
-                    certificate-card
-                    {% if cert.status == 'Locked' %}locked{% endif %}
-                ">
+                <article class="certificate-card {% if cert.status == 'Locked' %}locked{% endif %}">
+                    <div class="certificate-symbol">◇</div>
+                    <span>{{ cert.status }}</span>
+                    <h2>{{ cert.title }}</h2>
+                    <p>{{ cert.completed_count }} / {{ cert.total }} topics completed</p>
+                    <small>{% if cert.status == 'Earned' %}Completed on {{ cert.date }}{% else %}Complete all course topics to unlock{% endif %}</small>
 
-                    <div class="certificate-symbol">
-                        ◇
+                    {% if cert.completed_topics %}
+                    <div style="margin-top:16px;text-align:left;">
+                        <strong style="display:block;margin-bottom:8px;">Completed Topics</strong>
+                        <div style="max-height:180px;overflow:auto;font-size:13px;line-height:1.6;">
+                            {% for topic in cert.completed_topics %}
+                            <div>✓ {{ topic }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
-
-                    <span>
-                        {{ cert.status }}
-                    </span>
-
-                    <h2>
-                        {{ cert.title }}
-                    </h2>
-
-                    <p>
-                        {{ cert.topic }}
-                    </p>
-
-                    <small>
-                        {{ cert.date }}
-                    </small>
-
-
-                    {% if cert.status == "Earned" %}
-
-                    <button
-                        class="course-btn"
-                        type="button">
-
-                        View Certificate →
-
-                    </button>
-
-                    {% else %}
-
-                    <button
-                        class="course-btn"
-                        type="button">
-
-                        Continue Learning →
-
-                    </button>
-
                     {% endif %}
 
+                    {% if cert.status == "Earned" %}
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+                        <a class="course-btn" href="{{ url_for('certificate_download', course='data-structures' if cert.title == 'Data Structures' else 'computer-architecture') }}">Download Certificate ↓</a>
+                    </div>
+                    {% endif %}
                 </article>
 
                 {% endfor %}
@@ -2157,9 +2145,6 @@
 
 </div>
 
-<script>
-    window.NEXORA_ACTIVE_DATES = {{ student.active_dates | default([]) | tojson }};
-</script>
 <script src="{{ url_for('static', filename='dashboard/js/app.js') }}?v=calendar-final-4"></script>
 
 

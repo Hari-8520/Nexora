@@ -161,6 +161,22 @@ def init_db():
         )
     """)
 
+    # --------------------------------------------------
+    # PER-USER COURSE LESSON PROGRESS
+    # --------------------------------------------------
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS course_progress (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            course TEXT NOT NULL,
+            lesson_id TEXT NOT NULL,
+            lesson_title TEXT NOT NULL,
+            completed_at TEXT NOT NULL,
+            UNIQUE(user_id, course, lesson_id)
+        )
+    """)
+
     # Stores the questions/answers from each quiz attempt so the roadmap can
     # identify weak concepts instead of only looking at the overall score.
     conn.execute("""
@@ -2332,6 +2348,135 @@ def get_user_quiz_results(user_id):
     return {row["course"]: dict(row) for row in rows}
 
 
+COURSE_LESSON_TOTALS = {
+    "data-structures": 14,
+    "computer-architecture": 86,
+}
+
+
+def get_course_progress(user_id, course):
+    course = normalize_course_name(course)
+    conn = get_db()
+    rows = conn.execute(
+        """
+        SELECT lesson_id, lesson_title, completed_at
+        FROM course_progress
+        WHERE user_id = ? AND course = ?
+        ORDER BY id
+        """,
+        (user_id, course)
+    ).fetchall()
+    conn.close()
+    completed = [dict(row) for row in rows]
+    total = COURSE_LESSON_TOTALS.get(course, 0)
+    count = len(completed)
+    percent = round((count / total) * 100) if total else 0
+    return {
+        "course": course,
+        "completed_count": count,
+        "total": total,
+        "progress": percent,
+        "completed": bool(total and count >= total),
+        "completed_lessons": completed,
+    }
+
+
+def mark_course_lesson_complete(user_id, course, lesson_id, lesson_title):
+    course = normalize_course_name(course)
+    conn = get_db()
+    try:
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO course_progress
+            (user_id, course, lesson_id, lesson_title, completed_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                course,
+                str(lesson_id),
+                str(lesson_title),
+                current_time().isoformat(),
+            )
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_user_certificates(user_id):
+    certificates_for_user = []
+    for course_key, course_title in [
+        ("data-structures", "Data Structures"),
+        ("computer-architecture", "Computer Architecture"),
+    ]:
+        progress = get_course_progress(user_id, course_key)
+        completed_lessons = progress["completed_lessons"]
+        completed_date = "-"
+        if completed_lessons:
+            completed_dates = [
+                item["completed_at"] for item in completed_lessons
+                if item.get("completed_at")
+            ]
+            if completed_dates:
+                try:
+                    completed_date = datetime.fromisoformat(max(completed_dates)).date().isoformat()
+                except ValueError:
+                    completed_date = completed_dates[-1]
+
+        certificate_id = f"NEXORA-{course_key[:2].upper()}-{user_id:06d}"
+        certificates_for_user.append({
+            "title": course_title,
+            "topic": course_title,
+            "status": "Earned" if progress["completed"] else "Locked",
+            "date": completed_date if progress["completed"] else "-",
+            "progress": progress["progress"],
+            "completed_count": progress["completed_count"],
+            "total": progress["total"],
+            "certificate_id": certificate_id,
+            "completed_topics": [item["lesson_title"] for item in completed_lessons],
+        })
+    return certificates_for_user
+
+
+@app.get("/api/course-progress/<course>")
+def api_course_progress(course):
+    user = require_login()
+    if not user:
+        return jsonify({"ok": False, "message": "Please login first."}), 401
+
+    course = normalize_course_name(course)
+    if course not in COURSE_LESSON_TOTALS:
+        return jsonify({"ok": False, "message": "Course not found."}), 404
+
+    progress = get_course_progress(user["id"], course)
+    return jsonify({"ok": True, **progress})
+
+
+@app.post("/api/course-progress/<course>")
+def api_mark_course_progress(course):
+    user = require_login()
+    if not user:
+        return jsonify({"ok": False, "message": "Please login first."}), 401
+
+    course = normalize_course_name(course)
+    if course not in COURSE_LESSON_TOTALS:
+        return jsonify({"ok": False, "message": "Course not found."}), 404
+
+    data = request.get_json(silent=True) or {}
+    lesson_id = str(data.get("lesson_id", "")).strip()
+    lesson_title = str(data.get("lesson_title", "")).strip()
+
+    if not lesson_id or not lesson_title:
+        return jsonify({"ok": False, "message": "Lesson information is required."}), 400
+
+    mark_course_lesson_complete(
+        user["id"], course, lesson_id, lesson_title
+    )
+    progress = get_course_progress(user["id"], course)
+    return jsonify({"ok": True, **progress})
+
+
 def get_user_learning_stats(user_id):
     """Compute this user's real progress from their own quiz results -
     never shared with, or copied from, any other user."""
@@ -2375,30 +2520,25 @@ def get_user_learning_stats(user_id):
 
 
 def get_user_courses(user_id):
-    """Return the course catalog with each course's progress/status
-    computed from THIS user's quiz results, instead of the shared
-    static defaults."""
-
-    results = get_user_quiz_results(user_id)
+    """Return the course catalog with progress computed from saved per-user lesson completion."""
     personalized = []
 
     for course in courses:
         course_copy = dict(course)
         course_key = normalize_course_name(course["title"])
-        result = results.get(course_key)
+        progress = get_course_progress(user_id, course_key)
 
-        if result and result["completed"]:
-            percentage = round((result["score"] / result["total"]) * 100) if result["total"] else 0
-            course_copy["progress"] = percentage
-            course_copy["status"] = "Completed"
-        else:
-            course_copy["progress"] = 0
-            course_copy["status"] = "Start Learning"
+        course_copy["progress"] = progress["progress"]
+        course_copy["completed_lessons"] = progress["completed_count"]
+        course_copy["total_lessons"] = progress["total"]
+        course_copy["certificate_unlocked"] = progress["completed"]
+        course_copy["status"] = "Completed" if progress["completed"] else (
+            "Continue" if progress["completed_count"] > 0 else "Start Learning"
+        )
 
         personalized.append(course_copy)
 
     return personalized
-
 
 def get_next_learning_course(user_id):
     """Choose the user's next/recommended course from their real results.
@@ -2634,29 +2774,44 @@ courses = [
 ]
 
 videos = [
-    {'title': 'Understanding Linked Lists', 'topic': 'Data Structures', 'duration': '', 'level': '', 'reference': 'nptel_linked_list', 'subtopics': [
-        {'title': 'Introduction to Linked List in C', 'videoUrl': ''},
-        {'title': 'Insertion at the Beginning in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Insertion at a Position in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Insertion at the End in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Traversal of a Linked List in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Deletion at the Beginning in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Deletion at a Position in Singly Linked List', 'videoUrl': ''},
-        {'title': 'Deletion at the End in Singly Linked List', 'videoUrl': ''}
-    ]},
-
-    {'title': 'Understanding Doubly Linked List', 'topic': 'Data Structures', 'duration': '', 'level': '', 'reference': 'nptel_doubly_linked_list', 'subtopics': [
-        {'title': 'Insertion at the Beginning in Doubly Linked List', 'videoUrl': ''},
-        {'title': 'Insertion at a Position in Doubly Linked List', 'videoUrl': ''},
-        {'title': 'Insertion at the End in Doubly Linked List', 'videoUrl': ''},
-        {'title': 'Deletion at the Beginning in Doubly Linked List', 'videoUrl': ''}
-    ]},
-
-    {'title': 'Circular Linked List', 'topic': 'Data Structures', 'duration': '', 'level': '', 'reference': None, 'subtopics': [
-        {'title': 'Deletion at the End in Circular Linked List', 'videoUrl': ''},
-        {'title': 'Insertion at the End in Circular Linked List', 'videoUrl': ''}
-    ]}
+    {
+        'slug': 'data-structures',
+        'title': 'Data Structures',
+        'topic': 'Data Structures',
+        'duration': '',
+        'level': 'Intermediate',
+        'reference': 'nptel_linked_list',
+        'subtopics': [
+            {'title': 'Introduction to Linked List in C', 'videoUrl': ''},
+            {'title': 'Insertion at the Beginning in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Insertion at a Position in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Insertion at the End in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Traversal of a Linked List in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Deletion at the Beginning in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Deletion at a Position in Singly Linked List', 'videoUrl': ''},
+            {'title': 'Deletion at the End in Singly Linked List', 'videoUrl': ''}
+        ]
+    },
+    {
+        'slug': 'computer-architecture',
+        'title': 'Computer Architecture',
+        'topic': 'Computer Architecture',
+        'duration': '',
+        'level': 'Intermediate',
+        'reference': 'computer_architecture',
+        'subtopics': [
+            {'title': 'Introduction to Computer Architecture', 'videoUrl': ''},
+            {'title': 'CPU and ALU', 'videoUrl': ''},
+            {'title': 'Registers and Control Unit', 'videoUrl': ''},
+            {'title': 'Instruction Cycle', 'videoUrl': ''},
+            {'title': 'Memory Organization', 'videoUrl': ''},
+            {'title': 'Cache Memory', 'videoUrl': ''},
+            {'title': 'Input and Output Organization', 'videoUrl': ''},
+            {'title': 'Pipelining', 'videoUrl': ''}
+        ]
+    }
 ]
+
 sources = [{'title': 'Python Documentation', 'type': 'Documentation', 'topic': 'Python', 'description': 'Official Python language documentation and reference.'}, {'title': 'Java Programming Guide', 'type': 'Article', 'topic': 'Java', 'description': 'Learn classes, objects, inheritance and polymorphism.'}, {'title': 'Data Structures Notes', 'type': 'PDF Notes', 'topic': 'DSA', 'description': 'Quick revision notes for common data structures.'}, {'title': 'SQL Practice Problems', 'type': 'Practice', 'topic': 'Database', 'description': 'Practice SQL queries and database concepts.'}]
 
 certificates = [
@@ -2757,7 +2912,7 @@ def render_dashboard_page(page_name):
         courses=get_user_courses(user["id"]),
         videos=videos,
         sources=sources,
-        certificates=certificates
+        certificates=get_user_certificates(user["id"])
     )
 
 
@@ -2788,10 +2943,11 @@ def data_structures():
     if not user:
         return redirect(url_for("home"))
 
-    if not quiz_is_completed(user["id"], "data-structures"):
-        return redirect(url_for("quiz_page", course="data-structures"))
-
-    return render_template("datastructure.html")
+    progress = get_course_progress(user["id"], "data-structures")
+    return render_template(
+        "datastructure.html",
+        completed_lesson_ids=[item["lesson_id"] for item in progress["completed_lessons"]]
+    )
 @app.route("/linked-list-simulation")
 def linked_list_simulation():
     return render_template("linklist.html")
@@ -2804,10 +2960,11 @@ def computer_architecture():
     if not user:
         return redirect(url_for("home"))
 
-    if not quiz_is_completed(user["id"], "computer-architecture"):
-        return redirect(url_for("quiz_page", course="computer-architecture"))
-
-    return render_template("computer_architecture.html")
+    progress = get_course_progress(user["id"], "computer-architecture")
+    return render_template(
+        "computer_architecture.html",
+        completed_lesson_ids=[item["lesson_id"] for item in progress["completed_lessons"]]
+    )
 
 
 @app.route("/videos")
@@ -2830,29 +2987,13 @@ def video_learning(video_slug):
     if not student:
         return redirect(url_for("home"))
 
+    if video_slug == "data-structures":
+        return render_template("ds video.html")
+
     if video_slug == "computer-architecture":
         return render_template("CA video.html")
 
-    selected_video = None
-
-    for video in videos:
-        if video.get("slug") == video_slug:
-            selected_video = video
-            break
-
-    if not selected_video:
-        return redirect(url_for("video_page"))
-
-    return render_template(
-        "page.html",
-        page="video-learning",
-        student=student,
-        courses=courses,
-        videos=videos,
-        sources=sources,
-        certificates=certificates,
-        video=selected_video
-    )
+    return redirect(url_for("video_page"))
 
 
 @app.route("/chatbot")
@@ -2871,6 +3012,53 @@ def simulation():
 @app.route("/certificate")
 def certificate_page():
     return render_dashboard_page("certificate")
+
+
+@app.route("/certificate/<course>/download")
+def certificate_download(course):
+    user = require_login()
+    if not user:
+        return redirect(url_for("home"))
+
+    course = normalize_course_name(course)
+    titles = {
+        "data-structures": "Data Structures",
+        "computer-architecture": "Computer Architecture",
+    }
+
+    if course not in titles:
+        return redirect(url_for("certificate_page"))
+
+    progress = get_course_progress(user["id"], course)
+
+    if not progress["completed"]:
+        return redirect(url_for("certificate_page"))
+
+    try:
+        from flask import send_file
+        from certificate import generate_certificate_pdf
+
+        buffer = generate_certificate_pdf(
+            user,
+            course,
+            progress,
+        )
+    except ImportError:
+        app.logger.exception("Certificate module could not be imported.")
+        return redirect(url_for("certificate_page"))
+    except Exception as error:
+        app.logger.exception(
+            "Certificate generation failed: %s",
+            error,
+        )
+        return redirect(url_for("certificate_page"))
+
+    return send_file(
+        buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"NEXORA_{course}_certificate.pdf",
+    )
 
 
 @app.route("/profile")

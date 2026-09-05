@@ -65,7 +65,7 @@
   </style>
 </head>
 
-<body class="min-h-screen overflow-x-hidden bg-[#f7fcf8] text-[#173a25]">
+<body class="min-h-screen overflow-x-hidden bg-[#f7fcf8] text-[#173a25]" data-completed-lessons='{{ completed_lesson_ids | default([]) | tojson }}'>
   <!-- Decorative animated background -->
   <div class="pointer-events-none fixed -right-32 -top-32 z-0 h-96 w-96 rounded-full bg-green-200/40 blur-3xl reader-bg"></div>
   <div class="pointer-events-none fixed -bottom-40 -left-40 z-0 h-[30rem] w-[30rem] rounded-full bg-emerald-100/60 blur-3xl reader-bg" style="animation-delay:1.5s"></div>
@@ -341,7 +341,9 @@ const examples = {
   "10-5": "In a shared-memory multiprocessor, cores access a common memory space; in a distributed-memory system, each processor has local memory and communicates with others through a network."
 };
 
-const viewed = new Set();
+const viewed = new Set(
+  JSON.parse(document.body.dataset.completedLessons || "[]").map(String)
+);
 const totalSubtopics = topics.reduce((sum, topic) => sum + topic.items.length, 0);
 
 function esc(value) {
@@ -463,8 +465,18 @@ function openSubtopic(topicIndex, subtopicIndex) {
   const topic = topics[topicIndex];
   const item = topic.items[subtopicIndex];
 
-  viewed.add(`${topicIndex}-${subtopicIndex}`);
+  const progressId = `${topicIndex}-${subtopicIndex}`;
+  viewed.add(progressId);
   updateProgress();
+
+  fetch('/api/course-progress/computer-architecture', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      lesson_id: progressId,
+      lesson_title: item[0]
+    })
+  }).catch(error => console.error('Could not save subtopic progress:', error));
 
   document.getElementById('readerTopic').textContent = `Topic ${topicIndex + 1} • ${topic.title}`;
   document.getElementById('readerTitle').textContent = `${topicIndex + 1}.${subtopicIndex + 1} ${item[0]}`;
