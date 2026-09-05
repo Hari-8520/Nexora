@@ -1693,47 +1693,22 @@
                     id="chatBody">
 
                     <div class="message ai-message">
-
                         Hello {{ student.name.split()[0] }}! 👋
 
                         <br><br>
 
                         I analyzed your current mastery.
-                        Would you like help with OOP,
-                        Python, Java, or your next learning activity?
-
+                        Would you like help with
+                        {% for course in courses %}
+                        {{ course.title }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                        or your next learning activity?
                     </div>
 
                 </div>
 
 
-                <div class="chat-suggestions">
-
-                    <button
-                        type="button"
-                        onclick="sendSuggestion('Explain my weak topics')">
-
-                        Explain my weak topics
-
-                    </button>
-
-                    <button
-                        type="button"
-                        onclick="sendSuggestion('Give me a quiz')">
-
-                        Give me a quiz
-
-                    </button>
-
-                    <button
-                        type="button"
-                        onclick="sendSuggestion('Recommend my next lesson')">
-
-                        Recommend my next lesson
-
-                    </button>
-
-                </div>
+                
 
 
                 <div class="chat-input">

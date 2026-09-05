@@ -249,15 +249,288 @@ document.addEventListener(
 
         updateGreeting();
 
+        restoreChatDisplayHistory();
+
     }
 );
 
 
 // ======================================================
+
+// ======================================================
+// GEMINI-STYLE CHAT ANIMATION
+// ======================================================
+
+function injectNexoraChatAnimationStyles() {
+
+    if (document.getElementById("nexoraChatAnimationStyles")) {
+        return;
+    }
+
+    const style = document.createElement("style");
+    style.id = "nexoraChatAnimationStyles";
+
+    style.textContent = `
+        /* Gemini-like AI thinking animation */
+        .nexora-typing {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 5px;
+            min-height: 22px;
+            width: fit-content;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            padding: 8px 2px !important;
+        }
+
+        .nexora-typing .nexora-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: .35;
+            animation: nexoraThinking 1.15s infinite ease-in-out;
+        }
+
+        .nexora-typing .nexora-dot:nth-child(2) {
+            animation-delay: .16s;
+        }
+
+        .nexora-typing .nexora-dot:nth-child(3) {
+            animation-delay: .32s;
+        }
+
+        @keyframes nexoraThinking {
+            0%, 60%, 100% {
+                transform: translateY(0) scale(.85);
+                opacity: .28;
+            }
+            30% {
+                transform: translateY(-4px) scale(1);
+                opacity: .9;
+            }
+        }
+
+        /* Smooth appearance for every new message */
+        .nexora-message-enter {
+            animation: nexoraMessageIn .32s cubic-bezier(.2,.8,.2,1) both;
+        }
+
+        @keyframes nexoraMessageIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* AI response cursor, similar to streaming assistants */
+        .nexora-streaming::after {
+            content: "";
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            margin-left: 3px;
+            vertical-align: -2px;
+            border-radius: 2px;
+            background: currentColor;
+            animation: nexoraCursor .75s steps(1) infinite;
+        }
+
+        @keyframes nexoraCursor {
+            0%, 48% { opacity: 1; }
+            49%, 100% { opacity: 0; }
+        }
+
+        /* Subtle shimmer while the AI is preparing a response */
+        .nexora-thinking-label {
+            position: relative;
+            display: inline-block;
+            font-size: .92em;
+            background: linear-gradient(
+                90deg,
+                currentColor 0%,
+                currentColor 35%,
+                rgba(255,255,255,.9) 50%,
+                currentColor 65%,
+                currentColor 100%
+            );
+            background-size: 220% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: nexoraShimmer 1.6s linear infinite;
+        }
+
+        @keyframes nexoraShimmer {
+            from { background-position: 120% 0; }
+            to { background-position: -120% 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .nexora-typing .nexora-dot,
+            .nexora-message-enter,
+            .nexora-streaming::after,
+            .nexora-thinking-label {
+                animation: none !important;
+            }
+        }
+    `;
+
+    document.head.appendChild(style);
+}
+
+injectNexoraChatAnimationStyles();
+
+// ======================================================
 // CHATBOT
 // ======================================================
 
-function appendMessage(text, type) {
+let nexoraChatBusy = false;
+let nexoraTypingElement = null;
+
+
+// ======================================================
+// ADD MESSAGE
+// ======================================================
+
+const NEXORA_CHAT_STORAGE_KEY = "nexora_chat_display_history";
+
+function isBrowserRefresh() {
+    const navigation = performance.getEntriesByType("navigation")[0];
+
+    if (!navigation || navigation.type !== "reload") {
+        return false;
+    }
+
+    // Only clear when the chatbot page itself is refreshed.
+    // Normal navigation from Courses, Videos, Dashboard, etc.
+    // must keep the chat history in sessionStorage.
+    try {
+        const referrer = document.referrer;
+
+        if (!referrer) {
+            return true;
+        }
+
+        const currentURL = new URL(window.location.href);
+        const referrerURL = new URL(referrer);
+
+        return (
+            currentURL.origin === referrerURL.origin &&
+            currentURL.pathname === referrerURL.pathname
+        );
+    } catch (error) {
+        return true;
+    }
+}
+
+function clearChatDisplayHistoryOnRefresh() {
+    if (isBrowserRefresh()) {
+        sessionStorage.removeItem(NEXORA_CHAT_STORAGE_KEY);
+    }
+}
+
+function saveChatDisplayMessage(text, type) {
+    const history = JSON.parse(
+        sessionStorage.getItem(NEXORA_CHAT_STORAGE_KEY) || "[]"
+    );
+
+    history.push({
+        text: String(text || ""),
+        type: type === "user" ? "user" : "ai"
+    });
+
+    sessionStorage.setItem(
+        NEXORA_CHAT_STORAGE_KEY,
+        JSON.stringify(history)
+    );
+}
+
+function restoreChatDisplayHistory() {
+    const chatBody = document.getElementById("chatBody");
+
+    if (!chatBody) {
+        return;
+    }
+
+    let history = [];
+
+    try {
+        history = JSON.parse(
+            sessionStorage.getItem(NEXORA_CHAT_STORAGE_KEY) || "[]"
+        );
+    } catch (error) {
+        sessionStorage.removeItem(NEXORA_CHAT_STORAGE_KEY);
+        return;
+    }
+
+    if (!Array.isArray(history)) {
+        return;
+    }
+
+    history.forEach(function (item) {
+        if (item && item.text) {
+            appendMessage(item.text, item.type, false);
+        }
+    });
+
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+clearChatDisplayHistoryOnRefresh();
+
+function appendMessage(text, type, saveToStorage = true) {
+
+    const chatBody =
+        document.getElementById("chatBody");
+
+    if (!chatBody) {
+        return null;
+    }
+
+    const message =
+        document.createElement("div");
+
+    message.classList.add("message");
+
+    if (type === "user") {
+        message.classList.add("user-message");
+    } else {
+        message.classList.add("ai-message");
+    }
+
+    message.textContent =
+        String(text || "");
+
+    // Preserve tutor line breaks so bullets and numbered points
+    // are displayed vertically instead of becoming one paragraph.
+    message.style.whiteSpace = "pre-wrap";
+
+    message.classList.add("nexora-message-enter");
+
+    chatBody.appendChild(message);
+
+    if (saveToStorage) {
+        saveChatDisplayMessage(text, type);
+    }
+
+    chatBody.scrollTop =
+        chatBody.scrollHeight;
+
+    return message;
+}
+
+
+// ======================================================
+// TYPING INDICATOR
+// ======================================================
+
+function showTyping() {
 
     const chatBody =
         document.getElementById("chatBody");
@@ -266,85 +539,340 @@ function appendMessage(text, type) {
         return;
     }
 
+    hideTyping();
 
-    const message =
+    nexoraTypingElement =
         document.createElement("div");
 
+    nexoraTypingElement.className =
+        "message ai-message nexora-typing";
 
-    message.classList.add(
-        "message"
+    nexoraTypingElement.setAttribute(
+        "aria-label",
+        "NEXORA AI is thinking"
     );
 
-
-    if (type === "user") {
-
-        message.classList.add(
-            "user-message"
-        );
-
-    } else {
-
-        message.classList.add(
-            "ai-message"
-        );
-
-    }
-
-
-    message.innerText = text;
-
+    nexoraTypingElement.innerHTML =
+        '<span class="nexora-dot"></span>' +
+        '<span class="nexora-dot"></span>' +
+        '<span class="nexora-dot"></span>';
 
     chatBody.appendChild(
-        message
+        nexoraTypingElement
     );
-
 
     chatBody.scrollTop =
         chatBody.scrollHeight;
 }
 
 
+function hideTyping() {
+
+    if (nexoraTypingElement) {
+        nexoraTypingElement.remove();
+        nexoraTypingElement = null;
+    }
+}
+
+
 // ======================================================
-// AI RESPONSE
+// STREAM AI RESPONSE
+// ======================================================
+
+function streamAIMessage(text) {
+
+    const chatBody =
+        document.getElementById("chatBody");
+
+    if (!chatBody) {
+        return Promise.resolve(null);
+    }
+
+    const message =
+        document.createElement("div");
+
+    message.classList.add(
+        "message",
+        "ai-message",
+        "nexora-message-enter",
+        "nexora-streaming"
+    );
+
+    message.style.whiteSpace = "pre-wrap";
+    chatBody.appendChild(message);
+
+    const fullText =
+        String(text || "");
+
+    // Reveal the response in small chunks so it feels like
+    // a live Gemini-style response rather than a sudden block.
+    let index = 0;
+
+    const wordsPerFrame = 2;
+
+    return new Promise(function (resolve) {
+
+        function reveal() {
+
+            if (index >= fullText.length) {
+
+                message.classList.remove(
+                    "nexora-streaming"
+                );
+
+                message.textContent = fullText;
+
+                chatBody.scrollTop =
+                    chatBody.scrollHeight;
+
+                saveChatDisplayMessage(
+                    fullText,
+                    "ai"
+                );
+
+                resolve(message);
+                return;
+            }
+
+            let nextIndex = index;
+
+            for (
+                let count = 0;
+                count < wordsPerFrame && nextIndex < fullText.length;
+                count++
+            ) {
+
+                const nextSpace =
+                    fullText.indexOf(" ", nextIndex + 1);
+
+                const nextNewLine =
+                    fullText.indexOf("\n", nextIndex + 1);
+
+                let boundary = fullText.length;
+
+                if (nextSpace !== -1) {
+                    boundary = Math.min(boundary, nextSpace + 1);
+                }
+
+                if (nextNewLine !== -1) {
+                    boundary = Math.min(boundary, nextNewLine + 1);
+                }
+
+                nextIndex = Math.max(
+                    nextIndex + 1,
+                    boundary
+                );
+            }
+
+            index = nextIndex;
+
+            message.textContent =
+                fullText.slice(0, index);
+
+            chatBody.scrollTop =
+                chatBody.scrollHeight;
+
+            window.requestAnimationFrame(reveal);
+        }
+
+        reveal();
+    });
+}
+
+
+// ======================================================
+// REMOVE MARKDOWN CLUTTER
+// ======================================================
+
+function cleanAIText(text) {
+
+    let cleaned =
+        String(text || "");
+
+    cleaned =
+        cleaned.replace(
+            /```[A-Za-z0-9_+-]*/g,
+            ""
+        );
+
+    cleaned =
+        cleaned.replace(
+            /```/g,
+            ""
+        );
+
+    cleaned =
+        cleaned.replace(
+            /^\s*#{1,6}\s*/gm,
+            ""
+        );
+
+    cleaned =
+        cleaned.replace(
+            /\*\*(.*?)\*\*/gs,
+            "$1"
+        );
+
+    cleaned =
+        cleaned.replace(
+            /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
+            "$1"
+        );
+
+    cleaned =
+        cleaned.replace(
+            /__([^_\n]+)__/g,
+            "$1"
+        );
+
+    cleaned =
+        cleaned.replace(
+            /(?<!_)_([^_\n]+)_(?!_)/g,
+            "$1"
+        );
+
+    cleaned =
+        cleaned.replace(
+            /\n{3,}/g,
+            "\n\n"
+        );
+
+    return cleaned.trim();
+}
+
+
+// ======================================================
+// AI REQUEST
 // ======================================================
 
 async function aiReply(text) {
 
+    if (nexoraChatBusy) {
+        return;
+    }
+
+    nexoraChatBusy = true;
+
+    showTyping();
+
+    const controller =
+        new AbortController();
+
+    // Browser-side safety timeout.
+    // Backend Gemini timeout is handled separately.
+    const timeoutId =
+        setTimeout(
+            function () {
+                controller.abort();
+            },
+            25000
+        );
+
     try {
 
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: text
-            })
-        });
+        const response =
+            await fetch(
+                "/api/chat",
+                {
+                    method: "POST",
 
-        const data = await response.json();
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                        "Accept":
+                            "application/json"
+                    },
 
-        if (!response.ok || !data.ok) {
+                    credentials:
+                        "same-origin",
+
+                    cache:
+                        "no-store",
+
+                    signal:
+                        controller.signal,
+
+                    body:
+                        JSON.stringify({
+                            message: text
+                        })
+                }
+            );
+
+        let data = {};
+
+        try {
+            data =
+                await response.json();
+        } catch (jsonError) {
+
+            console.error(
+                "NEXORA invalid JSON:",
+                jsonError
+            );
+        }
+
+        hideTyping();
+
+        if (
+            !response.ok ||
+            !data.ok
+        ) {
+
             appendMessage(
-                data.message || "Something went wrong.",
+                data.message ||
+                "NEXORA AI is temporarily unavailable. Please try again.",
                 "ai"
             );
+
             return;
         }
 
-        appendMessage(
-            data.response,
-            "ai"
+        await streamAIMessage(
+            cleanAIText(data.response)
         );
 
     } catch (error) {
 
-        console.error("Chatbot error:", error);
+        hideTyping();
 
-        appendMessage(
-            "I couldn't connect to NEXORA AI. Please try again.",
-            "ai"
+        console.error(
+            "NEXORA chatbot error:",
+            error
         );
+
+        if (
+            error.name ===
+            "AbortError"
+        ) {
+
+            appendMessage(
+                "The response took too long. Please try again.",
+                "ai"
+            );
+
+        } else {
+
+            appendMessage(
+                "I couldn't connect to NEXORA AI. Please try again.",
+                "ai"
+            );
+        }
+
+    } finally {
+
+        clearTimeout(timeoutId);
+
+        nexoraChatBusy = false;
+
+        const input =
+            document.getElementById(
+                "chatInput"
+            );
+
+        if (input) {
+            input.focus();
+        }
     }
 }
 
@@ -356,31 +884,31 @@ async function aiReply(text) {
 function sendMessage() {
 
     const input =
-        document.getElementById("chatInput");
-
+        document.getElementById(
+            "chatInput"
+        );
 
     if (!input) {
         return;
     }
 
+    if (nexoraChatBusy) {
+        return;
+    }
 
     const text =
         input.value.trim();
 
-
     if (!text) {
         return;
     }
-
 
     appendMessage(
         text,
         "user"
     );
 
-
     input.value = "";
-
 
     aiReply(text);
 }
@@ -393,23 +921,26 @@ function sendMessage() {
 function sendSuggestion(text) {
 
     const input =
-        document.getElementById("chatInput");
+        document.getElementById(
+            "chatInput"
+        );
 
-
-    if (!input) {
+    if (
+        !input ||
+        nexoraChatBusy
+    ) {
         return;
     }
 
-
-    input.value = text;
-
+    input.value =
+        String(text || "");
 
     sendMessage();
 }
 
 
 // ======================================================
-// ENTER KEY FOR CHAT
+// ENTER KEY
 // ======================================================
 
 document.addEventListener(
@@ -426,14 +957,11 @@ document.addEventListener(
             event.preventDefault();
 
             sendMessage();
-
         }
-
     }
 );
 
 
-// ======================================================
 // DYNAMIC GREETING
 // ======================================================
 
