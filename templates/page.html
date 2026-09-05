@@ -7,7 +7,7 @@
     <title>NEXORA | {{ page|capitalize }}</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='dashboard/css/style.css') }}">
+          href="{{ url_for('static', filename='dashboard/css/style.css') }}?v=calendar-final-4">
 <link
     href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
     rel="stylesheet"
@@ -357,11 +357,15 @@
                         <div>
 
                             <strong>
-                                Object Oriented Programming
+                                {{ student.next_course.title }}
                             </strong>
 
                             <small>
-                                Adaptive practice • 20 minutes
+                                {% if student.next_course.completed %}
+                                Review focus • {{ student.next_course.progress }}% mastery
+                                {% else %}
+                                Next learning activity • Not completed yet
+                                {% endif %}
                             </small>
 
                         </div>
@@ -369,20 +373,20 @@
                     </div>
 
 
-                    <button
+                    <a
                         class="primary-btn"
-                        type="button">
+                        href="{{ url_for('continue_learning') }}">
 
                         Continue Learning →
 
-                    </button>
+                    </a>
 
                 </div>
 
 
                 <div class="hero-score">
 
-                    <div class="score-ring">
+                    <div class="score-ring" style="--mastery: {{ student.mastery }}%;">
 
                         <div>
 
@@ -399,7 +403,7 @@
                     </div>
 
                     <small>
-                        +6.4% this week
+                        Based on your latest quiz results
                     </small>
 
                 </div>
@@ -523,7 +527,7 @@
                         </div>
 
                         <span class="pill">
-                            Last 12 months
+                            January – December
                         </span>
 
                     </div>
@@ -607,46 +611,19 @@
                     </div>
 
 
+                    {% for insight in student.ai_insights %}
                     <div class="insight">
 
                         <div class="insight-number">
-                            01
+                            {{ "%02d"|format(loop.index) }}
                         </div>
 
                         <p>
-                            Your performance in programming
-                            fundamentals is strong.
+                            {{ insight }}
                         </p>
 
                     </div>
-
-
-                    <div class="insight">
-
-                        <div class="insight-number">
-                            02
-                        </div>
-
-                        <p>
-                            Your OOP mastery is below your
-                            current target level.
-                        </p>
-
-                    </div>
-
-
-                    <div class="insight">
-
-                        <div class="insight-number">
-                            03
-                        </div>
-
-                        <p>
-                            An adaptive practice session can
-                            improve your mastery efficiently.
-                        </p>
-
-                    </div>
+                    {% endfor %}
 
                 </div>
 
@@ -683,80 +660,21 @@
 
                     <div class="roadmap">
 
-                        <div class="road-item done">
-
-                            <span>✓</span>
-
-                            <div>
-
-                                <strong>
-                                    Programming Basics
-                                </strong>
-
-                                <small>
-                                    Completed
-                                </small>
-
+                        {% for item in student.today_roadmap %}
+                        <div class="road-item {{ item.class }}">
+                            <div class="road-marker"><span>{{ item.icon }}</span></div>
+                            <div class="road-content">
+                                <div class="road-title-row">
+                                    <strong>{{ item.title }}</strong>
+                                    <em class="road-badge {% if item.class == "active-road" %}current-badge{% else %}upcoming-badge{% endif %}">{{ item.status }}</em>
+                                </div>
+                                <small class="road-topic">Today's topic: <strong>{{ item.topic }}</strong></small>
+                                <small class="road-reason">{{ item.reason }}</small>
+                                {% if item.score is not none %}<small class="road-score">Latest quiz: {{ item.score }}%</small>{% endif %}
+                                {% if item.progress > 0 %}<div class="road-progress"><i style="--road-progress: {{ item.progress }}%;"></i></div>{% endif %}
                             </div>
-
                         </div>
-
-
-                        <div class="road-item done">
-
-                            <span>✓</span>
-
-                            <div>
-
-                                <strong>
-                                    Classes & Objects
-                                </strong>
-
-                                <small>
-                                    Completed
-                                </small>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="road-item active-road">
-
-                            <span>→</span>
-
-                            <div>
-
-                                <strong>
-                                    OOP Concepts
-                                </strong>
-
-                                <small>
-                                    Recommended now
-                                </small>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="road-item">
-
-                            <span>○</span>
-
-                            <div>
-
-                                <strong>
-                                    Adaptive Quiz
-                                </strong>
-
-                                <small>
-                                    Next
-                                </small>
-
-                            </div>
-
-                        </div>
+                        {% endfor %}
 
                     </div>
 
@@ -786,44 +704,16 @@
 
                     <div class="mastery-list">
 
+                        {% for course in courses %}
                         <div>
-                            <span>Python</span>
-                            <strong>92%</strong>
+                            <span>{{ course.title }}</span>
+                            <strong>{{ course.progress }}%</strong>
                         </div>
 
                         <div class="mastery-line">
-                            <i style="--progress:92%;"></i>
+                            <i style="--progress:{{ course.progress }}%;"></i>
                         </div>
-
-
-                        <div>
-                            <span>Java</span>
-                            <strong>76%</strong>
-                        </div>
-
-                        <div class="mastery-line">
-                            <i style="--progress:76%;"></i>
-                        </div>
-
-
-                        <div>
-                            <span>SQL</span>
-                            <strong>68%</strong>
-                        </div>
-
-                        <div class="mastery-line">
-                            <i style="--progress:68%;"></i>
-                        </div>
-
-
-                        <div>
-                            <span>Machine Learning</span>
-                            <strong>44%</strong>
-                        </div>
-
-                        <div class="mastery-line">
-                            <i style="--progress:44%;"></i>
-                        </div>
+                        {% endfor %}
 
                     </div>
 
@@ -1629,13 +1519,16 @@
                         </p>
 
 
-                        <a
+                        <button
                             class="course-btn"
-                            href="{% if video.slug == 'data-structures' %}{{ url_for('data_structures_videos') }}{% else %}{{ url_for('video_learning', video_slug=video.slug) }}{% endif %}">
+                            type="button"
+                            data-video-title="{{ video.title }}"
+                            data-video-topic="{{ video.topic }}">
+
 
                             Watch Video →
 
-                        </a>
+                        </button>
 
                     </div>
 
@@ -1649,145 +1542,6 @@
 
         {% endif %}
 
-
-
-        <!-- =========================
-             VIDEO TOPIC LEARNING
-        ========================== -->
-
-        {% if page == "video-learning" %}
-
-        <section class="video-learning-page">
-
-            <div class="video-learning-layout">
-
-                <!-- LEFT TOPIC SIDEBAR -->
-                <aside class="video-topic-sidebar">
-
-                    <div class="video-topic-header">
-
-                        <span class="eyebrow">
-                            NEXORA VIDEO LEARNING
-                        </span>
-
-                        <h2>
-                            {{ video.title }}
-                        </h2>
-
-                    </div>
-
-                    <div class="video-topic-list">
-
-                        {% for topic in video.subtopics %}
-
-                        <button
-                            type="button"
-                            class="video-topic-item"
-                            data-video-url="{{ topic.videoUrl }}"
-                            onclick="openTopicVideo(this)">
-
-                            <span class="topic-number">
-                                {{ loop.index }}
-                            </span>
-
-                            <span class="topic-title">
-                                {{ topic.title }}
-                            </span>
-
-                        </button>
-
-                        {% endfor %}
-
-                    </div>
-
-                    <a
-                        href="{{ url_for('video_page') }}"
-                        class="video-back-button">
-
-                        ← Back to Videos
-
-                    </a>
-
-                </aside>
-
-
-                <!-- RIGHT VIDEO CONTENT -->
-                <main class="video-learning-content">
-
-                    <div class="video-learning-heading">
-
-                        <span class="eyebrow">
-                            NEXORA VIDEO LEARNING
-                        </span>
-
-                        <h1>
-                            {{ video.title }}
-                        </h1>
-
-                        <p>
-                            Select a topic from the left to watch the video.
-                        </p>
-
-                    </div>
-
-
-                    <div class="video-player-card">
-
-                        <div
-                            class="video-player-placeholder"
-                            id="videoPlayerPlaceholder">
-
-                            <div class="video-player-icon">
-                                ▶
-                            </div>
-
-                            <h2>
-                                Select a Topic
-                            </h2>
-
-                            <p>
-                                Choose a topic from the left to start learning.
-                            </p>
-
-                        </div>
-
-
-                        <iframe
-                            id="videoPlayer"
-                            class="video-player"
-                            style="display: none;"
-                            title="NEXORA Learning Video"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowfullscreen>
-                        </iframe>
-
-                    </div>
-
-
-                    <div class="video-learning-info">
-
-                        <span class="eyebrow">
-                            COURSE TOPICS
-                        </span>
-
-                        <h3>
-                            {{ video.subtopics|length }} Learning Topics
-                        </h3>
-
-                        <p>
-                            Select any topic from the sidebar to open its video.
-                            Video links can be added later in <strong>app.py</strong>.
-                        </p>
-
-                    </div>
-
-                </main>
-
-            </div>
-
-        </section>
-
-        {% endif %}
 
         <!-- =========================
              CHATBOT
@@ -1834,9 +1588,9 @@
 
                         <br><br>
 
-                        I analyzed your current mastery.
-                        Would you like help with OOP,
-                        Python, Java, or your next learning activity?
+                        I analyzed your current quiz results.
+                        Your next learning focus is {{ student.next_course.title }}.
+                        Would you like help with this course or your next learning activity?
 
                     </div>
 
@@ -2020,14 +1774,13 @@
                 <p>
                     DSA · Intermediate
                 </p>
+<a
+    href="{{ url_for('linked_list_simulation') }}"
+    class="course-btn">
 
-                <a
-                    class="course-btn"
-                    href="{{ url_for('linked_list_simulation') }}">
+    Start Simulation →
 
-                    Start Simulation →
-
-                </a>
+</a>
 
             </div>
 
@@ -2055,12 +1808,14 @@
                     Computer Architecture · Intermediate
                 </p>
 
-               <a
-                href="{{ url_for('computer_architecture_simulation') }}"
-                class="course-btn">
+                <button
+                    class="course-btn"
+                    type="button"
+                    onclick="startSimulation('computer-architecture')">
 
-                  Start Simulation →
-              </a>
+                    Start Simulation →
+
+                </button>
 
             </div>
 
@@ -2402,7 +2157,10 @@
 
 </div>
 
-<script src="{{ url_for('static', filename='dashboard/js/app.js') }}"></script>
+<script>
+    window.NEXORA_ACTIVE_DATES = {{ student.active_dates | default([]) | tojson }};
+</script>
+<script src="{{ url_for('static', filename='dashboard/js/app.js') }}?v=calendar-final-4"></script>
 
 
 </body>

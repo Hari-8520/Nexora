@@ -37,221 +37,122 @@ function createHeatmap() {
     const heatmap = document.getElementById("heatmap");
     const monthLabels = document.getElementById("monthLabels");
 
-    if (!heatmap || !monthLabels) {
-        return;
-    }
+    if (!heatmap || !monthLabels) return;
 
-    // Clear old content
-    heatmap.innerHTML = "";
-    monthLabels.innerHTML = "";
+    heatmap.replaceChildren();
+    monthLabels.replaceChildren();
 
-
-    // --------------------------------------------------
-    // TODAY
-    // --------------------------------------------------
+    const activeDates = new Set(
+        Array.isArray(window.NEXORA_ACTIVE_DATES)
+            ? window.NEXORA_ACTIVE_DATES
+                .map(String)
+                .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+            : []
+    );
 
     const today = new Date();
-
     today.setHours(0, 0, 0, 0);
 
+    const year = today.getFullYear();
+    const jan1 = new Date(year, 0, 1);
+    const dec31 = new Date(year, 11, 31);
+    const leadingEmptyDays = jan1.getDay(); // Sunday = 0
 
-    // --------------------------------------------------
-    // START DATE
-    // Approximately one year ago
-    // --------------------------------------------------
+    // Work out how many week-columns this particular year actually needs.
+    // A fixed "53" is wrong for some years: if Jan 1 falls late in the week
+    // (e.g. a leap year starting on a Saturday), December 31 can land in a
+    // 54th column. When that happened, the fixed 53-column grid had nowhere
+    // to put that last column, so the browser wrapped it back onto column 1
+    // - which is exactly what looked like "the last few days of December
+    // printing before January". Computing the real number of columns needed
+    // for THIS year removes that wraparound for every year, not just this one.
+    const totalDaysThisYear = Math.round((dec31 - jan1) / 86400000) + 1;
+    const totalWeeks = Math.ceil((leadingEmptyDays + totalDaysThisYear) / 7);
 
-    const startDate = new Date(today);
+    // IMPORTANT: use explicit columns and explicit row/column positions.
+    // This prevents CSS grid auto-placement from ever moving December
+    // cells before January or creating date cells after December 31.
+    heatmap.style.gridTemplateColumns = `repeat(${totalWeeks}, 14px)`;
+    heatmap.style.gridTemplateRows = "repeat(7, 14px)";
+    heatmap.style.gridAutoFlow = "row";
+    heatmap.style.gridAutoColumns = "unset";
+    heatmap.style.gridAutoRows = "unset";
 
-    startDate.setFullYear(
-        today.getFullYear() - 1
-    );
+    monthLabels.style.gridTemplateColumns = `repeat(${totalWeeks}, 14px)`;
 
-
-    // Move to Sunday
-    // GitHub-style week starts on Sunday
-
-    startDate.setDate(
-        startDate.getDate() - startDate.getDay()
-    );
-
-
-    // --------------------------------------------------
-    // TOTAL WEEKS
-    // --------------------------------------------------
-
-    const totalWeeks = 53;
-
-    const totalDays = totalWeeks * 7;
-
-
-    // --------------------------------------------------
-    // CREATE MONTH LABELS
-    // --------------------------------------------------
-
-    const firstMonth = new Date(
-        today.getFullYear(),
-        today.getMonth() - 11,
-        1
-    );
-
-    for (let i = 0; i < 12; i++) {
-
-        const monthDate = new Date(
-            firstMonth.getFullYear(),
-            firstMonth.getMonth() + i,
-            1
-        );
-
-
-        // Calculate which week contains
-        // the first day of this month
-
-        const difference =
-            monthDate.getTime() -
-            startDate.getTime();
-
-        const weekIndex =
-            Math.floor(
-                difference /
-                (7 * 24 * 60 * 60 * 1000)
-            );
-
-
-        if (
-            weekIndex >= 0 &&
-            weekIndex < totalWeeks
-        ) {
-
-            const label =
-                document.createElement("span");
-
-            label.textContent =
-                monthDate.toLocaleString(
-                    "en-US",
-                    {
-                        month: "short"
-                    }
-                );
-
-            // Position label according
-            // to actual calendar week
-
-            label.style.gridColumn =
-                `${weekIndex + 1}`;
-
-
-            monthLabels.appendChild(label);
-        }
+    // Empty positions before January 1. These are hidden and never represent
+    // a real date.
+    for (let i = 0; i < leadingEmptyDays; i++) {
+        const square = document.createElement("div");
+        square.className = "heat empty-day";
+        square.setAttribute("aria-hidden", "true");
+        square.style.gridColumn = "1";
+        square.style.gridRow = String(i + 1);
+        heatmap.appendChild(square);
     }
 
+    // Month labels use the exact week column containing the first day of each month.
+    for (let month = 0; month < 12; month++) {
+        const first = new Date(year, month, 1);
+        const elapsedDays = Math.floor(
+            (Date.UTC(year, month, 1) - Date.UTC(year, 0, 1)) / 86400000
+        );
+        const weekIndex = Math.floor((elapsedDays + leadingEmptyDays) / 7);
 
-    // --------------------------------------------------
-    // CREATE 53 WEEKS × 7 DAYS
-    // --------------------------------------------------
+        const label = document.createElement("span");
+        label.textContent = first.toLocaleString("en-US", { month: "short" });
+        label.style.gridColumn = String(weekIndex + 1);
+        monthLabels.appendChild(label);
+    }
 
-    for (let week = 0; week < totalWeeks; week++) {
+    // Render ONLY real dates from January 1 through December 31.
+    // Every date gets an explicit grid position, so the DOM order cannot
+    // produce the old "December before January" layout.
+    for (let d = new Date(jan1); d <= dec31; d.setDate(d.getDate() + 1)) {
+        const square = document.createElement("div");
+        square.className = "heat";
 
-        for (let day = 0; day < 7; day++) {
+        const dateKey =
+            d.getFullYear() + "-" +
+            String(d.getMonth() + 1).padStart(2, "0") + "-" +
+            String(d.getDate()).padStart(2, "0");
 
-            const currentDate = new Date(
-                startDate
-            );
+        const elapsedDays = Math.floor(
+            (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(year, 0, 1)) / 86400000
+        );
+        const weekIndex = Math.floor((elapsedDays + leadingEmptyDays) / 7);
 
-            currentDate.setDate(
-                startDate.getDate() +
-                (week * 7) +
-                day
-            );
+        // Sunday is row 1, Monday row 2, ... Saturday row 7.
+        square.style.gridColumn = String(weekIndex + 1);
+        square.style.gridRow = String(d.getDay() + 1);
 
+        const dateText = d.toLocaleDateString("en-IN", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        });
 
-            // Create square
+        if (d > today) {
+            square.classList.add("future");
+            square.title = dateText + " • Future";
+        } else {
+            const isToday = d.getTime() === today.getTime();
+            const isActive = activeDates.has(dateKey);
 
-            const square =
-                document.createElement("div");
+            if (isToday) square.classList.add("today");
+            if (isActive) square.classList.add("l3");
 
-            square.classList.add("heat");
-
-
-            // --------------------------------------------------
-            // DON'T SHOW FUTURE DATES
-            // --------------------------------------------------
-
-            if (currentDate > today) {
-
-                square.classList.add(
-                    "future"
-                );
-
-            } else {
-
-                // --------------------------------------------------
-                // ACTIVITY LEVEL
-                // 0 = no activity
-                // 1 = low
-                // 2 = medium
-                // 3 = high
-                // 4 = very high
-                // --------------------------------------------------
-
-                const activity =
-                    Math.floor(
-                        Math.random() * 5
-                    );
-
-
-                if (activity > 0) {
-
-                    square.classList.add(
-                        `l${activity}`
-                    );
-
-                }
-
-
-                // --------------------------------------------------
-                // TOOLTIP
-                // --------------------------------------------------
-
-                square.title =
-                    currentDate.toLocaleDateString(
-                        "en-IN",
-                        {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric"
-                        }
-                    )
-                    +
-                    " • "
-                    +
-                    activity
-                    +
-                    " learning activities";
-            }
-
-
-            // Add square
-
-            heatmap.appendChild(square);
+            square.title = dateText +
+                (isToday ? " • Today" : "") +
+                (isActive ? " • Learning activity" : " • No learning activity");
         }
+
+        heatmap.appendChild(square);
     }
 }
 
-
-// Run heatmap after page loads
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        createHeatmap();
-
-        updateGreeting();
-
-    }
-);
-
+createHeatmap();
 
 // ======================================================
 // CHATBOT
@@ -500,6 +401,182 @@ setInterval(
     updateGreeting,
     60000
 );
+// =================================================
+// VIDEO LEARNING
+// =================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const videoButtons = document.querySelectorAll(
+        ".video-card .course-btn"
+    );
+
+    videoButtons.forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            const card = button.closest(".video-card");
+
+            if (!card) {
+                return;
+            }
+
+            const videoTitle =
+                card.dataset.videoTitle || "";
+
+            const videoTopic =
+                card.dataset.videoTopic || "";
+
+            // Send the selected video card information
+            // to the video learning section.
+            openVideoLearning(
+                videoTitle,
+                videoTopic
+            );
+
+        });
+
+    });
+
+});
+
+
+// =================================================
+// OPEN VIDEO LEARNING
+// =================================================
+
+function openVideoLearning(title, topic) {
+
+    /*
+     * The actual video URLs will be added later.
+     *
+     * Do NOT add invented URLs here.
+     */
+
+    const videoData = {
+
+        "Understanding Linked Lists": {
+            reference: "nptel_linked_list",
+
+            subtopics: [
+                {
+                    title: "Introduction to Linked List in C",
+                    videoUrl: ""
+                },
+                {
+                    title: "Insertion at the Beginning in Singly Linked List",
+                    videoUrl: ""
+                },
+                {
+                    title: "Insertion at a Position in Singly Linked List",
+                    videoUrl: ""
+                },
+                {
+                    title: "Insertion at the End in Singly Linked List",
+                    videoUrl: ""
+                },
+                {
+                    title: "Traversal of a Linked List in Singly Linked List",
+                    videoUrl: ""
+                },
+                {
+                    title: "Deletion at the Beginning in Singly Linked List",
+                    videoUrl: ""
+                },
+                {
+                    title: "Deletion at a Position in Singly Linked List",
+                    videoUrl: ""
+                },
+                {
+                    title: "Deletion at the End in Singly Linked List",
+                    videoUrl: ""
+                }
+            ]
+        },
+
+        "Understanding Doubly Linked List": {
+            reference: "nptel_doubly_linked_list",
+
+            subtopics: [
+                {
+                    title: "Insertion at the Beginning in Doubly Linked List",
+                    videoUrl: ""
+                },
+                {
+                    title: "Insertion at a Position in Doubly Linked List",
+                    videoUrl: ""
+                },
+                {
+                    title: "Insertion at the End in Doubly Linked List",
+                    videoUrl: ""
+                },
+                {
+                    title: "Deletion at the Beginning in Doubly Linked List",
+                    videoUrl: ""
+                }
+            ]
+        },
+
+        "Circular Linked List": {
+
+            reference: null,
+
+            subtopics: [
+                {
+                    title: "Deletion at the End in Circular Linked List",
+                    videoUrl: ""
+                },
+                {
+                    title: "Insertion at the End in Circular Linked List",
+                    videoUrl: ""
+                }
+            ]
+        }
+
+    };
+
+
+    const selectedVideo =
+        videoData[title];
+
+    if (!selectedVideo) {
+        return;
+    }
+
+
+    /*
+     * Store the selected data so the existing
+     * video/reference UI can use it.
+     */
+    window.currentVideoLearning = {
+        title: title,
+        topic: topic,
+        reference: selectedVideo.reference,
+        subtopics: selectedVideo.subtopics
+    };
+
+
+    /*
+     * If your project already has a video modal/
+     * reference system, call it here.
+     *
+     * Example:
+     *
+     * openVideoModal(
+     *     window.currentVideoLearning
+     * );
+     *
+     * Do NOT add a new UI here if your project
+     * already has one.
+     */
+
+
+    console.log(
+        "Selected video:",
+        window.currentVideoLearning
+    );
+
+}
 // ======================================================
 // EDIT PROFILE
 // ======================================================

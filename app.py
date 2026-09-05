@@ -1,4 +1,5 @@
 import os
+import json
 import secrets
 import sqlite3
 import smtplib
@@ -29,6 +30,15 @@ app.secret_key = os.getenv(
     "FLASK_SECRET_KEY",
     "change-this-secret-key"
 )
+
+# Keep the login session alive for 30 days instead of expiring the moment
+# the browser closes. Without this, a user who closes their browser and
+# comes back "the next day" would get bounced back to the login page,
+# which looked identical to (and was easy to confuse with) courses being
+# re-locked. Active Days / streaks are still computed from real calendar
+# dates in the database, so this only affects how long someone stays
+# signed in - not how activity is counted.
+app.permanent_session_lifetime = timedelta(days=30)
 
 DB_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -137,6 +147,33 @@ def init_db():
         )
     """)
 
+
+    # --------------------------------------------------
+    # USER ACTIVITY TABLE (per-user active days / streak)
+    # --------------------------------------------------
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS user_activity (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            activity_date TEXT NOT NULL,
+            UNIQUE(user_id, activity_date)
+        )
+    """)
+
+    # Stores the questions/answers from each quiz attempt so the roadmap can
+    # identify weak concepts instead of only looking at the overall score.
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS quiz_attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            course TEXT NOT NULL,
+            score INTEGER NOT NULL,
+            total INTEGER NOT NULL,
+            wrong_question_ids TEXT NOT NULL DEFAULT '[]',
+            completed_at TEXT NOT NULL
+        )
+    """)
 
     conn.commit()
     conn.close()
@@ -346,6 +383,7 @@ def login():
     # Create login session
     session.clear()
 
+    session.permanent = True
     session["user_id"] = user["id"]
     session["email"] = user["email"]
 
@@ -425,22 +463,23 @@ def chat():
     student = dict(user)
 
     # ---------------------------------------------
-    # Temporary NEXORA mastery profile
+    # Real per-user mastery profile
     # ---------------------------------------------
 
-    mastery = {
-        "Python": 85,
-        "Java": 70,
-        "OOP": 60,
-        "Inheritance": 45,
-        "Polymorphism": 38,
-        "Data Structures": 55
-    }
+    user_results = get_user_quiz_results(user_id)
+    mastery = {}
 
-    weakest_topic = min(
-        mastery,
-        key=mastery.get
-    )
+    for course in courses:
+        course_key = normalize_course_name(course["title"])
+        result = user_results.get(course_key)
+        if result and result["total"]:
+            mastery[course["title"]] = round(
+                (result["score"] / result["total"]) * 100
+            )
+        else:
+            mastery[course["title"]] = 0
+
+    weakest_topic = min(mastery, key=mastery.get) if mastery else "Data Structures"
 
     # ---------------------------------------------
     # NEXORA AI Tutor
@@ -463,12 +502,7 @@ Year: {student['year']}
 
 CURRENT MASTERY
 ----------------
-Python: {mastery['Python']}%
-Java: {mastery['Java']}%
-OOP: {mastery['OOP']}%
-Inheritance: {mastery['Inheritance']}%
-Polymorphism: {mastery['Polymorphism']}%
-Data Structures: {mastery['Data Structures']}%
+{chr(10).join(f"{topic}: {score}%" for topic, score in mastery.items())}
 
 WEAKEST TOPIC
 ----------------
@@ -937,6 +971,7 @@ def verify_registration_otp():
 
     session.clear()
 
+    session.permanent = True
     session["user_id"] = user["id"]
     session["email"] = user["email"]
 
@@ -1779,6 +1814,42 @@ QUIZ_QUESTIONS = {
     ]
 }
 
+# Question-to-topic mapping used by the adaptive Today's Roadmap.
+# Each quiz question belongs to the concept it tests, so wrong answers can
+# point the learner toward a concrete topic to study.
+QUIZ_TOPIC_MAP = {
+    "data-structures": {
+        1: "Singly Linked List", 2: "Singly Linked List", 3: "Singly Linked List",
+        4: "Singly Linked List", 5: "Doubly Linked List", 6: "Doubly Linked List",
+        7: "Doubly Linked List", 8: "Doubly Linked List", 9: "Circular Linked List",
+        10: "Circular Linked List", 11: "Linked List Operations",
+        12: "Linked List Operations", 13: "Linked List Operations",
+        14: "Linked List Operations", 15: "Linked List Operations"
+    },
+    "computer-architecture": {
+        1: "Computer Organization Basics", 2: "Computer Organization Basics",
+        3: "Number Systems & Data Representation", 4: "Number Systems & Data Representation",
+        5: "Number Systems & Data Representation", 6: "Registers & Instruction Register",
+        7: "Instruction Cycle", 8: "Instruction Cycle", 9: "CPU Organization",
+        10: "CPU Organization", 11: "Cache Memory", 12: "Memory Hierarchy",
+        13: "I/O Techniques", 14: "Instruction Cycle", 15: "CPU Organization"
+    }
+}
+
+ROADMAP_TOPIC_PLAN = {
+    "Data Structures": [
+        "Arrays & Array Operations", "Singly Linked List", "Doubly Linked List",
+        "Circular Linked List", "Stacks", "Queues", "Trees", "Binary Search Tree",
+        "Graphs", "Hashing", "Searching & Sorting"
+    ],
+    "Computer Architecture": [
+        "Computer Organization Basics", "Number Systems & Data Representation",
+        "Instruction Cycle", "Registers & Instruction Register", "Addressing Modes",
+        "CPU Organization", "Memory Hierarchy", "RAM & ROM", "Cache Memory",
+        "I/O Techniques", "Interrupts & Polling"
+    ]
+}
+
 
 def normalize_course_name(course):
     course = str(course or "").strip().lower()
@@ -1973,6 +2044,7 @@ def submit_quiz():
 
     score = 0
     correct_answers = {}
+    wrong_question_ids = []
 
     for question in questions:
 
@@ -1989,6 +2061,8 @@ def submit_quiz():
 
         if submitted_answer == question["answer"]:
             score += 1
+        else:
+            wrong_question_ids.append(int(question["id"]))
 
     total = 15
     completed_at = current_time().isoformat()
@@ -2027,6 +2101,19 @@ def submit_quiz():
 
         conn.commit()
 
+        conn.execute(
+            """
+            INSERT INTO quiz_attempts
+            (user_id, course, score, total, wrong_question_ids, completed_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                user["id"], course, score, total,
+                json.dumps(wrong_question_ids), completed_at
+            )
+        )
+        conn.commit()
+
     except Exception as error:
 
         conn.rollback()
@@ -2043,6 +2130,9 @@ def submit_quiz():
         }), 500
 
     conn.close()
+
+    # Completing a quiz is genuine learning activity for this user.
+    record_user_activity(user["id"])
 
     # Correct answers are returned only after submission.
     return jsonify({
@@ -2120,7 +2210,404 @@ def quiz_result(course):
 # DASHBOARD DATA AND ROUTES
 # --------------------------------------------------
 
-student_defaults = {'name': 'Ashwin Kumaar', 'email': 'ashwinkumaar@gmail.com', 'student_id': '2501014', 'department': 'Computer Science and Engineering', 'year': '3rd Year', 'college': 'Sri Ramakrishna Engineering College', 'batch': '2029', 'learning_level': 'Intermediate', 'mastery': 74, 'quiz_accuracy': 89, 'streak': 15, 'active_days': 42, 'completed_topics': 28}
+# NOTE: these are only used as *fallback/cosmetic* defaults (things we don't
+# actually track per-user, like college/batch/learning_level). The progress
+# numbers (mastery, quiz_accuracy, streak, active_days, completed_topics)
+# are always recomputed per logged-in user from real DB data below -
+# they must never be served as-is to every user.
+student_defaults = {'name': 'Student', 'email': '', 'student_id': '', 'department': '', 'year': '', 'college': 'Sri Ramakrishna Engineering College', 'batch': '2029', 'learning_level': 'Intermediate', 'mastery': 0, 'quiz_accuracy': 0, 'streak': 0, 'active_days': 0, 'completed_topics': 0}
+
+
+def record_user_activity(user_id):
+    """Log that this user was active *today* (for streak / active-days).
+
+    This is what makes "Active Days" behave like a login-based day
+    counter: the very first time a user reaches an authenticated page
+    (dashboard, courses, quiz, etc.) on a given calendar date, one row
+    is written for that date. INSERT OR IGNORE + the UNIQUE(user_id,
+    activity_date) constraint on the table guarantees a single date is
+    only ever counted once, no matter how many times the user logs in,
+    refreshes, or navigates around during that same day.
+    """
+    conn = get_db()
+    try:
+        today = current_time().date().isoformat()
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO user_activity (user_id, activity_date)
+            VALUES (?, ?)
+            """,
+            (user_id, today)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_active_days(user_id):
+    """Count the distinct calendar days this user has logged in / been
+    active on. Driven by user_activity (recorded on every authenticated
+    request), NOT by quiz completion - so day 1 shows 1 active day as
+    soon as the user reaches the dashboard, and each new calendar day
+    the user logs back in bumps the count by exactly 1, whether or not
+    they take a quiz that day."""
+    conn = get_db()
+    rows = conn.execute(
+        """
+        SELECT DISTINCT activity_date
+        FROM user_activity
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    ).fetchall()
+    conn.close()
+    return len(rows)
+
+
+def get_user_activity_dates(user_id):
+    """Return every calendar date this user was active (logged in), used
+    to color in the Learning Activity heatmap."""
+    conn = get_db()
+    rows = conn.execute(
+        """
+        SELECT DISTINCT activity_date
+        FROM user_activity
+        WHERE user_id = ?
+        ORDER BY activity_date
+        """,
+        (user_id,)
+    ).fetchall()
+    conn.close()
+    return [row["activity_date"] for row in rows if row["activity_date"]]
+
+
+def get_learning_streak(user_id):
+    """Consecutive-day login streak, computed from user_activity (login
+    days) rather than quiz completion days."""
+    conn = get_db()
+    rows = conn.execute(
+        """
+        SELECT DISTINCT activity_date
+        FROM user_activity
+        WHERE user_id = ?
+        ORDER BY activity_date DESC
+        """,
+        (user_id,)
+    ).fetchall()
+    conn.close()
+
+    if not rows:
+        return 0
+
+    dates = sorted(
+        {datetime.strptime(r["activity_date"], "%Y-%m-%d").date() for r in rows},
+        reverse=True
+    )
+
+    today = current_time().date()
+    if dates[0] not in (today, today - timedelta(days=1)):
+        return 0
+
+    streak = 1
+    start_date = dates[0]
+    for date_value in dates[1:]:
+        if date_value == start_date - timedelta(days=1):
+            streak += 1
+            start_date = date_value
+        else:
+            break
+    return streak
+
+def get_user_quiz_results(user_id):
+    conn = get_db()
+    rows = conn.execute(
+        """
+        SELECT course, score, total, completed, completed_at
+        FROM quiz_results
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    ).fetchall()
+    conn.close()
+    return {row["course"]: dict(row) for row in rows}
+
+
+def get_user_learning_stats(user_id):
+    """Compute this user's real progress from their own quiz results -
+    never shared with, or copied from, any other user."""
+
+    results = get_user_quiz_results(user_id)
+    completed_results = [
+        r for r in results.values() if r["completed"]
+    ]
+
+    total_courses = len(courses) or 1
+    total_possible_marks = total_courses * 15
+
+    marks_earned = sum(r["score"] for r in completed_results)
+    mastery = round((marks_earned / total_possible_marks) * 100) if total_possible_marks else 0
+
+    if completed_results:
+        quiz_accuracy = round(
+            sum((r["score"] / r["total"]) * 100 for r in completed_results if r["total"])
+            / len(completed_results)
+        )
+    else:
+        quiz_accuracy = 0
+
+    # "completed topics" = lessons from courses the user has actually
+    # finished the quiz for (real, per-user - not a shared constant).
+    completed_topics = 0
+    for course in courses:
+        course_key = normalize_course_name(course["title"])
+        result = results.get(course_key)
+        if result and result["completed"]:
+            completed_topics += course.get("lessons", 0)
+
+    return {
+        "mastery": mastery,
+        "quiz_accuracy": quiz_accuracy,
+        "completed_topics": completed_topics,
+        "active_days": get_active_days(user_id),
+        "streak": get_learning_streak(user_id),
+        "quiz_results": results,
+    }
+
+
+def get_user_courses(user_id):
+    """Return the course catalog with each course's progress/status
+    computed from THIS user's quiz results, instead of the shared
+    static defaults."""
+
+    results = get_user_quiz_results(user_id)
+    personalized = []
+
+    for course in courses:
+        course_copy = dict(course)
+        course_key = normalize_course_name(course["title"])
+        result = results.get(course_key)
+
+        if result and result["completed"]:
+            percentage = round((result["score"] / result["total"]) * 100) if result["total"] else 0
+            course_copy["progress"] = percentage
+            course_copy["status"] = "Completed"
+        else:
+            course_copy["progress"] = 0
+            course_copy["status"] = "Start Learning"
+
+        personalized.append(course_copy)
+
+    return personalized
+
+
+def get_next_learning_course(user_id):
+    """Choose the user's next/recommended course from their real results.
+
+    Unfinished courses are preferred. If all courses are completed, recommend
+    the course with the lowest score for review.
+    """
+    results = get_user_quiz_results(user_id)
+    candidates = []
+
+    for course in courses:
+        key = normalize_course_name(course["title"])
+        result = results.get(key)
+        percentage = 0
+        completed = False
+        completed_at = ""
+        if result:
+            completed = bool(result["completed"])
+            if result["total"]:
+                percentage = round((result["score"] / result["total"]) * 100)
+            completed_at = result.get("completed_at", "") or ""
+        candidates.append({
+            "key": key,
+            "title": course["title"],
+            "progress": percentage,
+            "completed": completed,
+            "completed_at": completed_at,
+        })
+
+    unfinished = [c for c in candidates if not c["completed"]]
+    if unfinished:
+        # Keep the catalog order for predictable recommendations.
+        return unfinished[0]
+
+    # Everything is complete: review the weakest subject. If scores tie,
+    # use the most recently completed quiz as the tie-breaker.
+    lowest = min(c["progress"] for c in candidates)
+    tied = [c for c in candidates if c["progress"] == lowest]
+    return max(tied, key=lambda c: c["completed_at"] or "")
+
+
+def get_daily_learning_topics():
+    """Return the fixed syllabus order used when there is no quiz weakness yet."""
+    return ROADMAP_TOPIC_PLAN
+
+
+def get_latest_quiz_attempt(user_id, course):
+    conn = get_db()
+    row = conn.execute(
+        """
+        SELECT score, total, wrong_question_ids, completed_at
+        FROM quiz_attempts
+        WHERE user_id = ? AND course = ?
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        (user_id, normalize_course_name(course))
+    ).fetchone()
+    conn.close()
+    if not row:
+        return None
+    data = dict(row)
+    try:
+        data["wrong_question_ids"] = json.loads(data.get("wrong_question_ids") or "[]")
+    except (TypeError, ValueError):
+        data["wrong_question_ids"] = []
+    return data
+
+
+def get_adaptive_topic(user_id, course_title):
+    """Choose the weakest learning topic from the user's latest quiz."""
+    course_key = normalize_course_name(course_title)
+    plan = ROADMAP_TOPIC_PLAN.get(course_title, [])
+    attempt = get_latest_quiz_attempt(user_id, course_key)
+
+    if attempt and attempt["wrong_question_ids"]:
+        topic_map = QUIZ_TOPIC_MAP.get(course_key, {})
+        counts = {}
+        for qid in attempt["wrong_question_ids"]:
+            topic = topic_map.get(int(qid))
+            if topic:
+                counts[topic] = counts.get(topic, 0) + 1
+
+        if counts:
+            max_mistakes = max(counts.values())
+            weak_topics = {t for t, n in counts.items() if n == max_mistakes}
+            topic = next(
+                (t for t in plan if t in weak_topics),
+                next(iter(weak_topics))
+            )
+        else:
+            topic = plan[0] if plan else "Core concepts"
+    else:
+        topic = plan[0] if plan else "Core concepts"
+
+    return {
+        "topic": topic,
+        "quiz_score": (
+            round((attempt["score"] / attempt["total"]) * 100)
+            if attempt and attempt["total"] else None
+        ),
+        "reason": (
+            "Based on the topic where you made the most mistakes in your latest quiz."
+            if attempt and attempt["wrong_question_ids"]
+            else "Start with this topic; quiz results will personalize the next focus."
+        )
+    }
+
+
+def get_today_roadmap(user_id):
+    """Build Today's Roadmap from the user's weakest quiz topic."""
+    user_courses = get_user_courses(user_id)
+    results = get_user_quiz_results(user_id)
+
+    scored = []
+    for course in user_courses:
+        result = results.get(normalize_course_name(course["title"]))
+        pct = round((result["score"] / result["total"]) * 100) if result and result["total"] else 0
+        completed_at = result.get("completed_at", "") if result else ""
+        scored.append((course, pct, completed_at, bool(result and result["completed"])))
+
+    # Score is the primary priority. If scores tie, the latest completed
+    # quiz gets priority.
+    lowest = min((x[1] for x in scored), default=0)
+    tied = [x for x in scored if x[1] == lowest]
+    focus_course = max(tied, key=lambda x: x[2] or "")[0] if tied else None
+
+    roadmap = []
+    if focus_course:
+        adaptive = get_adaptive_topic(user_id, focus_course["title"])
+        roadmap.append({
+            "title": focus_course["title"],
+            "topic": adaptive["topic"],
+            "reason": adaptive["reason"],
+            "score": adaptive["quiz_score"],
+            "status": "Today's Focus",
+            "icon": "★",
+            "class": "active-road",
+            "progress": focus_course["progress"]
+        })
+
+    # Keep the second course as a simple review topic. No mini quiz or
+    # additional learning phases are shown because the app has no mini quiz.
+    for course, pct, completed_at, completed in scored:
+        if focus_course and course["title"] == focus_course["title"]:
+            continue
+        adaptive = get_adaptive_topic(user_id, course["title"])
+        roadmap.append({
+            "title": course["title"],
+            "topic": adaptive["topic"],
+            "reason": "Review this topic to keep the course active.",
+            "score": pct if completed else None,
+            "status": "Quick Review",
+            "icon": "○",
+            "class": "",
+            "progress": pct
+        })
+
+    return roadmap
+
+def get_user_ai_insights(user_id):
+    """Build dashboard insight text from this user's actual quiz results."""
+    results = get_user_quiz_results(user_id)
+    course_scores = []
+    for course in courses:
+        key = normalize_course_name(course["title"])
+        result = results.get(key)
+        if result and result["completed"] and result["total"]:
+            pct = round((result["score"] / result["total"]) * 100)
+            completed_at = result.get("completed_at", "") or ""
+            course_scores.append((course["title"], pct, completed_at))
+
+    if not course_scores:
+        return [
+            "You have not completed a course quiz yet, so NEXORA will personalize your path as you learn.",
+            "Complete a quiz to create your first course-specific mastery signal.",
+            "Your next learning activity will be chosen from the courses you have not completed."
+        ]
+
+    # Score is the primary priority. When scores are tied, the most
+    # recently completed quiz wins the tie so the dashboard does not always
+    # default to the first course in the catalog.
+    weakest_score = min(x[1] for x in course_scores)
+    weakest_tied = [x for x in course_scores if x[1] == weakest_score]
+    weakest_title, weakest_score, _ = max(weakest_tied, key=lambda x: x[2] or "")
+
+    strongest_score = max(x[1] for x in course_scores)
+    strongest_tied = [x for x in course_scores if x[1] == strongest_score]
+    strongest_title, strongest_score, _ = max(strongest_tied, key=lambda x: x[2] or "")
+
+    if len(course_scores) == 1:
+        return [
+            f"Your {strongest_title} quiz score is {strongest_score}%, so NEXORA is using that result as your current learning signal.",
+            f"Your next focus is {weakest_title} because it is the only course with a recorded quiz result so far.",
+            "Continue Learning opens the course NEXORA currently recommends for your account."
+        ]
+
+    if weakest_title == strongest_title:
+        return [
+            f"Your completed quiz results currently show {strongest_score}% mastery across the tracked courses.",
+            f"NEXORA will keep {weakest_title} as the review focus while you build more learning activity.",
+            "Continue Learning opens the recommended course for your current results."
+        ]
+
+    return [
+        f"Your strongest recorded result is {strongest_title} at {strongest_score}%.",
+        f"Your current focus is {weakest_title} at {weakest_score}%, so NEXORA recommends strengthening it.",
+        "Continue Learning opens the course selected from your current quiz performance."
+    ]
 
 courses = [
     {
@@ -2147,46 +2634,30 @@ courses = [
 ]
 
 videos = [
-    {
-        'slug': 'data-structures',
-        'title': 'Data Structure',
-        'topic': 'Data Structures',
-        'duration': '',
-        'level': 'Intermediate',
-        'reference': 'nptel_linked_list',
-        'subtopics': [
-            {'title': 'Introduction to Linked List in C', 'videoUrl': ''},
-            {'title': 'Insertion at the Beginning in Singly Linked List', 'videoUrl': ''},
-            {'title': 'Insertion at a Position in Singly Linked List', 'videoUrl': ''},
-            {'title': 'Insertion at the End in Singly Linked List', 'videoUrl': ''},
-            {'title': 'Traversal of a Linked List in Singly Linked List', 'videoUrl': ''},
-            {'title': 'Deletion at the Beginning in Singly Linked List', 'videoUrl': ''},
-            {'title': 'Deletion at a Position in Singly Linked List', 'videoUrl': ''},
-            {'title': 'Deletion at the End in Singly Linked List', 'videoUrl': ''}
-        ]
-    },
+    {'title': 'Understanding Linked Lists', 'topic': 'Data Structures', 'duration': '', 'level': '', 'reference': 'nptel_linked_list', 'subtopics': [
+        {'title': 'Introduction to Linked List in C', 'videoUrl': ''},
+        {'title': 'Insertion at the Beginning in Singly Linked List', 'videoUrl': ''},
+        {'title': 'Insertion at a Position in Singly Linked List', 'videoUrl': ''},
+        {'title': 'Insertion at the End in Singly Linked List', 'videoUrl': ''},
+        {'title': 'Traversal of a Linked List in Singly Linked List', 'videoUrl': ''},
+        {'title': 'Deletion at the Beginning in Singly Linked List', 'videoUrl': ''},
+        {'title': 'Deletion at a Position in Singly Linked List', 'videoUrl': ''},
+        {'title': 'Deletion at the End in Singly Linked List', 'videoUrl': ''}
+    ]},
 
-    {
-        'slug': 'computer-architecture',
-        'title': 'Computer Architecture',
-        'topic': 'Computer Architecture',
-        'duration': '',
-        'level': 'Intermediate',
-        'reference': 'computer_architecture',
-        'subtopics': [
-            {'title': 'Introduction to Computer Architecture', 'videoUrl': ''},
-            {'title': 'CPU and ALU', 'videoUrl': ''},
-            {'title': 'Registers and Control Unit', 'videoUrl': ''},
-            {'title': 'Instruction Cycle', 'videoUrl': ''},
-            {'title': 'Memory Organization', 'videoUrl': ''},
-            {'title': 'Cache Memory', 'videoUrl': ''},
-            {'title': 'Input and Output Organization', 'videoUrl': ''},
-            {'title': 'Pipelining', 'videoUrl': ''}
-        ]
-    }
+    {'title': 'Understanding Doubly Linked List', 'topic': 'Data Structures', 'duration': '', 'level': '', 'reference': 'nptel_doubly_linked_list', 'subtopics': [
+        {'title': 'Insertion at the Beginning in Doubly Linked List', 'videoUrl': ''},
+        {'title': 'Insertion at a Position in Doubly Linked List', 'videoUrl': ''},
+        {'title': 'Insertion at the End in Doubly Linked List', 'videoUrl': ''},
+        {'title': 'Deletion at the Beginning in Doubly Linked List', 'videoUrl': ''}
+    ]},
+
+    {'title': 'Circular Linked List', 'topic': 'Data Structures', 'duration': '', 'level': '', 'reference': None, 'subtopics': [
+        {'title': 'Deletion at the End in Circular Linked List', 'videoUrl': ''},
+        {'title': 'Insertion at the End in Circular Linked List', 'videoUrl': ''}
+    ]}
 ]
-
-sources = [{'title': 'Python Documentation', 'type': 'Documentation', 'topic': 'Python', 'description': 'Official Python language documentation and reference.'}, {'title': 'Java OOP Guide', 'type': 'Article', 'topic': 'Java', 'description': 'Learn classes, objects, inheritance and polymorphism.'}, {'title': 'Data Structures Notes', 'type': 'PDF Notes', 'topic': 'DSA', 'description': 'Quick revision notes for common data structures.'}, {'title': 'SQL Practice Problems', 'type': 'Practice', 'topic': 'Database', 'description': 'Practice SQL queries and database concepts.'}]
+sources = [{'title': 'Python Documentation', 'type': 'Documentation', 'topic': 'Python', 'description': 'Official Python language documentation and reference.'}, {'title': 'Java Programming Guide', 'type': 'Article', 'topic': 'Java', 'description': 'Learn classes, objects, inheritance and polymorphism.'}, {'title': 'Data Structures Notes', 'type': 'PDF Notes', 'topic': 'DSA', 'description': 'Quick revision notes for common data structures.'}, {'title': 'SQL Practice Problems', 'type': 'Practice', 'topic': 'Database', 'description': 'Practice SQL queries and database concepts.'}]
 
 certificates = [
     {
@@ -2235,32 +2706,55 @@ def require_login():
 
         return None
 
+    # Every authenticated page hit counts as "the user logged in today".
+    # This is what makes Active Days / the learning streak / the heatmap
+    # advance immediately on login, on their own calendar day, instead of
+    # only when a quiz is completed.
+    record_user_activity(user["id"])
+
     return user
 def dashboard_student():
     user = require_login()
     if not user:
         return None
+
     data = dict(student_defaults)
     data.update({
-    "name": user["full_name"],
-    "email": user["email"],
-    "student_id": user["student_id"],
-    "department": user["department"],
-    "year": user["year"],
-    "profile_picture": user["profile_picture"]
-})
+        "name": user["full_name"],
+        "email": user["email"],
+        "student_id": user["student_id"],
+        "department": user["department"],
+        "year": user["year"],
+        "profile_picture": user["profile_picture"],
+        "active_dates": get_user_activity_dates(user["id"])
+    })
+
+    # Overwrite the shared placeholder progress numbers with this user's
+    # own, real, per-user progress.
+    data.update(get_user_learning_stats(user["id"]))
+
+    next_course = get_next_learning_course(user["id"])
+    data["next_course"] = next_course
+    data["today_roadmap"] = get_today_roadmap(user["id"])
+    data["ai_insights"] = get_user_ai_insights(user["id"])
+
     return data
 
 
 def render_dashboard_page(page_name):
+    user = require_login()
+    if not user:
+        return redirect(url_for("home"))
+
     student = dashboard_student()
     if not student:
         return redirect(url_for("home"))
+
     return render_template(
         "page.html",
         page=page_name,
         student=student,
-        courses=courses,
+        courses=get_user_courses(user["id"]),
         videos=videos,
         sources=sources,
         certificates=certificates
@@ -2275,6 +2769,18 @@ def dashboard():
 @app.route("/courses")
 def course_page():
     return render_dashboard_page("courses")
+@app.route("/continue-learning")
+def continue_learning():
+    """Open the user's next learning page based on their own quiz progress."""
+    user = require_login()
+    if not user:
+        return redirect(url_for("home"))
+
+    next_course = get_next_learning_course(user["id"])
+    route_name = next_course["key"].replace("-", "_")
+    return redirect(url_for(route_name))
+
+
 @app.route("/data-structures")
 def data_structures():
     user = require_login()
@@ -2289,9 +2795,6 @@ def data_structures():
 @app.route("/linked-list-simulation")
 def linked_list_simulation():
     return render_template("linklist.html")
-@app.route("/computer-architecture-simulation")
-def computer_architecture_simulation():
-    return render_template("ca_sim.html")
 
 
 @app.route("/computer-architecture")
@@ -2311,12 +2814,13 @@ def computer_architecture():
 def video_page():
     return render_dashboard_page("videos")
 
+@app.route("/computer-architecture-simulation")
+def computer_architecture_simulation():
+    return render_template("ca_sim.html")
 
 @app.route("/data-structures-videos")
 def data_structures_videos():
     return render_template("ds video.html")
-
-
 
 @app.route("/video-learning/<video_slug>")
 def video_learning(video_slug):
@@ -2350,6 +2854,7 @@ def video_learning(video_slug):
         video=selected_video
     )
 
+
 @app.route("/chatbot")
 def chatbot():
     return render_dashboard_page("chatbot")
@@ -2362,9 +2867,6 @@ def source_page():
 @app.route("/simulation")
 def simulation():
     return render_dashboard_page("simulation")
-
-
-
 
 @app.route("/certificate")
 def certificate_page():
