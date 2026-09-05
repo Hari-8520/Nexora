@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXORA | Computer Architecture 2D Virtual Lab</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#eef9f3;--card:#fff;--ink:#14221b;--muted:#708078;--accent:#35c878;--accent2:#159256;--wire:#42d985;--control:#31a9e9;--packet:#ffe66a}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);overflow:hidden}
+.page{height:100vh;display:flex}.side{width:350px;min-width:350px;background:#fff;border-right:1px solid #dcece4;overflow:auto;padding:20px 15px}
+.brand{padding:8px 12px 18px;border-bottom:1px solid #e3efe8;margin-bottom:12px}.brand small{color:var(--accent2);font-weight:900;letter-spacing:2px;font-size:10px}.brand h2{margin:6px 0 0;font-size:22px}
+.topic{margin-bottom:13px}.topic-title{font-weight:900;color:#17623e;font-size:14px;padding:9px 11px 5px;line-height:1.35}
+.sub{display:block;width:100%;border:0;background:transparent;text-align:left;color:#68776f;border-radius:9px;padding:8px 10px 8px 24px;font-size:12px;line-height:1.3;cursor:pointer}.sub:hover{background:#edf9f2;color:#168a4d}.sub.active{background:#dff5e8;color:#12884c;font-weight:800;box-shadow:inset 3px 0 var(--accent)}
+.main{flex:1;min-width:0;height:100vh;padding:18px;display:flex;flex-direction:column}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:12px}.eyebrow{font-size:10px;font-weight:900;letter-spacing:2px;color:#25a866}.top h1{font-size:27px;margin:4px 0 0}.back{background:#fff;border:1px solid #cfe3d8;border-radius:10px;padding:9px 13px;color:#158b50;text-decoration:none;font-weight:800;font-size:12px}
+.lab{flex:1;min-height:0;background:#fff;border:1px solid #dcebe4;border-radius:18px;padding:14px;box-shadow:0 12px 35px rgba(30,110,65,.07);display:flex;flex-direction:column}.head{display:flex;justify-content:space-between;gap:12px}.head h2{margin:0;font-size:19px}.head p{margin:5px 0 0;color:var(--muted);font-size:12px}.badge{background:#e4f8ec;color:#13884e;padding:7px 10px;border-radius:999px;font-size:9px;font-weight:900;white-space:nowrap}
+.canvasWrap{position:relative;flex:1;min-height:470px;margin-top:12px;border-radius:14px;overflow:hidden;background:#07110d;border:1px solid #193c2d}.hint,.selected{position:absolute;z-index:5;top:10px;padding:8px 10px;border-radius:8px;font-size:10px;font-weight:800;pointer-events:none}.hint{left:10px;background:rgba(255,255,255,.95);color:#52635a}.selected{right:10px;background:#e2f8eb;color:#13884e}
+.gridOverlay{position:absolute;inset:0;width:100%;height:100%;opacity:.55;pointer-events:none}#diagram{position:relative;width:100%;height:100%;display:block;touch-action:none}
+
+.component{fill:#12251d;stroke:#baf5d5;stroke-width:2.2}
+.cpuBody{fill:#102b20;stroke:#d7ffe6;stroke-width:2.5}
+.innerBox,.innerBar{fill:#183a2a;stroke:#54d995;stroke-width:1.2}
+.registerBox,.memoryBox,.busBox,.stageBox,.fieldBox,.genericBox{fill:#10231b;stroke:#8de7b5;stroke-width:2}
+.regCell,.memCell{fill:#173d2b;stroke:#4bcf8a;stroke-width:1}
+.aluShape,.controlShape,.gateShape,.decisionShape{fill:#132d22;stroke:#a8f0c8;stroke-width:2.3}
+.busLine{stroke:#45cfff;stroke-width:2}
+.detail{stroke:#4edb92;stroke-width:1.3;opacity:.75}
+.label{fill:#f0fff6;font-weight:900;font-size:14px}
+.mini{fill:#80e4ae;font-size:11px;font-weight:900}
+.small{fill:#9bd9b7;font-size:10px;font-weight:700}
+.stageArrow{fill:#ffe66a;font-size:15px;font-weight:900}
+.node.selected .component{stroke:#fff26b;stroke-width:4;filter:drop-shadow(0 0 8px #ffe65a);animation:componentPulse 1.8s ease-in-out infinite}
+.node.selected .innerBox,.node.selected .regCell,.node.selected .memCell{stroke:#fff26b}
+
+.node{cursor:pointer}.node rect,.node circle,.node polygon{fill:#10231b;stroke:#b8f4d5;stroke-width:2}.node text{fill:#ecfff6;font-weight:800;font-size:13px;text-anchor:middle;pointer-events:none}.node .small{fill:#9be6bf;font-size:9px;font-weight:600}.node.selected rect,.node.selected circle,.node.selected polygon{stroke:#fff26b;stroke-width:4;filter:drop-shadow(0 0 7px #ffe65a)}
+.wire{fill:none;stroke:var(--wire);stroke-width:3.5;opacity:.12}.wire.control{stroke:var(--control)}.wire.on{opacity:.95;stroke-dasharray:9 7;animation:flow .9s linear infinite}.packet{fill:var(--packet);opacity:.9;filter:drop-shadow(0 0 5px #fff36a)}@keyframes flow{to{stroke-dashoffset:-32}}@keyframes componentPulse{50%{filter:drop-shadow(0 0 13px #ffe65a)}}@keyframes pulse{50%{opacity:.35}}
+.title{fill:#a9f0c9;font-size:18px;font-weight:900}.caption{fill:#78cda1;font-size:10px;font-weight:700}
+.bottom{display:grid;grid-template-columns:1.2fr .8fr;gap:10px;margin-top:10px}.info{border:1px solid #dfede6;background:#fbfefc;border-radius:12px;padding:11px}.info h3{font-size:12px;margin:0 0 6px}.info p{font-size:11px;color:#65746c;line-height:1.5;margin:0}.legend{font-size:9px;color:#68776f;margin-top:6px}.legend span{margin-right:10px}
+@media(max-width:950px){.side{width:290px;min-width:290px}.bottom{grid-template-columns:1fr}.canvasWrap{min-height:400px}}
+@media(max-width:700px){body{overflow:auto}.page{display:block;height:auto}.side{width:100%;height:300px}.main{height:calc(100vh - 300px);padding:10px}.top h1{font-size:22px}.canvasWrap{min-height:320px}}
+</style>
+</head>
+<body>
+<div class="page">
+<aside class="side">
+<div class="brand"><small>NEXORA 2D INTERACTIVE VIRTUAL LAB</small><h2>Computer Architecture</h2></div>
+
+<div class="topic"><div class="topic-title">1. Computer Organization &amp; Basic Structure</div>
+<button class="sub active" data-id="functional">Functional units of a computer</button>
+<button class="sub" data-id="cpu">CPU, ALU, Control Unit, Registers</button>
+<button class="sub" data-id="memory-hierarchy">Memory hierarchy</button>
+<button class="sub" data-id="io-system">Input/Output system</button>
+<button class="sub" data-id="system-bus">System bus and its types</button></div>
+
+<div class="topic"><div class="topic-title">2. Number Systems &amp; Data Representation</div>
+<button class="sub" data-id="number-bases">Binary, Decimal, Octal, Hexadecimal</button><button class="sub" data-id="conversion">Number-system conversions</button><button class="sub" data-id="complement">1's and 2's complement</button><button class="sub" data-id="signed">Signed and unsigned numbers</button><button class="sub" data-id="fixed-float">Fixed-point &amp; floating-point representation</button><button class="sub" data-id="ieee754">IEEE 754 floating-point representation</button><button class="sub" data-id="character">Character representation: ASCII, Unicode</button></div>
+
+<div class="topic"><div class="topic-title">3. Computer Arithmetic</div>
+<button class="sub" data-id="binary-arithmetic">Binary addition/subtraction</button><button class="sub" data-id="signed-arithmetic">Signed arithmetic</button><button class="sub" data-id="booth">Booth's multiplication algorithm</button><button class="sub" data-id="division">Restoring &amp; non-restoring division</button><button class="sub" data-id="float-arithmetic">Floating-point arithmetic</button><button class="sub" data-id="overflow">Overflow detection</button><button class="sub" data-id="fast-adders">Fast adders</button><button class="sub" data-id="cla">Carry Look-Ahead Adder</button><button class="sub" data-id="csa">Carry Save Adder</button></div>
+
+<div class="topic"><div class="topic-title">4. CPU &amp; Processor Organization</div>
+<button class="sub" data-id="instruction-cycle">Instruction cycle</button><button class="sub" data-id="fetch-decode-execute">Fetch → Decode → Execute</button><button class="sub" data-id="cpu-registers">CPU registers</button><button class="sub" data-id="alu">ALU</button><button class="sub" data-id="control-unit">Control Unit</button><button class="sub" data-id="control-types">Hardwired vs Microprogrammed Control</button><button class="sub" data-id="datapath">Datapath and control path</button></div>
+
+<div class="topic"><div class="topic-title">5. Instruction Set Architecture (ISA)</div>
+<button class="sub" data-id="isa-important">One of the most important topics.</button><button class="sub" data-id="formats">Instruction formats</button><button class="sub" data-id="opcode-operands">Opcode &amp; operands</button><button class="sub" data-id="instruction-types">Types of instructions</button><button class="sub" data-id="risc-cisc">RISC vs CISC</button><button class="sub" data-id="addressing">Addressing modes</button><button class="sub" data-id="immediate">Immediate</button><button class="sub" data-id="direct">Direct</button><button class="sub" data-id="indirect">Indirect</button><button class="sub" data-id="register">Register</button><button class="sub" data-id="register-indirect">Register indirect</button><button class="sub" data-id="indexed">Indexed</button><button class="sub" data-id="relative">Relative</button></div>
+
+<div class="topic"><div class="topic-title">6. Subroutines &amp; Instruction Execution</div>
+<button class="sub" data-id="branch">Branch instructions</button><button class="sub" data-id="jump">Jump instructions</button><button class="sub" data-id="procedure">Procedure/subroutine calls</button><button class="sub" data-id="stack">Stack</button><button class="sub" data-id="return-address">Return address</button><button class="sub" data-id="interrupt">Interrupt handling</button></div>
+
+<div class="topic"><div class="topic-title">7. Pipelining</div>
+<button class="sub" data-id="pipelining">Instruction pipelining</button><button class="sub" data-id="pipeline-stages">Pipeline stages</button><button class="sub" data-id="speedup">Speedup</button><button class="sub" data-id="structural">Structural hazard</button><button class="sub" data-id="data-hazard">Data hazard</button><button class="sub" data-id="control-hazard">Control hazard</button><button class="sub" data-id="hazard-handling">Hazard handling</button><button class="sub" data-id="forwarding">Forwarding</button><button class="sub" data-id="stalling">Stalling</button><button class="sub" data-id="branch-prediction">Branch prediction</button></div>
+
+<div class="topic"><div class="topic-title">8. Memory Organization</div>
+<button class="sub" data-id="memory-hierarchy-2">Memory hierarchy</button><button class="sub" data-id="registers">Registers</button><button class="sub" data-id="cache">Cache</button><button class="sub" data-id="main-memory">Main memory</button><button class="sub" data-id="secondary">Secondary storage</button><button class="sub" data-id="sram-dram">SRAM vs DRAM</button><button class="sub" data-id="rom">ROM</button><button class="sub" data-id="cache-org">Cache organization</button><button class="sub" data-id="direct-map">Direct mapping</button><button class="sub" data-id="assoc-map">Associative mapping</button><button class="sub" data-id="set-assoc">Set-associative mapping</button><button class="sub" data-id="hit-miss">Cache hit &amp; miss</button><button class="sub" data-id="hit-ratio">Hit ratio</button><button class="sub" data-id="access-time">Memory access time</button></div>
+
+<div class="topic"><div class="topic-title">9. Virtual Memory</div>
+<button class="sub" data-id="virtual-physical">Virtual address vs physical address</button><button class="sub" data-id="paging">Paging</button><button class="sub" data-id="page-tables">Page tables</button><button class="sub" data-id="tlb">TLB</button><button class="sub" data-id="page-fault">Page faults</button><button class="sub" data-id="address-translation">Address translation</button></div>
+
+<div class="topic"><div class="topic-title">10. Input/Output Organization</div>
+<button class="sub" data-id="io-interface">I/O interface</button><button class="sub" data-id="programmed-io">Programmed I/O</button><button class="sub" data-id="interrupt-io">Interrupt-driven I/O</button><button class="sub" data-id="dma">DMA (Direct Memory Access)</button><button class="sub" data-id="io-processors">I/O processors</button></div>
+
+<div class="topic"><div class="topic-title">11. Parallel Processing</div>
+<button class="sub" data-id="multiprocessors">Multiprocessors</button><button class="sub" data-id="multicore">Multicore processors</button><button class="sub" data-id="simd">SIMD</button><button class="sub" data-id="mimd">MIMD</button><button class="sub" data-id="flynn">Flynn's classification</button><button class="sub" data-id="shared-distributed">Shared vs distributed memory</button></div>
+</aside>
+
+<main class="main">
+<div class="top"><div><div class="eyebrow">NEXORA • ORIGINAL 2D CONCEPT DIAGRAMS</div><h1>Computer Architecture Simulation</h1></div><a class="back" href="/simulation">← Back</a></div>
+<section class="lab">
+<div class="head"><div><h2 id="topicTitle">Functional units of a computer</h2><p id="desc">Touch a real component to reveal its connection path. Drag any component to reposition it.</p></div><span class="badge" id="badge">BASIC STRUCTURE</span></div>
+<div class="canvasWrap"><svg class="gridOverlay" aria-hidden="true"><defs><pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M 28 0 L 0 0 0 28" fill="none" stroke="#163326" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)"/></svg><div class="hint">Touch/click = show connection • Drag = move component</div><div class="selected" id="selected">No component selected</div><svg id="diagram" viewBox="0 0 1200 680" aria-label="Interactive computer architecture diagram"></svg></div>
+<div class="bottom"><div class="info"><h3 id="selTitle">Interactive learning</h3><p id="selInfo">Select a component. The related wires will become visible and animated.</p><div class="legend"><span>● green = data path</span><span>● blue = control path</span><span>● yellow = moving information</span></div></div><div class="info"><h3>Learning rule</h3><p><b>Touch first → connection appears.</b> Dragging only moves the component; it does not automatically show every connection.</p></div></div>
+</section>
+</main>
+</div>
+
+<script>
+const svg=document.getElementById('diagram'),titleEl=document.getElementById('topicTitle'),descEl=document.getElementById('desc'),badgeEl=document.getElementById('badge'),selectedEl=document.getElementById('selected'),selTitle=document.getElementById('selTitle'),selInfo=document.getElementById('selInfo');
+let current='functional',nodes=[],wires=[],selectedId=null,drag=null,dragStart=null,raf=0;
+
+const meta={
+functional:['Functional units of a computer','BASIC STRUCTURE','Explore input, CPU, memory and output.'],
+cpu:['CPU, ALU, Control Unit, Registers','CPU ORGANIZATION','Touch ALU, control or registers to reveal the CPU path.'],
+'memory-hierarchy':['Memory hierarchy','MEMORY','Follow registers → cache → RAM → storage.'],
+'io-system':['Input/Output system','I/O','Follow CPU ↔ interface ↔ device.'],
+'system-bus':['System bus and its types','SYSTEM BUS','Inspect data, address and control buses.'],
+'number-bases':['Binary, Decimal, Octal, Hexadecimal','NUMBER SYSTEMS','Compare the common number bases.'],
+conversion:['Number-system conversions','CONVERSION','Follow the conversion chain.'],
+complement:["1's and 2's complement",'COMPLEMENT','See inversion and +1 transformation.'],
+signed:['Signed and unsigned numbers','REPRESENTATION','Compare signed and unsigned bit interpretation.'],
+'fixed-float':['Fixed-point & floating-point representation','REPRESENTATION','Compare fixed and floating formats.'],
+ieee754:['IEEE 754 floating-point representation','IEEE 754','Inspect sign, exponent and fraction fields.'],
+character:['Character representation: ASCII, Unicode','CHARACTER CODES','Follow character → code → stored bits.'],
+'binary-arithmetic':['Binary addition/subtraction','ARITHMETIC','Follow operands through a binary adder/subtractor.'],
+'signed-arithmetic':['Signed arithmetic','ARITHMETIC','Follow two’s-complement signed computation.'],
+booth:["Booth's multiplication algorithm",'MULTIPLICATION','Observe Q, Q-1, accumulator and shift stages.'],
+division:['Restoring & non-restoring division','DIVISION','Observe divisor, accumulator and quotient flow.'],
+'float-arithmetic':['Floating-point arithmetic','FLOATING POINT','Align → operate → normalize → round.'],
+overflow:['Overflow detection','STATUS FLAGS','Follow the result and overflow flag.'],
+'fast-adders':['Fast adders','FAST ADDERS','Compare carry paths with ordinary ripple behavior.'],
+cla:['Carry Look-Ahead Adder','CLA','Generate and propagate produce carries in parallel.'],
+csa:['Carry Save Adder','CSA','Three operands are reduced without immediate carry propagation.'],
+'instruction-cycle':['Instruction cycle','CPU EXECUTION','Follow the instruction through fetch, decode, execute and write-back.'],
+'fetch-decode-execute':['Fetch → Decode → Execute','CPU EXECUTION','Touch a stage to reveal the next path.'],
+'cpu-registers':['CPU registers','REGISTERS','Inspect PC, IR, register file and status.'],
+alu:['ALU','ALU','Inspect arithmetic, logic and flags.'],
+'control-unit':['Control Unit','CONTROL','Inspect generated control signals.'],
+'control-types':['Hardwired vs Microprogrammed Control','CONTROL','Compare fixed logic and control memory.'],
+datapath:['Datapath and control path','DATAPATH','Green carries data; blue carries control.'],
+'isa-important':['Instruction Set Architecture (ISA)','ISA','Explore the programmer-visible instruction interface.'],
+formats:['Instruction formats','ISA','Inspect opcode and operand fields.'],
+'opcode-operands':['Opcode & operands','ISA','Separate operation code from operand fields.'],
+'instruction-types':['Types of instructions','ISA','Explore data movement, arithmetic and control instructions.'],
+'risc-cisc':['RISC vs CISC','ISA COMPARISON','Compare instruction organization.'],
+addressing:['Addressing modes','ADDRESSING','Explore effective-address formation.'],
+immediate:['Immediate','ADDRESSING MODE','Operand is embedded in the instruction.'],
+direct:['Direct','ADDRESSING MODE','Instruction points directly to memory.'],
+indirect:['Indirect','ADDRESSING MODE','A pointer leads to the effective address.'],
+register:['Register','ADDRESSING MODE','Operand is located in a CPU register.'],
+'register-indirect':['Register indirect','ADDRESSING MODE','Register contains the effective address.'],
+indexed:['Indexed','ADDRESSING MODE','Base + index forms the effective address.'],
+relative:['Relative','ADDRESSING MODE','PC + displacement forms the target.'],
+branch:['Branch instructions','CONTROL FLOW','Condition selects the next program path.'],
+jump:['Jump instructions','CONTROL FLOW','PC moves to a target address.'],
+procedure:['Procedure/subroutine calls','SUBROUTINES','CALL saves return information and transfers control.'],
+stack:['Stack','STACK','Push/pop follows last-in-first-out behavior.'],
+'return-address':['Return address','SUBROUTINES','Saved address returns control to the caller.'],
+interrupt:['Interrupt handling','INTERRUPTS','Device request moves execution to an ISR.'],
+pipelining:['Instruction pipelining','PIPELINING','Overlapping instructions move through five stages.'],
+'pipeline-stages':['Pipeline stages','PIPELINING','IF → ID → EX → MEM → WB.'],
+speedup:['Speedup','PIPELINE PERFORMANCE','Overlapped stages increase instruction throughput.'],
+structural:['Structural hazard','PIPELINE HAZARD','Two instructions compete for one resource.'],
+'data-hazard':['Data hazard','PIPELINE HAZARD','A consumer waits for a producer result.'],
+'control-hazard':['Control hazard','PIPELINE HAZARD','A branch changes the next instruction path.'],
+'hazard-handling':['Hazard handling','HAZARDS','Forwarding, stalling and prediction handle hazards.'],
+forwarding:['Forwarding','HAZARD HANDLING','A result bypasses normal write-back timing.'],
+stalling:['Stalling','HAZARD HANDLING','A bubble delays pipeline progress.'],
+'branch-prediction':['Branch prediction','HAZARD HANDLING','Prediction lets fetch continue before branch resolution.'],
+'memory-hierarchy-2':['Memory hierarchy','MEMORY ORGANIZATION','Registers → cache → RAM → storage.'],
+registers:['Registers','MEMORY ORGANIZATION','Fast CPU-local storage.'],
+cache:['Cache','CACHE','CPU checks cache before lower memory.'],
+'main-memory':['Main memory','RAM','Working memory for active programs and data.'],
+secondary:['Secondary storage','STORAGE','Persistent high-capacity storage.'],
+'sram-dram':['SRAM vs DRAM','MEMORY TECHNOLOGY','Compare cache-oriented SRAM with DRAM main memory.'],
+rom:['ROM','NON-VOLATILE MEMORY','Firmware remains stored without power.'],
+'cache-org':['Cache organization','CACHE','Inspect tag, index and line structure.'],
+'direct-map':['Direct mapping','CACHE MAPPING','One block maps to one possible line.'],
+'assoc-map':['Associative mapping','CACHE MAPPING','A block can match any cache line.'],
+'set-assoc':['Set-associative mapping','CACHE MAPPING','A block maps to one set and one line in that set.'],
+'hit-miss':['Cache hit & miss','CACHE ACCESS','Hit stays near CPU; miss continues to lower memory.'],
+'hit-ratio':['Hit ratio','CACHE PERFORMANCE','Hits divided by total cache accesses.'],
+'access-time':['Memory access time','MEMORY PERFORMANCE','Different levels have different access delays.'],
+'virtual-physical':['Virtual address vs physical address','VIRTUAL MEMORY','Translation connects virtual addresses to physical frames.'],
+paging:['Paging','VIRTUAL MEMORY','Pages map onto physical frames.'],
+'page-tables':['Page tables','VIRTUAL MEMORY','Page table converts virtual page numbers to frames.'],
+tlb:['TLB','VIRTUAL MEMORY','Fast cached translations avoid repeated page-table lookup.'],
+'page-fault':['Page faults','VIRTUAL MEMORY','Missing page triggers service from storage.'],
+'address-translation':['Address translation','VIRTUAL MEMORY','VPN + offset becomes frame + offset.'],
+'io-interface':['I/O interface','I/O ORGANIZATION','Interface bridges CPU/bus and peripheral.'],
+'programmed-io':['Programmed I/O','I/O ORGANIZATION','CPU polls status and performs transfers.'],
+'interrupt-io':['Interrupt-driven I/O','I/O ORGANIZATION','Device interrupts CPU when service is needed.'],
+dma:['DMA (Direct Memory Access)','DMA','DMA controller transfers device ↔ memory.'],
+'io-processors':['I/O processors','I/O PROCESSORS','Dedicated processor manages I/O work.'],
+multiprocessors:['Multiprocessors','PARALLEL PROCESSING','Multiple processors cooperate.'],
+multicore:['Multicore processors','PARALLEL PROCESSING','Multiple cores share chip resources.'],
+simd:['SIMD','PARALLEL PROCESSING','One instruction operates on multiple lanes.'],
+mimd:['MIMD','PARALLEL PROCESSING','Independent instruction streams run in parallel.'],
+flynn:["Flynn's classification",'PARALLEL TAXONOMY','SISD, SIMD, MISD and MIMD.'],
+'shared-distributed':['Shared vs distributed memory','MEMORY ARCHITECTURE','Compare common memory with separate node memory.']
+};
+
+function E(t){return t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function S(tag,a={}){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const k in a)e.setAttribute(k,a[k]);svg.appendChild(e);return e}
+function node(id,x,y,w,h,label,small='',shape='rect'){
+ const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+ g.classList.add('node'); g.dataset.id=id; g.dataset.x=x; g.dataset.y=y; const sizeBoost=1.14; w*=sizeBoost; h*=sizeBoost;
+ g.dataset.w=w; g.dataset.h=h;
+
+ const title=(label||'').toUpperCase();
+ const addRect=(x1,y1,w1,h1,rx=8,cls='')=>{
+   const q=document.createElementNS('http://www.w3.org/2000/svg','rect');
+   q.setAttribute('x',x1);q.setAttribute('y',y1);q.setAttribute('width',w1);q.setAttribute('height',h1);
+   q.setAttribute('rx',rx); if(cls)q.setAttribute('class',cls); g.appendChild(q); return q;
+ };
+ const addLine=(x1,y1,x2,y2,cls='detail')=>{
+   const q=document.createElementNS('http://www.w3.org/2000/svg','line');
+   q.setAttribute('x1',x1);q.setAttribute('y1',y1);q.setAttribute('x2',x2);q.setAttribute('y2',y2);
+   q.setAttribute('class',cls);g.appendChild(q);return q;
+ };
+ const addText=(x1,y1,text,cls='label')=>{
+   const q=document.createElementNS('http://www.w3.org/2000/svg','text');
+   q.setAttribute('x',x1);q.setAttribute('y',y1);q.setAttribute('class',cls);
+   q.setAttribute('text-anchor','middle');q.textContent=text;g.appendChild(q);return q;
+ };
+
+ // Component-specific schematic symbols. These remain simple enough for learning,
+ // but visually communicate what each computer-architecture component represents.
+ if(['CPU','PROCESSOR'].includes(title)){
+   addRect(x-w/2,y-h/2,w,h,12,'component cpuBody');
+   addRect(x-w/2+10,y-h/2+10,w-20,18,5,'innerBar');
+   addText(x,y-h/2+23,label,'label');
+   addRect(x-w/2+12,y-h/2+38,w*0.32,h-52,6,'innerBox');
+   addRect(x-w/2+w*0.38,y-h/2+38,w*0.50,h-52,6,'innerBox');
+   addText(x-w/2+w*0.16,y+5,'CU','mini');
+   addText(x-w/2+w*0.63,y+5,'ALU','mini');
+   addLine(x-w/2+25,y+h/2-13,x+w/2-25,y+h/2-13);
+   addText(x,y+h/2+13,small||'processor','small');
+ } else if(title.includes('ALU')){
+   const q=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+   q.setAttribute('points',`${x-w/2},${y-h/2} ${x+w/2-18},${y-h/2} ${x+w/2},${y} ${x+w/2-18},${y+h/2} ${x-w/2},${y+h/2} ${x-w/2+25},${y}`);
+   q.setAttribute('class','component aluShape');g.appendChild(q);
+   addText(x,y-2,'ALU','label'); addText(x,y+18,small||'ADD • SUB • AND • OR','small');
+ } else if(title.includes('CONTROL')){
+   const q=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+   q.setAttribute('cx',x);q.setAttribute('cy',y);q.setAttribute('rx',w/2);q.setAttribute('ry',h/2);
+   q.setAttribute('class','component controlShape');g.appendChild(q);
+   addText(x,y-3,'CONTROL','label');addText(x,y+16,small||'signals','small');
+ } else if(title.includes('REGISTER')){
+   addRect(x-w/2,y-h/2,w,h,8,'component registerBox');
+   const cells=Math.min(6,Math.max(3,Math.floor(w/30)));
+   for(let i=0;i<cells;i++){addRect(x-w/2+9+i*((w-18)/cells),y-h/2+25,(w-18)/cells-4,h-38,3,'regCell')}
+   addText(x,y-h/2+15,'REGISTERS','label');
+ } else if(title.includes('MEMORY') || title==='RAM' || title==='ROM' || title==='CACHE' || title.includes('STORAGE')){
+   addRect(x-w/2,y-h/2,w,h,7,'component memoryBox');
+   addText(x,y-h/2+18,label,'label');
+   const cols=5, rows=3, cw=(w-24)/cols, rh=(h-34)/rows;
+   for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)addRect(x-w/2+8+c*cw,y-h/2+25+r*rh,cw-3,rh-3,2,'memCell');
+   addText(x,y+h/2+13,small||'storage','small');
+ } else if(title.includes('BUS')){
+   addRect(x-w/2,y-h/2,w,h,7,'component busBox');
+   addLine(x-w/2+18,y-12,x+w/2-18,y-12,'busLine');
+   addLine(x-w/2+18,y,x+w/2-18,y,'busLine');
+   addLine(x-w/2+18,y+12,x+w/2-18,y+12,'busLine');
+   addText(x,y-20,label,'label');addText(x,y+29,small||'data • address • control','small');
+ } else if(title.includes('PIPE') || ['IF / FETCH','ID / DECODE','EX / EXECUTE','MEM / MEMORY','WB / WRITE BACK'].includes(title)){
+   addRect(x-w/2,y-h/2,w,h,8,'component stageBox');
+   addLine(x-w/2+18,y-h/2+25,x+w/2-18,y-h/2+25,'detail');
+   addText(x,y-h/2+18,label,'label');addText(x,y+6,small||'stage','small');
+   addText(x,y+24,'▶','stageArrow');
+ } else if(title.includes('ADDER') || title.includes('SUM LOGIC') || title.includes('CARRY LOGIC') || title==='LOOK-AHEAD'){
+   const q=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+   q.setAttribute('points',`${x-w/2},${y-h/2} ${x+w/2-15},${y-h/2} ${x+w/2},${y} ${x+w/2-15},${y+h/2} ${x-w/2},${y+h/2}`);
+   q.setAttribute('class','component gateShape');g.appendChild(q);
+   addText(x,y-2,label,'label');addText(x,y+18,small||'logic','small');
+ } else if(title.includes('ADDRESS') || title.includes('OPCODE') || title.includes('OPERAND')){
+   addRect(x-w/2,y-h/2,w,h,5,'component fieldBox');
+   const parts=title.includes('ADDRESS')?3:4;
+   for(let i=1;i<parts;i++)addLine(x-w/2+i*w/parts,y-h/2,x-w/2+i*w/parts,y+h/2,'detail');
+   addText(x,y-5,label,'label');addText(x,y+18,small||'field','small');
+ } else if(shape==='circle'){
+   const q=document.createElementNS('http://www.w3.org/2000/svg','circle');
+   q.setAttribute('cx',x);q.setAttribute('cy',y);q.setAttribute('r',Math.min(w,h)/2);
+   q.setAttribute('class','component');g.appendChild(q);
+   addText(x,y+5,label,'label');
+ } else if(shape==='diamond'){
+   const q=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+   q.setAttribute('points',`${x},${y-h/2} ${x+w/2},${y} ${x},${y+h/2} ${x-w/2},${y}`);
+   q.setAttribute('class','component decisionShape');g.appendChild(q);
+   addText(x,y+4,label,'label');
+ } else {
+   addRect(x-w/2,y-h/2,w,h,9,'component genericBox');
+   addText(x,y+(small?-3:5),label,'label');
+   if(small)addText(x,y+17,small,'small');
+ }
+ svg.appendChild(g);nodes.push(g);return g
+}
+function wire(a,b,cls='wire'){const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.classList.add(...cls.split(' '));p.dataset.a=a;p.dataset.b=b;svg.insertBefore(p,svg.firstChild);wires.push(p);return p}
+function tx(x,y,s,cls='caption'){const t=S('text',{x,y,class:cls});t.textContent=s;return t}
+function updateWires(){const m={};nodes.forEach(n=>m[n.dataset.id]=n);wires.forEach(w=>{const a=m[w.dataset.a],b=m[w.dataset.b];if(!a||!b)return;const ax=+a.dataset.x,ay=+a.dataset.y,bx=+b.dataset.x,by=+b.dataset.y;w.setAttribute('d',`M ${ax} ${ay} C ${(ax+bx)/2} ${ay}, ${(ax+bx)/2} ${by}, ${bx} ${by}`)})}
+function connectionsFor(id){
+  // Build a directed graph from the currently selected component.
+  // The selected component lights first, then each connected component/path
+  // is revealed in sequence so the learner can follow the architecture.
+  const graph={};
+ wires.forEach((w,i)=>{
+    if(!graph[w.dataset.a]) graph[w.dataset.a]=[];
+    graph[w.dataset.a].push({to:w.dataset.b,index:i});
+  });
+
+  wires.forEach(w=>w.classList.remove('on'));
+  nodes.forEach(n=>n.classList.toggle('selected',n.dataset.id===id));
+
+  const queue=[id], seen=new Set([id]), order=[];
+  while(queue.length){
+    const from=queue.shift();
+    (graph[from]||[]).forEach(edge=>{
+      if(!seen.has(edge.to)){
+        seen.add(edge.to);
+        queue.push(edge.to);
+        order.push(edge.index);
+      }else{
+        // Keep an edge visible if it belongs to the discovered path.
+        order.push(edge.index);
+      }
+    });
+  }
+
+  // Reveal one path segment at a time. The slower timing makes the data flow
+  // clearly visible instead of lighting everything at once.
+  order.forEach((wireIndex,step)=>{
+    setTimeout(()=>{
+      const w=wires[wireIndex];
+      if(w) w.classList.add('on');
+    }, 520*step);
+  });
+}
+function select(id){selectedId=id;connectionsFor(id);const n=nodes.find(x=>x.dataset.id===id);const label=n?.querySelector('text')?.textContent||id;selectedEl.textContent='Selected: '+label;selTitle.textContent='Selected component: '+label;selInfo.textContent='Touch another component to change the active connection. The highlighted animated paths represent the learning relationship.'}
+function reset(){svg.innerHTML='';nodes=[];wires=[];selectedId=null;selectedEl.textContent='No component selected'}
+function commonCpu(){
+ node('PC',130,300,105,62,'PC','program counter');node('IM',320,300,155,78,'INSTRUCTION','memory');node('CTRL',540,180,150,76,'CONTROL','control unit');node('REG',540,330,165,82,'REGISTERS','register file');node('ALU',780,330,145,78,'ALU','arithmetic / logic');node('DM',1010,330,165,78,'DATA MEMORY','read / write');node('WB',1010,510,150,68,'WRITE BACK','result');
+wire('PC','IM');wire('IM','CTRL','wire control');wire('IM','REG');wire('CTRL','REG','wire control');wire('REG','ALU');wire('ALU','DM');wire('DM','WB');wire('WB','REG','wire control')
+}
+function render(){
+ reset();const d=meta[current]||[current,'INTERACTIVE','Touch a component to explore it.'];titleEl.textContent=d[0];badgeEl.textContent=d[1];descEl.textContent=d[2];selInfo.textContent=d[2];
+ if(['functional','cpu','instruction-cycle','fetch-decode-execute','cpu-registers','alu','control-unit','datapath'].includes(current)){commonCpu();requestAnimationFrame(updateWires);return}
+ if(['memory-hierarchy','memory-hierarchy-2','registers','cache','main-memory','secondary','sram-dram','rom','access-time'].includes(current)){memoryDiagram();requestAnimationFrame(updateWires);return}
+ if(['system-bus'].includes(current)){busDiagram();requestAnimationFrame(updateWires);return}
+ if(['io-system','io-interface','programmed-io','interrupt-io','dma','io-processors'].includes(current)){ioDiagram();requestAnimationFrame(updateWires);return}
+ if(['number-bases','conversion'].includes(current)){bases();requestAnimationFrame(updateWires);return}
+ if(['complement','signed'].includes(current)){bits();requestAnimationFrame(updateWires);return}
+ if(['fixed-float','ieee754'].includes(current)){floatDiagram();requestAnimationFrame(updateWires);return}
+ if(current==='character'){charDiagram();requestAnimationFrame(updateWires);return}
+ if(['binary-arithmetic','signed-arithmetic','fast-adders','cla','csa','overflow'].includes(current)){adderDiagram();requestAnimationFrame(updateWires);return}
+ if(['booth','division'].includes(current)){algorithmDiagram();requestAnimationFrame(updateWires);return}
+ if(current==='float-arithmetic'){floatArithmetic();requestAnimationFrame(updateWires);return}
+ if(['isa-important','formats','opcode-operands','instruction-types','risc-cisc','addressing','immediate','direct','indirect','register','register-indirect','indexed','relative'].includes(current)){isaDiagram();requestAnimationFrame(updateWires);return}
+ if(['branch','jump','procedure','stack','return-address','interrupt'].includes(current)){controlFlow();requestAnimationFrame(updateWires);return}
+ if(['pipelining','pipeline-stages','speedup','structural','data-hazard','control-hazard','hazard-handling','forwarding','stalling','branch-prediction'].includes(current)){pipeline();requestAnimationFrame(updateWires);return}
+ if(['cache-org','direct-map','assoc-map','set-assoc','hit-miss','hit-ratio'].includes(current)){cacheDiagram();requestAnimationFrame(updateWires);return}
+ if(['virtual-physical','paging','page-tables','tlb','page-fault','address-translation'].includes(current)){virtualDiagram();requestAnimationFrame(updateWires);return}
+ if(['multiprocessors','multicore','simd','mimd','flynn','shared-distributed'].includes(current)){parallelDiagram();requestAnimationFrame(updateWires);return}
+ generic();
+}
+function memoryDiagram(){
+ node('CPU',140,340,130,72,'CPU','request');node('L1',390,180,150,68,'L1 CACHE','fast');node('L2',620,260,150,68,'L2 CACHE','larger');node('RAM',850,350,170,75,'MAIN MEMORY','DRAM');node('SSD',1070,500,150,70,'STORAGE','persistent');
+ wire('CPU','L1');wire('L1','L2');wire('L2','RAM');wire('RAM','SSD');
+ if(current==='sram-dram'){node('SRAM',400,520,150,65,'SRAM','cache cells');node('DRAM',700,520,150,65,'DRAM','main memory');wire('SRAM','DRAM','wire control')}
+ if(current==='rom'){node('ROM',860,150,150,65,'ROM','firmware');wire('CPU','ROM','wire control')}
+}
+function busDiagram(){node('CPU',180,320,150,80,'CPU','processor');node('BUS',590,320,250,72,'SYSTEM BUS','DATA • ADDRESS • CONTROL');node('MEM',1000,210,170,75,'MEMORY','RAM');node('IO',1000,440,170,75,'I/O','devices');wire('CPU','BUS');wire('BUS','MEM');wire('BUS','IO','wire control');tx(590,415,'DATA BUS • ADDRESS BUS • CONTROL BUS')}
+function ioDiagram(){node('CPU',150,300,135,72,'CPU','processor');node('BUS',370,300,150,68,'BUS','communication');node('IF',610,220,175,75,'I/O INTERFACE','status + data');node('DEV',900,220,170,75,'DEVICE','peripheral');node('MEM',610,430,175,75,'MEMORY','RAM');wire('CPU','BUS');wire('BUS','IF');wire('IF','DEV');wire('IF','MEM','wire control');if(current==='dma'){node('DMA',850,470,180,72,'DMA CONTROLLER','direct transfer');wire('DEV','DMA');wire('DMA','MEM');wire('CPU','DMA','wire control')}if(current==='interrupt-io'){node('INT',900,390,170,68,'INTERRUPT','request');wire('DEV','INT','wire control');wire('INT','CPU','wire control')}if(current==='io-processors'){node('IOP',380,500,180,68,'I/O PROCESSOR','independent');wire('IOP','DEV');wire('CPU','IOP','wire control')}}
+function bases(){node('BIN',180,320,160,75,'BINARY','base 2');node('DEC',470,170,160,75,'DECIMAL','base 10');node('OCT',470,470,160,75,'OCTAL','base 8');node('HEX',790,320,180,75,'HEXADECIMAL','base 16');wire('BIN','DEC');wire('BIN','OCT');wire('DEC','HEX');wire('OCT','HEX');node('VALUE',1050,320,120,65,'VALUE','same number');wire('HEX','VALUE')}
+function bits(){node('INPUT',160,320,150,72,'INPUT','bit pattern');node('INVERT',430,220,170,72,'INVERT','1\'s complement');node('PLUS1',700,220,150,72,'+ 1','2\'s complement');node('RESULT',1000,320,170,72,'RESULT','signed value');wire('INPUT','INVERT');wire('INVERT','PLUS1');wire('PLUS1','RESULT');node('SIGN',430,470,150,68,'SIGN BIT','MSB');node('MAG',700,470,160,68,'MAGNITUDE','remaining bits');wire('SIGN','MAG')}
+function floatDiagram(){node('VALUE',130,320,140,70,'VALUE','number');node('SIGN',390,190,150,68,'SIGN','1 bit');node('EXP',650,190,170,68,'EXPONENT','scale');node('FRAC',900,190,180,68,'FRACTION','significand');node('ENC',900,420,180,72,'ENCODED','IEEE 754');wire('VALUE','SIGN');wire('VALUE','EXP');wire('VALUE','FRAC');wire('SIGN','ENC');wire('EXP','ENC');wire('FRAC','ENC');if(current==='fixed-float'){node('FIXED',430,500,170,68,'FIXED POINT','fixed binary point');node('FLOAT',760,500,170,68,'FLOATING POINT','exponent');wire('FIXED','FLOAT','wire control')} }
+function charDiagram(){node('CHAR',150,320,150,70,'CHARACTER','A / ₹ / 文');node('ASCII',450,220,160,70,'ASCII','code');node('UNICODE',450,430,180,70,'UNICODE','code point');node('BITS',800,320,180,75,'BINARY STORAGE','bits');wire('CHAR','ASCII');wire('CHAR','UNICODE');wire('ASCII','BITS');wire('UNICODE','BITS');}
+function adderDiagram(){node('A',140,220,120,65,'A','operand');node('B',140,420,120,65,'B','operand');node('XOR',390,250,145,70,'SUM LOGIC','XOR');node('CARRY',390,410,145,70,'CARRY LOGIC','AND / OR');node('CLA',650,330,170,82,current==='cla'?'LOOK-AHEAD':'ADDER','generate / propagate');node('OUT',960,330,160,72,'RESULT','sum');wire('A','XOR');wire('B','XOR');wire('A','CARRY','wire control');wire('B','CARRY','wire control');wire('XOR','CLA');wire('CARRY','CLA','wire control');wire('CLA','OUT');if(current==='csa'){node('C',140,550,120,65,'C','third operand');node('SAVE',650,520,180,70,'SAVE CARRY','no ripple');wire('C','SAVE');wire('CLA','SAVE')}if(current==='overflow'){node('FLAG',960,500,170,65,'OVERFLOW FLAG','status');wire('CLA','FLAG','wire control')} }
+function algorithmDiagram(){node('Q',130,240,120,65,'Q','multiplier / quotient');node('ACC',390,240,155,70,'ACCUMULATOR','A');node('M',390,410,150,70,'M / DIVISOR','operand');node('CHECK',650,320,160,75,current==='booth'?'Q0,Q-1':'SIGN TEST','decision');node('SHIFT',900,320,160,75,'SHIFT','A,Q');wire('Q','ACC');wire('M','CHECK');wire('ACC','CHECK');wire('CHECK','SHIFT');wire('SHIFT','Q','wire control');wire('SHIFT','ACC','wire control');}
+function floatArithmetic(){node('A',130,230,140,65,'OPERAND A','sign exp frac');node('B',130,420,140,65,'OPERAND B','sign exp frac');node('ALIGN',390,320,170,70,'ALIGN','exponents');node('OP',650,320,170,70,'OPERATE','add / subtract');node('NORM',900,220,170,70,'NORMALIZE','shift');node('ROUND',900,420,150,70,'ROUND','precision');wire('A','ALIGN');wire('B','ALIGN');wire('ALIGN','OP');wire('OP','NORM');wire('OP','ROUND','wire control');wire('NORM','ROUND');}
+function isaDiagram(){node('INSTR',160,320,220,80,'INSTRUCTION','opcode | fields');node('OPCODE',470,180,160,70,'OPCODE','operation');node('OPERAND',470,330,170,70,'OPERANDS','data / address');node('MODE',470,480,170,70,'ADDRESS MODE','effective address');node('REG',780,220,160,70,'REGISTERS','fast operand');node('MEM',780,430,160,70,'MEMORY','operand data');node('EXEC',1050,320,140,75,'EXECUTE','datapath');wire('INSTR','OPCODE');wire('INSTR','OPERAND');wire('INSTR','MODE');wire('OPCODE','EXEC');wire('OPERAND','REG');wire('MODE','MEM');wire('REG','EXEC');wire('MEM','EXEC');if(current==='risc-cisc'){node('RISC',300,580,170,65,'RISC','simple formats');node('CISC',700,580,170,65,'CISC','rich formats');wire('RISC','CISC','wire control')} }
+function controlFlow(){node('PC',130,320,110,62,'PC','current address');node('FETCH',330,320,140,68,'FETCH','instruction');node('DEC',530,320,140,68,'DECODE','control');node('EXEC',730,320,150,70,'EXECUTE','condition');node('TARGET',1000,190,160,70,'TARGET','new PC');node('STACK',1000,450,160,70,'STACK','return address');wire('PC','FETCH');wire('FETCH','DEC');wire('DEC','EXEC');wire('EXEC','TARGET','wire control');wire('EXEC','STACK');wire('STACK','TARGET');}
+function pipeline(){
+ const ids=['IF','ID','EX','MEM','WB'],labs=['IF / FETCH','ID / DECODE','EX / EXECUTE','MEM / MEMORY','WB / WRITE BACK'];ids.forEach((id,i)=>node(id,135+i*225,230,175,90,labs[i],['instruction','decode','ALU','data memory','register write'][i]));
+ for(let i=0;i<4;i++)wire(ids[i],ids[i+1]);
+ tx(600,55,'ORIGINAL 2D PIPELINE DATAPATH');
+ for(let r=0;r<4;r++){tx(28,380+r*52,'I'+(r+1));for(let c=0;c<5;c++){const rr=document.createElementNS('http://www.w3.org/2000/svg','rect');rr.setAttribute('x',85+c*225);rr.setAttribute('y',360+r*52);rr.setAttribute('width',175);rr.setAttribute('height',32);rr.setAttribute('rx',5);rr.setAttribute('fill','#0e2119');rr.setAttribute('stroke','#275b45');svg.appendChild(rr);const tt=document.createElementNS('http://www.w3.org/2000/svg','text');tt.setAttribute('x',172+c*225);tt.setAttribute('y',381+r*52);tt.setAttribute('fill','#8ee5b6');tt.setAttribute('font-size','10');tt.setAttribute('text-anchor','middle');tt.textContent=labs[c].split(' / ')[0];svg.appendChild(tt)}}
+ if(current==='structural'){node('RESOURCE',600,560,190,65,'RESOURCE CONFLICT','shared hardware');wire('EX','RESOURCE','wire control');wire('MEM','RESOURCE','wire control')}
+ if(current==='data-hazard'){node('HAZARD',600,560,170,65,'DATA HAZARD','dependency');wire('ID','HAZARD','wire control');wire('HAZARD','EX','wire control')}
+ if(current==='control-hazard'){node('BRANCH',850,560,160,65,'BRANCH','decision');wire('EX','BRANCH','wire control');wire('BRANCH','IF','wire control')}
+ if(current==='forwarding'){node('FWD',600,560,175,65,'FORWARDING','bypass path');wire('MEM','FWD','wire control');wire('FWD','EX','wire control')}
+ if(current==='stalling'){node('STALL',600,560,175,65,'STALL / BUBBLE','delay');wire('ID','STALL','wire control');wire('STALL','EX','wire control')}
+ if(current==='branch-prediction'){node('PRED',600,560,190,65,'BRANCH PREDICTOR','target guess');wire('PRED','IF','wire control');wire('EX','PRED','wire control')}
+}
+function cacheDiagram(){node('CPU',120,320,120,65,'CPU','request');node('ADDR',320,320,145,65,'ADDRESS','tag | index');node('TAG',540,180,130,62,'TAG','compare');node('INDEX',540,320,130,62,'INDEX','select set');node('LINE',760,320,160,70,'CACHE LINE','data');node('RAM',1030,320,150,70,'MAIN MEMORY','lower level');wire('CPU','ADDR');wire('ADDR','TAG');wire('ADDR','INDEX');wire('INDEX','LINE');wire('TAG','LINE','wire control');wire('LINE','RAM');if(current==='hit-miss'){node('HIT',760,170,130,62,'HIT','cache');node('MISS',760,500,140,62,'MISS','memory');wire('TAG','HIT');wire('TAG','MISS','wire control')}if(current==='set-assoc'){node('SET A',780,180,130,60,'SET 0','ways');node('SET B',780,450,130,60,'SET 1','ways');wire('INDEX','SET A');wire('INDEX','SET B')} }
+function virtualDiagram(){node('VADDR',150,320,190,75,'VIRTUAL ADDRESS','VPN + OFFSET');node('TLB',430,190,150,68,'TLB','fast lookup');node('PT',430,430,170,68,'PAGE TABLE','VPN → FRAME');node('FRAME',760,320,190,75,'PHYSICAL ADDRESS','FRAME + OFFSET');node('RAM',1040,320,130,68,'RAM','physical memory');wire('VADDR','TLB');wire('TLB','FRAME');wire('VADDR','PT');wire('PT','FRAME');wire('FRAME','RAM');if(current==='page-fault'){node('FAULT',760,520,170,68,'PAGE FAULT','disk service');wire('PT','FAULT','wire control');wire('FAULT','RAM','wire control')}}
+function parallelDiagram(){
+ if(current==='simd'){node('INST',150,320,160,70,'ONE INSTRUCTION','control');['LANE 1','LANE 2','LANE 3','LANE 4'].forEach((l,i)=>{node('L'+i,430+i*180,320,140,70,l,'data lane');wire('INST','L'+i)});return}
+ if(current==='mimd'){['CORE 1','CORE 2','CORE 3','CORE 4'].forEach((l,i)=>node('C'+i,180+(i%2)*330,180+(Math.floor(i/2))*260,150,70,l,'independent'));node('MEM',900,320,190,80,'MEMORY','shared / distributed');for(let i=0;i<4;i++)wire('C'+i,'MEM');return}
+ if(current==='flynn'){node('SISD',250,190,180,70,'SISD','1I / 1D');node('SIMD',600,190,180,70,'SIMD','1I / many D');node('MISD',250,430,180,70,'MISD','many I / 1D');node('MIMD',600,430,180,70,'MIMD','many I / many D');wire('SISD','SIMD');wire('MISD','MIMD');return}
+ if(current==='shared-distributed'){node('CPU1',170,190,140,65,'CPU 1','local');node('CPU2',170,450,140,65,'CPU 2','local');node('SHARED',550,320,190,80,'SHARED MEMORY','common address space');node('N1',980,190,150,65,'NODE 1','local memory');node('N2',980,450,150,65,'NODE 2','local memory');wire('CPU1','SHARED');wire('CPU2','SHARED');wire('SHARED','N1','wire control');wire('SHARED','N2','wire control');return}
+ node('C1',180,200,150,70,'CORE 1','processor');node('C2',180,440,150,70,'CORE 2','processor');node('C3',570,200,150,70,'CORE 3','processor');node('C4',570,440,150,70,'CORE 4','processor');node('MEM',950,320,190,80,current==='multicore'?'SHARED CACHE':'SHARED MEMORY','common resource');['C1','C2','C3','C4'].forEach(x=>wire(x,'MEM'))}
+function generic(){node('INPUT',150,320,150,70,'INPUT','information');node('PROCESS',450,320,190,82,'PROCESSOR','concept');node('MEM',760,220,170,72,'MEMORY','state');node('OUTPUT',1030,320,160,72,'OUTPUT','result');wire('INPUT','PROCESS');wire('PROCESS','MEM');wire('MEM','OUTPUT')}
+svg.addEventListener('pointerdown',e=>{
+  const n=e.target.closest?.('.node');
+  if(!n)return;
+  e.preventDefault();
+  svg.setPointerCapture(e.pointerId);
+  drag=n;
+  dragStart=point(e);
+  n.dataset.startX=n.dataset.x;
+  n.dataset.startY=n.dataset.y;
+  n.dataset.dragBaseX=n.dataset.baseTx||'0';
+  n.dataset.dragBaseY=n.dataset.baseTy||'0';
+});
+
+svg.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  e.preventDefault();
+  const p=point(e);
+  const dx=p.x-dragStart.x,dy=p.y-dragStart.y;
+  const x=+drag.dataset.startX+dx,y=+drag.dataset.startY+dy;
+  drag.dataset.x=x;
+  drag.dataset.y=y;
+
+  // Move the entire SVG group. All internal drawings/text/details are children
+  // of this same group, so nothing is left behind.
+  drag.setAttribute(
+    'transform',
+    `translate(${+drag.dataset.dragBaseX+dx} ${+drag.dataset.dragBaseY+dy})`
+  );
+  updateWires();
+});
+
+svg.addEventListener('pointerup',e=>{
+  if(!drag)return;
+  const p=point(e);
+  const dx=p.x-dragStart.x,dy=p.y-dragStart.y;
+  const moved=Math.hypot(dx,dy);
+  const id=drag.dataset.id;
+
+  if(moved>=8){
+    drag.dataset.baseTx=+drag.dataset.dragBaseX+dx;
+    drag.dataset.baseTy=+drag.dataset.dragBaseY+dy;
+    // Keep coordinates and transform in agreement for the next drag.
+    drag.setAttribute('transform',`translate(${drag.dataset.baseTx} ${drag.dataset.baseTy})`);
+    updateWires();
+  }
+  drag=null;
+  if(moved<8)select(id);
+});
+
+svg.addEventListener('pointercancel',()=>drag=null);
+
+function point(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
+document.querySelectorAll('.sub').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.sub').forEach(x=>x.classList.remove('active'));b.classList.add('active');current=b.dataset.id;render()}));
+render();
+
+const packets=new Map();
+function animate(){
+ raf=requestAnimationFrame(animate);
+ const now=performance.now();
+ wires.forEach((w,i)=>{
+   if(!w.classList.contains('on')){const p=packets.get(i);if(p){p.remove();packets.delete(i)};return}
+   let p=packets.get(i);
+   if(!p){
+     p=document.createElementNS('http://www.w3.org/2000/svg','circle');
+     p.setAttribute('r','5');p.setAttribute('class','packet');
+     svg.appendChild(p);packets.set(i,p);
+   }
+   try{
+     const len=w.getTotalLength();
+     const pos=(now*0.000095*len)%len;
+     const pt=w.getPointAtLength(pos);
+     p.setAttribute('cx',pt.x);p.setAttribute('cy',pt.y);
+   }catch(_){}
+ });
+}
+animate();
+</script>
+</body>
+</html>

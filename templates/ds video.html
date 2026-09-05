@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXORA | Data Structures Videos</title>
+
+<style>
+*{box-sizing:border-box}
+:root{
+    --green:#58c481;
+    --green-dark:#269c5d;
+    --green-deep:#145b37;
+    --green-light:#e2f7eb;
+    --page:#eef9f2;
+    --white:#fff;
+    --text:#17221c;
+    --muted:#68766f;
+    --border:#dceee3;
+}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--page);
+    color:var(--text);
+}
+.page{min-height:100vh;display:flex}
+.sidebar{
+    width:255px;
+    min-width:255px;
+    min-height:100vh;
+    background:var(--green);
+    color:#fff;
+    padding:28px 18px;
+    position:sticky;
+    top:0;
+    height:100vh;
+}
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:8px 10px 30px;
+}
+.brand-mark{
+    width:70px;
+    height:70px;
+    border-radius:16px;
+    background:#fff;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+}
+.nexora-logo{width:56px;height:64px;display:block}
+.brand-name{font-size:25px;font-weight:800}
+.sidebar-nav{display:flex;flex-direction:column;gap:7px}
+.sidebar-nav a{
+    color:#fff;
+    text-decoration:none;
+    padding:13px 12px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-weight:700;
+}
+.sidebar-nav a:hover{background:rgba(255,255,255,.15)}
+.sidebar-nav a.active{background:#fff;color:var(--green)}
+.sidebar-bottom{
+    position:absolute;
+    left:18px;
+    right:18px;
+    bottom:22px;
+    border-top:1px solid rgba(255,255,255,.25);
+    padding-top:18px;
+}
+.sidebar-bottom a{
+    color:#fff;
+    text-decoration:none;
+    padding:13px 12px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-weight:700;
+}
+.sidebar-bottom a:hover{
+    background:rgba(255,255,255,.15);
+}
+
+.main{flex:1;min-width:0;padding:34px 42px}
+.heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    margin-bottom:25px;
+}
+.eyebrow{
+    color:#22a35c;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:2px;
+    margin-bottom:8px;
+}
+h1{margin:0;font-size:42px;letter-spacing:-1px}
+.description{margin:9px 0 0;color:var(--muted);font-size:16px}
+.back{
+    text-decoration:none;
+    background:#fff;
+    color:var(--green-dark);
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:11px 16px;
+    font-weight:700;
+}
+.layout{
+    display:grid;
+    grid-template-columns:355px minmax(0,1fr);
+    gap:24px;
+    align-items:start;
+}
+.topics,.content{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:22px;
+    box-shadow:0 16px 45px rgba(32,111,68,.07);
+}
+.topics{padding:22px 18px}
+.topic-label{
+    color:var(--green-dark);
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:1.5px;
+    margin:2px 10px 18px;
+}
+.group{margin-bottom:19px}
+.group:last-child{margin-bottom:0}
+.group-title{
+    color:var(--green-deep);
+    font-size:17px;
+    font-weight:800;
+    padding:8px 10px;
+    margin-bottom:6px;
+}
+.topic{
+    width:100%;
+    border:0;
+    background:transparent;
+    color:#65736c;
+    text-align:left;
+    padding:11px 12px 11px 25px;
+    border-radius:11px;
+    margin:3px 0;
+    cursor:pointer;
+    font-size:14px;
+    line-height:1.4;
+}
+.topic:hover{background:#edf9f2;color:var(--green-dark)}
+.topic.active{
+    background:var(--green-light);
+    color:var(--green-dark);
+    font-weight:700;
+    box-shadow:inset 3px 0 var(--green);
+}
+.content{padding:25px;min-height:690px}
+.content-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    margin-bottom:20px;
+}
+.content-head h2{margin:0;font-size:25px}
+.content-head p{margin:8px 0 0;color:var(--muted);line-height:1.5}
+.badge{
+    background:#e8f8ee;
+    color:#20955a;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:11px;
+    font-weight:800;
+    white-space:nowrap;
+}
+.video-box{
+    min-height:440px;
+    border-radius:19px;
+    border:1px solid var(--border);
+    background:
+        radial-gradient(circle at 25% 20%,rgba(72,190,123,.13),transparent 30%),
+        radial-gradient(circle at 80% 75%,rgba(72,190,123,.10),transparent 34%),
+        #f5fcf8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+}
+.placeholder{text-align:center;padding:30px}
+.play{
+    width:78px;height:78px;border-radius:50%;
+    background:var(--green);color:#fff;
+    display:grid;place-items:center;
+    margin:0 auto 20px;
+    font-size:28px;
+    box-shadow:0 12px 30px rgba(53,174,109,.25);
+}
+.placeholder h3{margin:0 0 9px;font-size:22px}
+.placeholder p{margin:0 auto;max-width:500px;color:var(--muted);line-height:1.6}
+.frame{display:none;width:100%;height:440px;border:0;background:#000}
+.actions{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:15px;margin-top:20px;padding-top:18px;border-top:1px solid #e3eee7
+}
+.current{color:var(--muted);font-size:13px}
+.current strong{display:block;color:var(--text);font-size:15px;margin-top:3px}
+.open{
+    display:none;text-decoration:none;background:var(--green);
+    color:#fff;padding:11px 16px;border-radius:10px;font-weight:700
+}
+@media(max-width:1050px){
+    .sidebar{width:220px;min-width:220px}
+    .main{padding:28px}
+    .layout{grid-template-columns:310px minmax(0,1fr)}
+}
+@media(max-width:900px){
+    .page{display:block}
+    .sidebar{width:100%;min-width:0;height:auto;min-height:0;position:relative;padding:15px}
+    .brand{padding-bottom:18px}
+    .sidebar-nav{flex-direction:row;flex-wrap:wrap}
+    .sidebar-nav a{flex:1 1 130px}
+    .sidebar-bottom{display:none}
+    .layout{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+    .main{padding:18px 14px}
+    .heading{flex-direction:column}
+    .content{padding:16px}
+    .content-head{flex-direction:column}
+    .video-box,.frame{min-height:300px;height:300px}
+    .actions{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-mark" aria-label="NEXORA logo">
+            <svg class="nexora-logo" viewBox="0 0 220 250" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="nexora-gradient" x1="45" y1="15" x2="175" y2="235" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#78D69A"/>
+                        <stop offset="45%" stop-color="#4FC27E"/>
+                        <stop offset="100%" stop-color="#269C5D"/>
+                    </linearGradient>
+                </defs>
+                <path fill="url(#nexora-gradient)" d="M42 18 C34 12 24 16 24 27 V183 C24 192 28 198 35 203 L70 229 V82 C70 76 77 72 82 76 L166 138 C178 147 193 142 197 130 C201 118 197 108 188 101 L57 7 C51 3 45 8 42 18 Z"/>
+                <path fill="url(#nexora-gradient)" d="M126 151 L181 191 C192 199 194 211 187 221 C180 231 167 233 157 226 L113 194 L91 178 Z"/>
+                <path fill="url(#nexora-gradient)" d="M91 145 C96 132 101 127 114 122 C101 117 96 112 91 99 C86 112 81 117 68 122 C81 127 86 132 91 145 Z"/>
+            </svg>
+        </div>
+        <div class="brand-name">NEXORA</div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="/">▦ <span>Dashboard</span></a>
+        <a href="/courses">▤ <span>Courses</span></a>
+        <a href="/videos" class="active">▶ <span>Videos</span></a>
+        <a href="/chatbot">✦ <span>AI Chatbot</span></a>
+        <a href="/sources">⌁ <span>Sources</span></a>
+        <a href="/simulation">◇ <span>Simulation</span></a>
+        <a href="/certificate">◇ <span>Certificates</span></a>
+        <a href="/quiz">✓ <span>Quiz</span></a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <a href="/profile">⚙ &nbsp; Settings</a>
+    </div>
+</aside>
+
+<main class="main">
+    <div class="heading">
+        <div>
+            <div class="eyebrow">NEXORA VIDEO LEARNING</div>
+            <h1>Data Structures</h1>
+            <p class="description">Learn linked-list concepts visually, one topic at a time.</p>
+        </div>
+        <a href="/videos" class="back">← Back to Videos</a>
+    </div>
+
+    <div class="layout">
+
+        <aside class="topics">
+            <div class="topic-label">COURSE TOPICS</div>
+
+            <div class="group">
+                <div class="group-title">1. SINGLY LINKED LIST</div>
+                <button class="topic active" data-topic="sll-intro">1. Introduction to Linked List in C</button>
+                <button class="topic" data-topic="sll-begin">2. Insertion at the Beginning in Singly Linked List</button>
+                <button class="topic" data-topic="sll-position">3. Insertion at a Position in Singly Linked List</button>
+                <button class="topic" data-topic="sll-end">4. Insertion at the End in Singly Linked List</button>
+                <button class="topic" data-topic="sll-traverse">5. Traversal of a Linked List in Singly Linked List</button>
+                <button class="topic" data-topic="sll-del-begin">6. Deletion at the Beginning in Singly Linked List</button>
+                <button class="topic" data-topic="sll-del-position">7. Deletion at a Position in Singly Linked List</button>
+                <button class="topic" data-topic="sll-del-end">8. Deletion at the End in Singly Linked List</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">2. DOUBLY LINKED LIST</div>
+                <button class="topic" data-topic="dll-begin">1. Insertion at the Beginning in Doubly Linked List</button>
+                <button class="topic" data-topic="dll-position">2. Insertion at a Position in Doubly Linked List</button>
+                <button class="topic" data-topic="dll-end">3. Insertion at the End in Doubly Linked List</button>
+                <button class="topic" data-topic="dll-del-begin">4. Deletion at the Beginning in Doubly Linked List</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">3. CIRCULAR LINKED LIST</div>
+                <button class="topic" data-topic="cll-del-end">1. Deletion at the End in Circular Linked List</button>
+                <button class="topic" data-topic="cll-insert-end">2. Insertion at the End in Circular Linked List</button>
+            </div>
+        </aside>
+
+        <section class="content">
+            <div class="content-head">
+                <div>
+                    <h2 id="title">Introduction to Linked List in C</h2>
+                    <p id="description">Learn the basic structure of linked lists, nodes, DATA, NEXT pointers, and how nodes are connected.</p>
+                </div>
+                <span class="badge" id="badge">SINGLY LINKED LIST</span>
+            </div>
+
+            <div class="video-box">
+                <div class="placeholder" id="placeholder">
+                    <div class="play">▶</div>
+                    <h3>Video Coming Soon</h3>
+                    <p id="placeholderText">The video for this topic will be uploaded later. Add its URL in the VIDEO_URLS section in this file.</p>
+                </div>
+                <iframe id="frame" class="frame" title="NEXORA Data Structures Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <div class="actions">
+                <div class="current">CURRENT TOPIC<strong id="current">Introduction to Linked List in C</strong></div>
+                <a id="open" class="open" href="#" target="_blank" rel="noopener noreferrer">Open Video ↗</a>
+            </div>
+        </section>
+    </div>
+</main>
+</div>
+
+<script>
+/*
+============================================================
+VIDEO URLS
+
+Add your videos later by replacing "" with the URL.
+
+For YouTube use:
+https://www.youtube.com/embed/VIDEO_ID
+
+Example:
+"sll-intro": "https://www.youtube.com/embed/VIDEO_ID",
+
+Only change the URLs below.
+============================================================
+*/
+const VIDEO_URLS = {
+    "sll-intro": "https://www.youtube.com/embed/R9PTBwOzceo",
+    "sll-begin": "https://www.youtube.com/embed/jgqg6Qw68_Q",
+    "sll-position": "https://www.youtube.com/embed/0hGxILnKvJk",
+    "sll-end": "https://www.youtube.com/embed/LYGbeWnYXd8",
+    "sll-traverse": "https://www.youtube.com/embed/e0s-zmpedYo",
+    "sll-del-begin": "https://www.youtube.com/embed/-rcIWx-JTxw",
+    "sll-del-position": "https://www.youtube.com/embed/f1r_jxCyOl0",
+    "sll-del-end": "https://www.youtube.com/embed/TpgxJupHATQ",
+
+    "dll-begin": "https://www.youtube.com/embed/SPKCATQ--KY",
+    "dll-end": "https://www.youtube.com/embed/LDMF8iqO8pg", 
+    "dll-del-begin": "https://www.youtube.com/embed/ZxGz3XkGlyA",
+    "dll-position": "https://www.youtube.com/embed/le9RuwN2sQg",
+
+    "cll-del-end": "https://www.youtube.com/embed/2bqbgNQi2UE",
+    "cll-insert-end": "https://www.youtube.com/embed/kErHUGvFrNg"
+};
+
+const VIDEO_DATA = {
+    "sll-intro": ["Introduction to Linked List in C","Learn the basic structure of linked lists, nodes, DATA, NEXT pointers, and how nodes are connected.","SINGLY LINKED LIST"],
+    "sll-begin": ["Insertion at the Beginning in Singly Linked List","Learn how a new node is inserted before the current HEAD of a singly linked list.","SINGLY LINKED LIST"],
+    "sll-position": ["Insertion at a Position in Singly Linked List","Learn how to insert a new node at a selected position in a singly linked list.","SINGLY LINKED LIST"],
+    "sll-end": ["Insertion at the End in Singly Linked List","Learn how to traverse to the last node and attach a new node at the end.","SINGLY LINKED LIST"],
+    "sll-traverse": ["Traversal of a Linked List in Singly Linked List","Learn how a singly linked list is traversed from HEAD until NULL.","SINGLY LINKED LIST"],
+    "sll-del-begin": ["Deletion at the Beginning in Singly Linked List","Learn how the first node is removed and HEAD is moved to the next node.","SINGLY LINKED LIST"],
+    "sll-del-position": ["Deletion at a Position in Singly Linked List","Learn how a node at a selected position is removed while preserving the linked structure.","SINGLY LINKED LIST"],
+    "sll-del-end": ["Deletion at the End in Singly Linked List","Learn how the final node is removed and the previous node points to NULL.","SINGLY LINKED LIST"],
+
+    "dll-begin": ["Insertion at the Beginning in Doubly Linked List","Learn how a new node is inserted at the beginning using both PREV and NEXT links.","DOUBLY LINKED LIST"],
+    "dll-position": ["Insertion at a Position in Doubly Linked List","Learn how a node is inserted at a selected position while updating both directions.","DOUBLY LINKED LIST"],
+    "dll-end": ["Insertion at the End in Doubly Linked List","Learn how a new node is attached at the end of a doubly linked list.","DOUBLY LINKED LIST"],
+    "dll-del-begin": ["Deletion at the Beginning in Doubly Linked List","Learn how the first node is deleted while maintaining PREV and NEXT connections.","DOUBLY LINKED LIST"],
+
+    "cll-del-end": ["Deletion at the End in Circular Linked List","Learn how the last node is deleted while preserving the circular connection to HEAD.","CIRCULAR LINKED LIST"],
+    "cll-insert-end": ["Insertion at the End in Circular Linked List","Learn how a new node is inserted at the end while keeping the list circular.","CIRCULAR LINKED LIST"]
+};
+
+const buttons = document.querySelectorAll(".topic");
+const title = document.getElementById("title");
+const description = document.getElementById("description");
+const badge = document.getElementById("badge");
+const current = document.getElementById("current");
+const placeholder = document.getElementById("placeholder");
+const placeholderText = document.getElementById("placeholderText");
+const frame = document.getElementById("frame");
+const open = document.getElementById("open");
+
+function loadTopic(id) {
+    const data = VIDEO_DATA[id];
+    if (!data) return;
+
+    const url = (VIDEO_URLS[id] || "").trim();
+
+    title.textContent = data[0];
+    description.textContent = data[1];
+    badge.textContent = data[2];
+    current.textContent = data[0];
+
+    buttons.forEach(button => {
+        button.classList.toggle("active", button.dataset.topic === id);
+    });
+
+    if (!url) {
+        placeholder.style.display = "block";
+        frame.style.display = "none";
+        frame.src = "";
+        open.style.display = "none";
+        open.removeAttribute("href");
+        placeholderText.textContent =
+            "The video for this topic will be uploaded later. Add its URL in the VIDEO_URLS section in this file.";
+        return;
+    }
+
+    placeholder.style.display = "none";
+    frame.style.display = "block";
+    frame.src = url;
+    open.style.display = "inline-block";
+    open.href = url;
+}
+
+buttons.forEach(button => {
+    button.addEventListener("click", () => loadTopic(button.dataset.topic));
+});
+
+loadTopic("sll-intro");
+</script>
+</body>
+</html>
